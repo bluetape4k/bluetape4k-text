@@ -1,4 +1,4 @@
-[한국어](./README.ko.md) | English
+English | [한국어](./README.ko.md)
 
 # bluetape4k-text
 
@@ -6,26 +6,26 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.bluetape4k.text/tokenizer-core)](https://central.sonatype.com/namespace/io.github.bluetape4k.text)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-Kotlin/JVM text processing library — Korean and Japanese morphological analyzers, multilingual language detection, and Aho-Corasick multi-keyword search — part of the bluetape4k ecosystem.
+Kotlin/JVM 텍스트 처리 라이브러리 — 한국어·일본어 형태소 분석기, 다국어 언어 감지, Aho-Corasick 다중 키워드 검색 — bluetape4k 에코시스템의 일부입니다.
 
-## Modules
+## 모듈
 
-| Module | Description | Artifact |
+| 모듈 | 설명 | 아티팩트 |
 |---|---|---|
-| `tokenizer-core` | Shared domain models (`TokenizeRequest/Response`, `BlockwordRequest/Response`, `Severity`), dictionary utilities (`DictionaryProvider`, `CharArraySet`) | `io.github.bluetape4k.text:tokenizer-core` |
-| `tokenizer-japanese` | `JapaneseProcessor` facade powered by Kuromoji IPAdic — morphological analysis, POS filtering, blockword detection and masking | `io.github.bluetape4k.text:tokenizer-japanese` |
-| `tokenizer-korean` | `KoreanProcessor` facade — full Korean NLP pipeline: normalization, POS tokenization, phrase extraction, stemming, sentence splitting, blockword masking | `io.github.bluetape4k.text:tokenizer-korean` |
-| `lingua` | Kotlin DSL wrapper around Lingua — factory functions for `LanguageDetector`, mixed-language detection via `Set<Language>`, `UnicodeDetector` | `io.github.bluetape4k.text:lingua` |
-| `text-search` | `AhoCorasickAutomaton<V>` — O(n+m+z) multi-keyword search, Unicode normalization, word boundaries, Kotlin Flow API | `io.github.bluetape4k.text:text-search` |
+| `tokenizer-core` | 공통 도메인 모델 (`TokenizeRequest/Response`, `BlockwordRequest/Response`, `Severity`), 사전 유틸리티 (`DictionaryProvider`, `CharArraySet`) | `io.github.bluetape4k.text:tokenizer-core` |
+| `tokenizer-japanese` | Kuromoji IPAdic 기반 `JapaneseProcessor` 파사드 — 형태소 분석, POS 필터링, 금칙어 감지·마스킹 | `io.github.bluetape4k.text:tokenizer-japanese` |
+| `tokenizer-korean` | `KoreanProcessor` 파사드 — 한국어 전처리 전 파이프라인: 정규화, 형태소 분석, 구 추출, 어간 추출, 문장 분리, 금칙어 마스킹 | `io.github.bluetape4k.text:tokenizer-korean` |
+| `lingua` | Lingua 기반 Kotlin DSL — `LanguageDetector` 팩토리, 혼합 언어 감지 (`Set<Language>`), `UnicodeDetector` | `io.github.bluetape4k.text:lingua` |
+| `text-search` | `AhoCorasickAutomaton<V>` — O(n+m+z) 다중 키워드 검색, 유니코드 정규화, 단어 경계, Kotlin Flow API | `io.github.bluetape4k.text:text-search` |
 
-## Architecture
+## 아키텍처
 
 ```mermaid
 graph TD
     subgraph bluetape4k_text["bluetape4k-text"]
-        CORE["tokenizer-core\nModels · DictionaryProvider\nCharArraySet · Severity"]
-        KO["tokenizer-korean\nKoreanProcessor\nNormalizer · Tokenizer\nPhraseExtractor · Stemmer"]
-        JA["tokenizer-japanese\nJapaneseProcessor\nKuromoji IPAdic\nBlockword Masking"]
+        CORE["tokenizer-core\n모델 · DictionaryProvider\nCharArraySet · Severity"]
+        KO["tokenizer-korean\nKoreanProcessor\n정규화 · 형태소 분석\n구 추출 · 어간 추출"]
+        JA["tokenizer-japanese\nJapaneseProcessor\nKuromoji IPAdic\n금칙어 마스킹"]
         LINGUA["lingua\nLanguageDetector DSL\ndetectAllLanguagesOf()\nUnicodeDetector"]
         SEARCH["text-search\nAhoCorasickAutomaton\nFlow · replaceAll · tokenize"]
     end
@@ -39,30 +39,30 @@ graph TD
     JA --> KUROMOJI["kuromoji-ipadic"]
 ```
 
-## Installation
+## 설치
 
-Add each module individually:
+각 모듈을 개별적으로 추가합니다:
 
 ```kotlin
 // build.gradle.kts
 
-// Korean NLP
+// 한국어 NLP
 implementation("io.github.bluetape4k.text:tokenizer-korean:0.1.0-SNAPSHOT")
 
-// Japanese NLP
+// 일본어 NLP
 implementation("io.github.bluetape4k.text:tokenizer-japanese:0.1.0-SNAPSHOT")
 
-// Language detection
+// 언어 감지
 implementation("io.github.bluetape4k.text:lingua:0.1.0-SNAPSHOT")
 
-// Aho-Corasick search
+// Aho-Corasick 검색
 implementation("io.github.bluetape4k.text:text-search:0.1.0-SNAPSHOT")
 
-// Core models only (if you build a custom tokenizer)
+// 공통 모델만 필요한 경우 (커스텀 토크나이저 구현 시)
 implementation("io.github.bluetape4k.text:tokenizer-core:0.1.0-SNAPSHOT")
 ```
 
-For snapshots, add the Maven Central Snapshots repository:
+SNAPSHOT 버전 사용 시 Maven Central Snapshots 저장소를 추가하세요:
 
 ```kotlin
 repositories {
@@ -72,93 +72,93 @@ repositories {
 }
 ```
 
-## Usage
+## 사용법
 
-### Korean Tokenizer
+### 한국어 토크나이저
 
 ```kotlin
 import io.bluetape4k.tokenizer.korean.KoreanProcessor
 import io.bluetape4k.tokenizer.model.BlockwordRequest
 import io.bluetape4k.tokenizer.model.Severity
 
-// 1. Normalize colloquial text
+// 1. 구어체 텍스트 정규화
 val normalized = KoreanProcessor.normalize("안됔ㅋㅋㅋㅋㅋ")
 // → "안돼ㅋㅋㅋ"
 
-// 2. Morphological tokenization
+// 2. 형태소 분석
 val tokens = KoreanProcessor.tokenize("주말특가 쇼핑몰")
 KoreanProcessor.tokensToStrings(tokens)
 // ["주말", "특가", "쇼핑몰"]
 
-// 3. Stemming
+// 3. 어간 추출
 val stemmed = KoreanProcessor.stem(KoreanProcessor.tokenize("가느다란"))
 println(stemmed.first().stem)  // → "갈다"
 
-// 4. Phrase extraction
+// 4. 구 추출
 val phrases = KoreanProcessor.extractPhrases(
     KoreanProcessor.tokenize("성탄절 쇼핑"),
     filterSpam = false
 )
 
-// 5. Sentence splitting
+// 5. 문장 분리
 val sentences = KoreanProcessor.splitSentences("안녕? 세상아?").toList()
 // size == 2
 
-// 6. Runtime noun dictionary extension
+// 6. 런타임 명사 사전 추가
 KoreanProcessor.addNounsToDictionary("블루테이프4K", "주말특가")
 
-// 7. Blockword masking
+// 7. 금칙어 마스킹
 KoreanProcessor.addBlockwords(listOf("욕설"), Severity.HIGH)
 val response = KoreanProcessor.maskBlockwords(BlockwordRequest("이 욕설은 나쁜 말이야"))
 // response.maskedText → "이 **은 나쁜 말이야"
 ```
 
-### Japanese Tokenizer
+### 일본어 토크나이저
 
 ```kotlin
 import io.bluetape4k.tokenizer.japanese.JapaneseProcessor
 import io.bluetape4k.tokenizer.model.blockwordRequestOf
 
-// Morphological analysis
+// 형태소 분석
 val tokens = JapaneseProcessor.tokenize("お寿司が食べたい。")
 val surfaces = tokens.map { it.surface }
 // [お, 寿司, が, 食べ, たい, 。]
 
-// Noun filtering
+// 명사 필터링
 val nouns = JapaneseProcessor.filterNoun(
     JapaneseProcessor.tokenize("私は、日本語の勉強をしています。")
 ).map { it.surface }
 // [私, 日本語, 勉強]
 
-// Blockword masking
+// 금칙어 마스킹
 val request = blockwordRequestOf("ホモの男性を理解できない")
 val result = JapaneseProcessor.maskBlockwords(request)
 println(result.maskedText)       // **の男性を理解できない
 println(result.blockwordExists)  // true
 ```
 
-### Language Detection
+### 언어 감지
 
 ```kotlin
 import com.github.pemistahl.lingua.api.Language
 import io.bluetape4k.lingua.allLanguageDetector
 import io.bluetape4k.lingua.detectAllLanguagesOf
 
-// Build a detector (reuse the instance — model loading is expensive)
+// 감지기 생성 (인스턴스 재사용 권장 — 모델 로딩 비용이 있음)
 val detector = allLanguageDetector {
     withPreloadedLanguageModels()
     withMinimumRelativeDistance(0.0)
 }
 
-// Single-language detection
+// 단일 언어 감지
 val lang = detector.detectLanguageOf("Hello, world")
 // Language.ENGLISH
 
-// Mixed-language detection
+// 혼합 언어 감지
 val langs = detector.detectAllLanguagesOf("Hello 안녕 こんにちは")
 // setOf(Language.ENGLISH, Language.KOREAN, Language.JAPANESE)
 
-// Build from a specific language subset
+// 특정 언어 집합으로 감지기 생성
 val koEnDetector = languageDetectorOf(
     languages = setOf(Language.ENGLISH, Language.KOREAN),
     minimumRelativeDistance = 0.0,
@@ -166,7 +166,7 @@ val koEnDetector = languageDetectorOf(
 )
 ```
 
-### Aho-Corasick Text Search
+### Aho-Corasick 텍스트 검색
 
 ```kotlin
 import io.bluetape4k.text.search.AhoCorasickAutomaton
@@ -175,7 +175,7 @@ import io.bluetape4k.text.search.WordBoundary
 import io.bluetape4k.text.search.ahoCorasick
 import io.bluetape4k.text.search.flow.matchesAsFlow
 
-// Builder API
+// 빌더 API
 val automaton = AhoCorasickAutomaton.builder<String>()
     .add("apple", "APPLE")
     .add("banana", "BANANA")
@@ -185,7 +185,7 @@ val automaton = AhoCorasickAutomaton.builder<String>()
 val matches = automaton.parseText("I like Apple and BANANA.")
 // [Match(start=7, end=11, keyword="apple", value="APPLE"), ...]
 
-// DSL builder
+// DSL 빌더
 val kw = ahoCorasick<String> {
     ignoreCase = true
     wordBoundary = WordBoundary.LATIN_ALPHA
@@ -193,25 +193,25 @@ val kw = ahoCorasick<String> {
     keyword("val", "KW_VAL")
 }
 
-// Profanity masking with replaceAll
+// replaceAll로 금칙어 마스킹
 val blocked = AhoCorasickAutomaton.builder<String>()
     .apply { listOf("bad", "worse").forEach { add(it, "***") } }
     .build()
 val clean = blocked.replaceAll("That's bad and worse!") { it.value }
 // "That's *** and ***!"
 
-// Kotlin Flow — first alert
+// Kotlin Flow — 첫 번째 알림 수신
 val firstAlert = automaton.matchesAsFlow("ERROR in disk")
     .take(1)
     .toList()
 ```
 
-## Requirements
+## 요구사항
 
 - **JDK**: 21+
 - **Kotlin**: 2.3+
 - **Gradle**: 8.x
 
-## License
+## 라이선스
 
-Apache License 2.0 — see [LICENSE](LICENSE)
+Apache License 2.0 — [LICENSE](LICENSE) 참조
