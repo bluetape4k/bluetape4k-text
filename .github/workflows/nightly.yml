@@ -1,0 +1,326 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: '0 19 * * *'  # 매일 UTC 19:00 (KST 04:00)
+  workflow_dispatch:
+
+env:
+  JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: 'temurin'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  # ── 0. Gradle Wrapper 검증 ────────────────────────────────────────────────
+  validate-wrapper:
+    name: Validate Gradle Wrapper
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle/actions/wrapper-validation@v4
+
+  # ── 1. 전체 빌드 + Detekt ─────────────────────────────────────────────────
+  build:
+    name: Build & Detekt
+    runs-on: ubuntu-latest
+    needs: validate-wrapper
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: wrapper
+
+      - name: Build (compile only)
+        run: ./gradlew build -x test --parallel
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+      - name: Detekt static analysis
+        run: ./gradlew detekt --parallel
+
+      - name: Upload detekt report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: detekt-report
+          path: 'build/reports/detekt/*.xml'
+          retention-days: 14
+
+  # ── 2. tokenizer-core ─────────────────────────────────────────────────────
+  test-tokenizer-core:
+    name: Test / tokenizer-core
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: wrapper
+          cache-read-only: true
+
+      - name: Test tokenizer-core
+        run: ./gradlew :tokenizer-core:test --no-daemon --no-configuration-cache
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
+
+      - name: Generate Kover XML report
+        if: always()
+        run: ./gradlew :tokenizer-core:koverXmlReport --no-daemon
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-tokenizer-core
+          path: '**/build/test-results/test/*.xml'
+          retention-days: 14
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-tokenizer-core
+          path: '**/build/reports/kover/'
+          retention-days: 14
+
+  # ── 3. tokenizer-japanese ─────────────────────────────────────────────────
+  test-tokenizer-japanese:
+    name: Test / tokenizer-japanese
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: wrapper
+          cache-read-only: true
+
+      - name: Test tokenizer-japanese
+        run: ./gradlew :tokenizer-japanese:test --no-daemon --no-configuration-cache
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
+
+      - name: Generate Kover XML report
+        if: always()
+        run: ./gradlew :tokenizer-japanese:koverXmlReport --no-daemon
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-tokenizer-japanese
+          path: '**/build/test-results/test/*.xml'
+          retention-days: 14
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-tokenizer-japanese
+          path: '**/build/reports/kover/'
+          retention-days: 14
+
+  # ── 4. tokenizer-korean ───────────────────────────────────────────────────
+  test-tokenizer-korean:
+    name: Test / tokenizer-korean
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: wrapper
+          cache-read-only: true
+
+      - name: Test tokenizer-korean
+        run: ./gradlew :tokenizer-korean:test --no-daemon --no-configuration-cache
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
+
+      - name: Generate Kover XML report
+        if: always()
+        run: ./gradlew :tokenizer-korean:koverXmlReport --no-daemon
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-tokenizer-korean
+          path: '**/build/test-results/test/*.xml'
+          retention-days: 14
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-tokenizer-korean
+          path: '**/build/reports/kover/'
+          retention-days: 14
+
+  # ── 5. lingua ─────────────────────────────────────────────────────────────
+  test-lingua:
+    name: Test / lingua
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: wrapper
+          cache-read-only: true
+
+      - name: Test lingua
+        run: ./gradlew :lingua:test --no-daemon --no-configuration-cache
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
+
+      - name: Generate Kover XML report
+        if: always()
+        run: ./gradlew :lingua:koverXmlReport --no-daemon
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-lingua
+          path: '**/build/test-results/test/*.xml'
+          retention-days: 14
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lingua
+          path: '**/build/reports/kover/'
+          retention-days: 14
+
+  # ── 6. text-search ────────────────────────────────────────────────────────
+  test-text-search:
+    name: Test / text-search
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: wrapper
+          cache-read-only: true
+
+      - name: Test text-search
+        run: ./gradlew :text-search:test --no-daemon --no-configuration-cache
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
+
+      - name: Generate Kover XML report
+        if: always()
+        run: ./gradlew :text-search:koverXmlReport --no-daemon
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-text-search
+          path: '**/build/test-results/test/*.xml'
+          retention-days: 14
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-text-search
+          path: '**/build/reports/kover/'
+          retention-days: 14
+
+  # ── 7. 커버리지 집계 ──────────────────────────────────────────────────────
+  coverage-report:
+    name: Coverage Report
+    runs-on: ubuntu-latest
+    needs:
+      - test-tokenizer-core
+      - test-tokenizer-japanese
+      - test-tokenizer-korean
+      - test-lingua
+      - test-text-search
+    if: always()
+    steps:
+      - name: Download all coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: coverage-artifacts
+          merge-multiple: false
+        continue-on-error: true
+
+      - name: Upload aggregated coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-all
+          path: coverage-artifacts/
+          retention-days: 30
+
+  # ── 8. 결과 집계 ──────────────────────────────────────────────────────────
+  nightly-status:
+    name: Nightly Status
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - test-tokenizer-core
+      - test-tokenizer-japanese
+      - test-tokenizer-korean
+      - test-lingua
+      - test-text-search
+      - coverage-report
+    if: always()
+    steps:
+      - name: Check all jobs
+        env:
+          RESULTS: ${{ join(needs.*.result, ',') }}
+        run: |
+          echo "Nightly results: $RESULTS"
+          if echo "$RESULTS" | grep -qE "failure|cancelled"; then
+            echo "Nightly failed"
+            exit 1
+          fi
+          echo "Nightly passed"
