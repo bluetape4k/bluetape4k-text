@@ -4,7 +4,9 @@ English | [한국어](./README.ko.md)
 
 [![CI](https://github.com/bluetape4k/bluetape4k-text/actions/workflows/ci.yml/badge.svg)](https://github.com/bluetape4k/bluetape4k-text/actions/workflows/ci.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.bluetape4k.text/tokenizer-core)](https://central.sonatype.com/namespace/io.github.bluetape4k.text)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.3-7F52FF?logo=kotlin)](https://kotlinlang.org)
+[![JVM](https://img.shields.io/badge/JVM-21-ED8B00?logo=openjdk)](https://openjdk.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Kotlin/JVM 텍스트 처리 라이브러리 — 한국어·일본어 형태소 분석기, 다국어 언어 감지, Aho-Corasick 다중 키워드 검색 — bluetape4k 에코시스템의 일부입니다.
 

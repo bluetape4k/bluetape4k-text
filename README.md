@@ -4,7 +4,9 @@
 
 [![CI](https://github.com/bluetape4k/bluetape4k-text/actions/workflows/ci.yml/badge.svg)](https://github.com/bluetape4k/bluetape4k-text/actions/workflows/ci.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.bluetape4k.text/tokenizer-core)](https://central.sonatype.com/namespace/io.github.bluetape4k.text)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.3-7F52FF?logo=kotlin)](https://kotlinlang.org)
+[![JVM](https://img.shields.io/badge/JVM-21-ED8B00?logo=openjdk)](https://openjdk.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Kotlin/JVM text processing library — Korean and Japanese morphological analyzers, multilingual language detection, and Aho-Corasick multi-keyword search — part of the bluetape4k ecosystem.
 
