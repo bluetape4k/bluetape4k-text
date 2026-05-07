@@ -15,6 +15,7 @@ jobs:
   validate-wrapper:
     name: Validate Gradle Wrapper
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: gradle/actions/wrapper-validation@v4
@@ -23,6 +24,7 @@ jobs:
   build:
     name: Build & Detekt
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: validate-wrapper
     steps:
       - uses: actions/checkout@v4
@@ -56,6 +58,7 @@ jobs:
   test-tokenizer-core:
     name: Test / tokenizer-core
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -100,6 +103,7 @@ jobs:
   test-tokenizer-japanese:
     name: Test / tokenizer-japanese
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -144,6 +148,7 @@ jobs:
   test-tokenizer-korean:
     name: Test / tokenizer-korean
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -188,6 +193,7 @@ jobs:
   test-lingua:
     name: Test / lingua
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -232,6 +238,7 @@ jobs:
   test-text-search:
     name: Test / text-search
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -276,6 +283,7 @@ jobs:
   coverage-report:
     name: Coverage Report
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs:
       - test-tokenizer-core
       - test-tokenizer-japanese
@@ -304,6 +312,7 @@ jobs:
   nightly-status:
     name: Nightly Status
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs:
       - build
       - test-tokenizer-core
