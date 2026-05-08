@@ -4,7 +4,7 @@ import io.bluetape4k.tokenizer.korean.TestBase
 import io.bluetape4k.tokenizer.korean.normalizer.KoreanNormalizer.correctTypo
 import io.bluetape4k.tokenizer.korean.normalizer.KoreanNormalizer.normalize
 import io.bluetape4k.tokenizer.korean.normalizer.KoreanNormalizer.normalizeCodaN
-import org.amshove.kluent.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 
 class KoreanNormalizerTest: TestBase() {

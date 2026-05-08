@@ -27,13 +27,13 @@ import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.utils.Systemx
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeFalse
-import org.amshove.kluent.shouldBeLessThan
-import org.amshove.kluent.shouldBeTrue
-import org.amshove.kluent.shouldContainAll
-import org.amshove.kluent.shouldContainSame
-import org.amshove.kluent.shouldNotBeEqualTo
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeLessThan
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContainAll
+import io.bluetape4k.assertions.shouldContainSame
+import io.bluetape4k.assertions.shouldNotBeEqualTo
 import org.junit.jupiter.api.Test
 import kotlin.system.measureTimeMillis
 
@@ -286,6 +286,6 @@ class KoreanTextProcessorTest: TestBase() {
 
         log.debug { "response=$response" }
         response.maskedText shouldBeEqualTo expected
-        response.blockWords shouldContainAll arrayOf("은꼴사", "물쑈", "혼숙")
+        response.blockWords shouldContainAll listOf("은꼴사", "물쑈", "혼숙")
     }
 }

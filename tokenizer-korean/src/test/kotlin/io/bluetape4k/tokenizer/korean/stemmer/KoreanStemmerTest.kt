@@ -10,8 +10,8 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Eomi
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Exclamation
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.PreEomi
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Verb
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldContainSame
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldContainSame
 import org.junit.jupiter.api.Test
 
 class KoreanStemmerTest: TestBase() {

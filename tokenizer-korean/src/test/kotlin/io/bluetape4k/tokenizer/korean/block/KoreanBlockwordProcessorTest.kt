@@ -6,11 +6,11 @@ import io.bluetape4k.tokenizer.model.BlockwordOptions
 import io.bluetape4k.tokenizer.model.BlockwordRequest
 import io.bluetape4k.tokenizer.model.Severity
 import kotlinx.coroutines.test.runTest
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldContainAll
-import org.amshove.kluent.shouldContainSame
-import org.amshove.kluent.shouldHaveSize
-import org.amshove.kluent.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldContainAll
+import io.bluetape4k.assertions.shouldContainSame
+import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.assertions.shouldNotBeEmpty
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -58,7 +58,7 @@ class KoreanBlockwordProcessorTest {
 
         log.debug { "response=$response" }
         response.maskedText shouldBeEqualTo expected
-        response.blockWords shouldContainAll arrayOf("걸레", "찌찌뽕", "대끼리")
+        response.blockWords shouldContainAll listOf("걸레", "찌찌뽕", "대끼리")
     }
 
     @RepeatedTest(REPEAT_SIZE)
@@ -82,7 +82,7 @@ class KoreanBlockwordProcessorTest {
 
         log.debug { "response=$response" }
         response.maskedText shouldBeEqualTo expected
-        response.blockWords shouldContainAll arrayOf("히로뽕") // Severity LOW 인 금칙어는 처리하지 않는다
+        response.blockWords shouldContainAll listOf("히로뽕") // Severity LOW 인 금칙어는 처리하지 않는다
     }
 
     @RepeatedTest(REPEAT_SIZE)
@@ -102,7 +102,7 @@ class KoreanBlockwordProcessorTest {
 
         log.debug { "response=$response" }
         response.maskedText shouldBeEqualTo expected
-        response.blockWords shouldContainAll arrayOf("분수쑈", "쌀거")
+        response.blockWords shouldContainAll listOf("분수쑈", "쌀거")
     }
 
     @Test
@@ -122,7 +122,7 @@ class KoreanBlockwordProcessorTest {
 
         log.debug { "response=$response" }
         response.maskedText shouldBeEqualTo expected
-        response.blockWords shouldContainAll arrayOf("삼초찍")
+        response.blockWords shouldContainAll listOf("삼초찍")
     }
 
     @Test
@@ -142,7 +142,7 @@ class KoreanBlockwordProcessorTest {
 
         log.debug { "response=$response" }
         response.maskedText shouldBeEqualTo expected
-        response.blockWords shouldContainAll arrayOf("fuck")
+        response.blockWords shouldContainAll listOf("fuck")
     }
 
     @ParameterizedTest

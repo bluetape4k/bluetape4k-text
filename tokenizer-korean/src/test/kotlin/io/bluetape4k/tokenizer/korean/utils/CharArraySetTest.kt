@@ -7,8 +7,8 @@ import io.bluetape4k.tokenizer.utils.CharArraySet
 import io.bluetape4k.tokenizer.utils.DictionaryProvider
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.test.runTest
-import org.amshove.kluent.shouldBeTrue
-import org.amshove.kluent.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldNotBeEmpty
 import org.junit.jupiter.api.Test
 
 class CharArraySetTest: TestBase() {

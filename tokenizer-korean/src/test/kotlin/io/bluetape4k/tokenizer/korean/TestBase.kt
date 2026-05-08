@@ -5,7 +5,7 @@ import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.trace
 import io.bluetape4k.tokenizer.korean.utils.KoreanDictionaryProvider
 import io.bluetape4k.tokenizer.utils.DictionaryProvider
-import org.amshove.kluent.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeFalse
 import org.slf4j.Logger
 import kotlin.system.measureNanoTime
 import kotlin.system.measureTimeMillis

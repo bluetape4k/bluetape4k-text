@@ -3,7 +3,7 @@ package io.bluetape4k.tokenizer.korean.tokenizer
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.tokenizer.korean.TestBase
 import io.bluetape4k.tokenizer.korean.tokenizer.KoreanSentenceSplitter.split
-import org.amshove.kluent.shouldContainSame
+import io.bluetape4k.assertions.shouldContainSame
 import org.junit.jupiter.api.Test
 
 
