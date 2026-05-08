@@ -10,7 +10,7 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Suffix
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Verb
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosx.SelfNode
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosx.buildTrie
-import org.amshove.kluent.shouldContainSame
+import io.bluetape4k.assertions.shouldContainSame
 import org.junit.jupiter.api.Test
 
 class KoreanPosTest: TestBase() {

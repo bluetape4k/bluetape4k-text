@@ -8,9 +8,9 @@ import io.bluetape4k.tokenizer.korean.tokenizer.KoreanToken
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.KoreanParticle
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Modifier
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Noun
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeLessThan
-import org.amshove.kluent.shouldContainSame
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeLessThan
+import io.bluetape4k.assertions.shouldContainSame
 import org.junit.jupiter.api.Test
 import java.io.Serializable
 import kotlin.system.measureTimeMillis

@@ -1,7 +1,7 @@
 package io.bluetape4k.lingua
 
 import com.github.pemistahl.lingua.api.Language
-import org.amshove.kluent.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 
 class LanguageDetectorExtensionsTest: AbstractLinguaTest() {

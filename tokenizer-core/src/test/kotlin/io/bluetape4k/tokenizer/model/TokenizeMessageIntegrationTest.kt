@@ -2,7 +2,7 @@ package io.bluetape4k.tokenizer.model
 
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.tokenizer.AbstractCoreTest
-import org.amshove.kluent.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 import java.util.*
 

@@ -2,8 +2,8 @@ package io.bluetape4k.text.search
 
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeEmpty
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEmpty
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 

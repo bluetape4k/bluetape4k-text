@@ -5,7 +5,7 @@ import io.bluetape4k.logging.error
 import io.bluetape4k.tokenizer.korean.TestBase
 import io.bluetape4k.tokenizer.utils.CharArraySet
 import io.bluetape4k.tokenizer.utils.DictionaryProvider
-import org.amshove.kluent.shouldBeTrue
+import io.bluetape4k.assertions.shouldBeTrue
 import org.junit.jupiter.api.Test
 
 class KoreanConjugationTest: TestBase() {
