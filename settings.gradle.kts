@@ -18,3 +18,6 @@ include(
     "lingua",
     "text-search",
 )
+
+include("bluetape4k-text-bom")
+project(":bluetape4k-text-bom").projectDir = file("bom")
