@@ -46,7 +46,6 @@ allprojects {
     version = baseVersion + snapshotVersion
 
     repositories {
-        mavenLocal()
         mavenCentral()
         maven {
             name = "central-snapshots"
@@ -255,7 +254,6 @@ subprojects {
         testImplementation(rootLibs.junit.jupiter)
         testRuntimeOnly(rootLibs.junit.platform.engine)
 
-        testImplementation(rootLibs.bluetape4k.assertions)
         testImplementation(rootLibs.awaitility.kotlin)
         testImplementation(rootLibs.mockk)
     }
@@ -301,7 +299,11 @@ subprojects {
             }
         }
         repositories {
-            mavenLocal()
+            mavenCentral()
+            maven {
+                name = "central-snapshots"
+                url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+            }
         }
     }
 

@@ -17,4 +17,3 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - CI uses path filtering and retry configuration ([PR #5](https://github.com/bluetape4k/bluetape4k-text/pull/5)).
 - Test code migrated from Kluent to `bluetape4k-assertions` ([PR #6](https://github.com/bluetape4k/bluetape4k-text/pull/6)).
-
