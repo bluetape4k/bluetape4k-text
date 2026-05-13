@@ -1,5 +1,3 @@
-English | [한국어](./README.ko.md)
-
 # bluetape4k-text
 
 [![CI](https://github.com/bluetape4k/bluetape4k-text/actions/workflows/ci.yml/badge.svg)](https://github.com/bluetape4k/bluetape4k-text/actions/workflows/ci.yml)
@@ -8,7 +6,24 @@ English | [한국어](./README.ko.md)
 [![JVM](https://img.shields.io/badge/JVM-21-ED8B00?logo=openjdk)](https://openjdk.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+[English](./README.md) | 한국어
+
+![bluetape4k 텍스트 처리 작업대 일러스트](./docs/assets/text-workbench.png)
+
 Kotlin/JVM 텍스트 처리 라이브러리 — 한국어·일본어 형태소 분석기, 다국어 언어 감지, Aho-Corasick 다중 키워드 검색 — bluetape4k 에코시스템의 일부입니다.
+
+## 프로젝트 목적
+
+`bluetape4k-text`는 Kotlin 서비스에서 한국어/일본어 토큰화, 언어 감지, 사전 기반 필터링,
+고성능 키워드 검색을 재사용 가능한 텍스트 처리 primitive로 제공합니다.
+
+## 제공 기능
+
+- **Tokenizer core** — 공통 request/response 모델, dictionary 유틸리티, severity metadata, `CharArraySet`
+- **한국어 NLP** — 정규화, POS tokenization, 구 추출, 어간 추출, 문장 분리, runtime dictionary 확장, 금칙어 마스킹
+- **일본어 NLP** — Kuromoji IPAdic tokenization, POS helper, 명사 필터링, 금칙어 마스킹
+- **언어 감지** — Lingua 기반 detector factory와 혼합 언어 감지 helper
+- **Aho-Corasick 검색** — 불변 automaton, DSL builder, replacement, word boundary, Kotlin Flow matching
 
 ## 모듈
 
