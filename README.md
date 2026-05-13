@@ -1,5 +1,3 @@
-[한국어](./README.ko.md) | English
-
 # bluetape4k-text
 
 [![CI](https://github.com/bluetape4k/bluetape4k-text/actions/workflows/ci.yml/badge.svg)](https://github.com/bluetape4k/bluetape4k-text/actions/workflows/ci.yml)
@@ -8,7 +6,30 @@
 [![JVM](https://img.shields.io/badge/JVM-21-ED8B00?logo=openjdk)](https://openjdk.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+[한국어](./README.ko.md) | English
+
+![Bluetape4k text processing workbench](./docs/assets/text-workbench.png)
+
 Kotlin/JVM text processing library — Korean and Japanese morphological analyzers, multilingual language detection, and Aho-Corasick multi-keyword search — part of the bluetape4k ecosystem.
+
+## Project Purpose
+
+`bluetape4k-text` gives Kotlin services reusable text-processing primitives for
+Korean/Japanese tokenization, language detection, dictionary-backed filtering,
+and high-throughput keyword search.
+
+## What It Provides
+
+- **Tokenizer core** — shared request/response models, dictionary utilities,
+  severity metadata, and `CharArraySet`.
+- **Korean NLP** — normalization, POS tokenization, phrase extraction, stemming,
+  sentence splitting, runtime dictionary extension, and blockword masking.
+- **Japanese NLP** — Kuromoji IPAdic tokenization, POS helpers, noun filtering,
+  and blockword masking.
+- **Language detection** — Lingua-backed detector factories and mixed-language
+  detection helpers.
+- **Aho-Corasick search** — immutable automata, DSL builder, replacement, word
+  boundary handling, and Kotlin Flow matching.
 
 ## Modules
 

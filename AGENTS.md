@@ -15,6 +15,10 @@ and Aho-Corasick search.
 | `tokenizer-korean` | `io.github.bluetape4k.text:tokenizer-korean` | `KoreanProcessor`, normalizer, chunker, POS tagger, phrase extractor, stemmer |
 | `lingua` | `io.github.bluetape4k.text:lingua` | Language detector DSL and Unicode detector |
 | `text-search` | `io.github.bluetape4k.text:text-search` | Immutable generic `AhoCorasickAutomaton<V>` and DSL |
+| `bom/` | `io.github.bluetape4k.text:bluetape4k-text-bom` | Consumer BOM for aligned text artifacts |
+
+Root README visual assets live under `docs/assets/` and should be shared by
+`README.md` and `README.ko.md` through the same relative path.
 
 ## Commands
 
