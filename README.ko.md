@@ -231,4 +231,4 @@ val firstAlert = automaton.matchesAsFlow("ERROR in disk")
 
 ## 라이선스
 
-Apache License 2.0 — [LICENSE](LICENSE) 참조
+MIT License — [LICENSE](LICENSE) 참조
