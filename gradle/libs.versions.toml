@@ -78,6 +78,7 @@ bluetape4k-io = { module = "io.github.bluetape4k:bluetape4k-io" }
 bluetape4k-coroutines = { module = "io.github.bluetape4k:bluetape4k-coroutines" }
 bluetape4k-logging = { module = "io.github.bluetape4k:bluetape4k-logging" }
 bluetape4k-jackson2 = { module = "io.github.bluetape4k:bluetape4k-jackson2" }
+bluetape4k-jackson3 = { module = "io.github.bluetape4k:bluetape4k-jackson3" }
 bluetape4k-junit5 = { module = "io.github.bluetape4k:bluetape4k-junit5" }
 
 # Logging
@@ -91,6 +92,8 @@ logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
 jackson-module-blackbird = { module = "com.fasterxml.jackson.module:jackson-module-blackbird" }
+jackson3-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" }
+jackson3-module-blackbird = { module = "tools.jackson.module:jackson-module-blackbird" }
 
 # Text processing
 lingua = { module = "com.github.pemistahl:lingua", version.ref = "lingua" }

@@ -1,7 +1,6 @@
 package io.bluetape4k.tokenizer.model
 
-import com.fasterxml.jackson.module.kotlin.readValue
-import io.bluetape4k.jackson.writeAsString
+import io.bluetape4k.jackson3.writeAsString
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.tokenizer.AbstractCoreTest
 import io.bluetape4k.assertions.shouldBeEqualTo
@@ -9,6 +8,7 @@ import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFailsWith
+import tools.jackson.module.kotlin.readValue
 
 class TokenizeMessageTest: AbstractCoreTest() {
 

@@ -1,9 +1,9 @@
 package io.bluetape4k.tokenizer
 
-import com.fasterxml.jackson.databind.json.JsonMapper
-import io.bluetape4k.jackson.Jackson
+import io.bluetape4k.jackson3.Jackson
 import io.bluetape4k.logging.KLogging
 import net.datafaker.Faker
+import tools.jackson.databind.json.JsonMapper
 import java.util.*
 
 abstract class AbstractCoreTest {
