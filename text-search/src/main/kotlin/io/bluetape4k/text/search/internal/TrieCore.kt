@@ -29,18 +29,16 @@ import java.util.*
  * )
  * ```
  *
- * ## 동작/계약
- * - [build] 시점에 failure transition을 구성한 뒤 검색을 수행합니다.
- * - 옵션([InternalTrieConfig])에 따라 대소문자 무시/겹침 제거/단어 경계 필터를 적용합니다.
- * - 검색 결과는 [Emit]의 시작 위치 기준으로 처리됩니다.
+ * Failure transitions are constructed at [build] time. Search behavior is controlled by
+ * [InternalTrieConfig] (case-insensitive, overlap removal, word-boundary filtering).
  *
- * @property config TrieCore 환경설정 (기본값: [InternalTrieConfig.DEFAULT])
+ * @property config trie configuration (default: [InternalTrieConfig.DEFAULT])
  */
 internal class TrieCore(private val config: InternalTrieConfig = InternalTrieConfig.DEFAULT) {
 
     companion object: KLogging() {
         @JvmStatic
-        /** [TrieCoreBuilder]를 생성합니다. */
+        /** Creates a [TrieCoreBuilder]. */
         fun builder(): TrieCoreBuilder = TrieCoreBuilder()
     }
 
@@ -49,7 +47,7 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
     private val ignoreCase: Boolean get() = config.ignoreCase
 
     /**
-     * 문장에서 키워드를 치환합니다.
+     * Replaces all keyword matches in [text] with their mapped values from [map] and returns the resulting string.
      *
      * ```
      * val map = mapOf(
@@ -63,13 +61,11 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
      * replaced shouldBeEqualTo "I am a product manager for a java programming platform working from Apple, New york"
      * ```
      *
-     * @param text 치환할 문자열
-     * @param map 치환할 키워드 맵
-     * @return 치환된 문자열
+     * @param text input text to process
+     * @param map keyword-to-replacement map
      *
-     * ## 동작/계약
-     * - [tokenize] 결과를 순회하며 매칭 토큰만 [map] 값으로 치환합니다.
-     * - 키가 없는 매칭은 원문 fragment를 유지합니다.
+     * Iterates [tokenize] results and replaces matched tokens with their [map] values.
+     * Matches with no map entry are kept as-is.
      */
     fun replace(text: String, map: Map<String, String>): String {
         val tokens = tokenize(text)
@@ -87,7 +83,7 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
     }
 
     /**
-     * 문장을 형태소 분석합니다.
+     * Splits [text] into [MatchToken] and [FragmentToken] segments.
      *
      * ```
      * val GREEK_LETTERS = listOf("Alpha", "Beta", "Gamma")
@@ -100,12 +96,7 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
      * tokens.size shouldBeEqualTo 5   // 2 space
      * ```
      *
-     * @param text 형태소 분석할 문자열
-     * @return 형태소 리스트
-     *
-     * ## 동작/계약
-     * - 매칭 구간은 [MatchToken], 비매칭 구간은 [FragmentToken]으로 반환합니다.
-     * - 빈 입력은 빈 리스트를 반환합니다.
+     * @param text input text to tokenize
      */
     fun tokenize(
         text: String,
@@ -154,13 +145,10 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
      * )
      * ```
      *
-     * @param text 키워드를 찾을 문자열
-     * @param emitHandler Emit 처리기 (기본값: [DefaultEmitHandler])
-     * @return Emit 리스트
+     * @param text input text to search
+     * @param emitHandler emit handler (default: [DefaultEmitHandler])
      *
-     * ## 동작/계약
-     * - 내부 파싱 후 config 옵션에 따라 partial/overlap 필터를 적용합니다.
-     * - [allowOverlaps]가 `false`면 [IntervalTree]로 겹침을 제거합니다.
+     * Applies partial-match and overlap filters per [InternalTrieConfig] after raw parsing.
      */
     fun parseText(text: CharSequence, emitHandler: StatefulEmitHandler = DefaultEmitHandler()): List<Emit> {
         runParseText(text, emitHandler)
@@ -183,11 +171,11 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
         return collectedEmits
     }
 
-    /** 텍스트에 매칭 키워드가 하나라도 있으면 `true`를 반환합니다. */
+    /** Returns `true` if [text] contains at least one matching keyword. */
     fun containsMatch(text: CharSequence): Boolean = firstMatch(text) != null
 
     /**
-     * [text]를 파싱하고, [emitHandler]를 통해 Emit을 처리합니다.
+     * Parses [text] char-by-char, invoking [emitHandler] for each keyword match found.
      *
      * ```
      *  val PRONOUNS = listOf("hers", "his", "she", "he")
@@ -206,12 +194,11 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
      *  checkEmit(emits[2], 2, 5, "hers")
      *  ```
      *
-     *  @param text 키워드를 찾을 문자열
-     *  @param emitHandler Emit 처리기
+     *  @param text input text to search
+     *  @param emitHandler emit handler to receive each keyword match
      *
-     *  ## 동작/계약
-     *  - 문자 단위로 상태 전이를 진행하고 각 상태 emit을 [emitHandler]에 전달합니다.
-     *  - [config.stopOnHit]가 `true`이고 handler가 `true`를 반환하면 즉시 중단합니다.
+     *  Performs char-by-char state transitions and delivers each emit to [emitHandler].
+     *  Stops immediately when [config.stopOnHit] is `true` and the handler returns `true`.
      */
     fun runParseText(text: CharSequence, emitHandler: EmitHandler) {
         var currentState = rootState
@@ -229,7 +216,7 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
     }
 
     /**
-     * 문장에서 첫 번째 매치를 찾습니다.
+     * Returns the first keyword match in [text], or `null` if none is found.
      *
      * ```
      * val UNICODE = listOf("turning", "once", "again", "börkü")
@@ -244,12 +231,11 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
      * checkEmit(firstMatch, 0, 6, "turning")
      * ```
      *
-     * @param text 키워드를 찾을 문자열
-     * @return Emit 첫 번째 매치되는 키워드를 담은 [Emit] 객체, 없으면 null
+     * @param text input text to search
+     * @return the first [Emit] match, or `null` if none
      *
-     * ## 동작/계약
-     * - [allowOverlaps]가 `false`면 [parseText]의 첫 결과를 반환합니다.
-     * - [onlyWholeWords] 옵션이 켜져 있으면 부분 단어 매칭을 제외합니다.
+     * When [allowOverlaps] is `false`, delegates to [parseText] and returns the first result.
+     * Respects [onlyWholeWords] filtering.
      */
     fun firstMatch(text: CharSequence): Emit? {
         if (!config.allowOverlaps) {
@@ -398,52 +384,48 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
         private val configBuilder = InternalTrieConfig.builder()
         private val keywords: MutableList<String> = mutableListOf()
 
-        /** 단일 키워드를 추가합니다. */
+        /** Adds a single keyword. */
         fun addKeyword(keyword: String) = apply {
             this.keywords.add(keyword)
         }
 
-        /** 가변 인자 키워드를 추가합니다. */
+        /** Adds multiple keywords. */
         fun addKeywords(vararg keywords: String) = apply {
             this.keywords.addAll(keywords)
         }
 
-        /** 컬렉션 키워드를 추가합니다. */
+        /** Adds keywords from a collection. */
         fun addKeywords(keywords: Collection<String>) = apply {
             this.keywords.addAll(keywords)
         }
 
-        /** 겹침 결과를 허용하지 않도록 설정합니다. */
+        /** Disallows overlapping matches. */
         fun ignoreOverlaps() = apply {
             configBuilder.allowOverlaps(false)
         }
 
-        /** 완전 단어 매칭만 허용하도록 설정합니다. */
+        /** Restricts matching to whole words (alphabetic boundary). */
         fun onlyWholeWords() = apply {
             configBuilder.onlyWholeWords(true)
         }
 
-        /** 공백 경계 기준 완전 단어 매칭만 허용하도록 설정합니다. */
+        /** Restricts matching to whole words (whitespace boundary). */
         fun onlyWholeWordsWhiteSpaceSeparated() = apply {
             configBuilder.onlyWholeWordsWhiteSpaceSeparated(true)
         }
 
-        /** 대소문자 무시 모드를 활성화합니다. */
+        /** Enables case-insensitive matching. */
         fun ignoreCase() = apply {
             configBuilder.ignoreCase(true)
         }
 
-        /** 첫 매칭 발견 시 검색 중단 모드를 활성화합니다. */
+        /** Enables stop-on-first-hit mode. */
         fun stopOnHit() = apply {
             configBuilder.stopOnHit(true)
         }
 
-
         /**
-         * 설정과 키워드로 [TrieCore]를 생성합니다.
-         *
-         * ## 동작/계약
-         * - 키워드 추가 후 failure state를 구성한 완성 TrieCore를 반환합니다.
+         * Builds a [TrieCore] with failure transitions constructed and ready for search.
          */
         fun build(): TrieCore {
             return TrieCore(configBuilder.build()).apply {

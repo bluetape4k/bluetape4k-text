@@ -8,12 +8,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
 /**
- * 일본어 토크나이저에서 사용하는 금칙어 사전 로딩 및 런타임 갱신 기능을 제공합니다.
+ * Loads and manages the blockword dictionary used by the Japanese tokenizer.
  *
- * ## 동작/계약
- * - 사전 리소스 기준 경로는 `BASE_PATH`(`japanesetext`)입니다.
- * - 파일 로드는 `DictionaryProvider`에 위임하며 상대 경로 앞에 `BASE_PATH/`를 붙여 호출합니다.
- * - `blockWordDictionary`는 최초 접근 시 파일을 읽어 메모리에 적재한 뒤 재사용합니다.
+ * Dictionary files are resolved relative to [BASE_PATH] (`japanesetext`) and loaded
+ * via [io.bluetape4k.tokenizer.utils.DictionaryProvider]. The [blockWordDictionary]
+ * is lazily initialized on first access and reused for the object's lifetime.
  *
  * ```kotlin
  * val hasWord = JapaneseDictionaryProvider.blockWordDictionary.contains("性器")
@@ -23,28 +22,13 @@ import kotlinx.coroutines.runBlocking
  */
 object JapaneseDictionaryProvider: KLoggingChannel() {
 
-    /**
-     * 일본어 사전 리소스를 찾을 때 사용하는 기본 루트 경로입니다.
-     *
-     * ## 동작/계약
-     * - `readWordsAsSet`, `readWords`는 전달받은 상대 경로 앞에 이 값을 접두사로 붙입니다.
-     * - 리소스 구조가 바뀌면 이 상수와 배포 리소스 경로를 함께 맞춰야 합니다.
-     *
-     * ```kotlin
-     * val basePath = JapaneseDictionaryProvider.BASE_PATH
-     *
-     * // basePath == "japanesetext"
-     * ```
-     */
+    /** Root classpath prefix for all Japanese dictionary resources (`japanesetext`). */
     const val BASE_PATH = "japanesetext"
 
     /**
-     * 지정한 사전 파일들을 읽어 단어 집합(`MutableSet`)으로 반환합니다.
+     * Reads the specified dictionary files and returns their contents as a [MutableSet].
      *
-     * ## 동작/계약
-     * - 각 경로는 `BASE_PATH` 기준 상대 경로로 해석됩니다.
-     * - 중복 단어는 집합 특성상 하나로 합쳐집니다.
-     * - `suspend` 함수이며 실제 로딩은 `DictionaryProvider.readWordsAsSet`에 위임합니다.
+     * Paths are resolved relative to [BASE_PATH]. Duplicate words are deduplicated by the set.
      *
      * ```kotlin
      * val words = kotlinx.coroutines.runBlocking {
@@ -59,12 +43,9 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     }
 
     /**
-     * 지정한 사전 파일들을 읽어 `CharArraySet`으로 반환합니다.
+     * Reads the specified dictionary files and returns their contents as a [CharArraySet].
      *
-     * ## 동작/계약
-     * - 각 경로는 `BASE_PATH` 기준 상대 경로로 해석됩니다.
-     * - 반환 타입은 토큰 매칭에 사용하는 `CharArraySet`입니다.
-     * - `suspend` 함수이며 실제 로딩은 `DictionaryProvider.readWords`에 위임합니다.
+     * Paths are resolved relative to [BASE_PATH].
      *
      * ```kotlin
      * val words = kotlinx.coroutines.runBlocking {
@@ -79,12 +60,9 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     }
 
     /**
-     * 금칙어 판정에 사용하는 메모리 내 사전 집합입니다.
+     * In-memory blockword dictionary, lazily loaded from `block/blocks.txt` on first access.
      *
-     * ## 동작/계약
-     * - 최초 접근 시 `runBlocking(Dispatchers.IO)`로 `block/blocks.txt`를 로드합니다.
-     * - 이후 동일 인스턴스를 재사용하므로 추가/삭제/비우기 변경이 즉시 반영됩니다.
-     * - 테스트 기준으로 "性器"는 포함되고 "한국어"는 포함되지 않습니다.
+     * Mutations via [addBlockwords], [removeBlockwords], and [clearBlockwords] take effect immediately.
      *
      * ```kotlin
      * val dictionary = JapaneseDictionaryProvider.blockWordDictionary
@@ -99,12 +77,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     }
 
     /**
-     * 금칙어 사전에 단어 컬렉션을 추가합니다.
-     *
-     * ## 동작/계약
-     * - 내부 사전은 집합이므로 중복 단어는 한 번만 저장됩니다.
-     * - 호출 직후 `findBlockwords`/`maskBlockwords` 판정에 반영됩니다.
-     * - 빈 컬렉션 전달 시 변경 없이 종료됩니다.
+     * Adds words to the in-memory blockword dictionary. Duplicates are ignored.
      *
      * ```kotlin
      * JapaneseDictionaryProvider.addBlockwords(listOf("19禁", "29禁"))
@@ -119,12 +92,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     }
 
     /**
-     * 금칙어 사전에서 단어 컬렉션을 제거합니다.
-     *
-     * ## 동작/계약
-     * - 존재하지 않는 단어는 무시되고 예외가 발생하지 않습니다.
-     * - 호출 직후 동일 단어는 금칙어 판정에서 제외됩니다.
-     * - 빈 컬렉션 전달 시 변경 없이 종료됩니다.
+     * Removes words from the in-memory blockword dictionary. Unknown words are silently ignored.
      *
      * ```kotlin
      * JapaneseDictionaryProvider.removeBlockwords(listOf("19禁"))
@@ -139,12 +107,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     }
 
     /**
-     * 메모리에 로드된 금칙어 사전을 모두 비웁니다.
-     *
-     * ## 동작/계약
-     * - 현재 프로세스의 `blockWordDictionary`만 비우며 리소스 파일은 변경하지 않습니다.
-     * - 이후 재로딩이 필요하면 별도 초기화 사이클(프로세스 재시작 등)이 필요합니다.
-     * - 호출 후 `blockWordDictionary.isEmpty()`는 `true`입니다.
+     * Clears the in-memory blockword dictionary. Does not modify the underlying resource files.
      *
      * ```kotlin
      * JapaneseDictionaryProvider.clearBlockwords()

@@ -4,16 +4,16 @@ import io.bluetape4k.text.search.NormalizationForm
 import java.text.Normalizer
 
 /**
- * 원본 텍스트와 정규화된 텍스트 간의 문자(`char`) offset 매핑.
+ * Bidirectional char-offset mapping between original and Unicode-normalized text.
  *
- * 유니코드 정규화는 문자열 길이를 변화시킬 수 있으므로, 정규화된 텍스트에서
- * 매치된 offset을 원본 텍스트의 offset으로 되돌리려면 별도의 매핑 테이블이 필요하다.
+ * Unicode normalization can change string length (e.g. NFC composes jamo, NFKC expands ligatures),
+ * so a mapping table is required to convert match offsets back to original positions.
  *
- * ## 길이 변화 예시
- * - **NFC**: `ㄴㅏ` (2 chars, 자모 분리) → `나` (1 char) — 길이 감소
- * - **NFKC**: `㈜` (1 char) → `(주)` (3 chars) — 길이 증가
+ * ## Length-change examples
+ * - **NFC**: `ㄴㅏ` (2 chars, decomposed jamo) → `나` (1 char) — length decreases
+ * - **NFKC**: `㈜` (1 char) → `(주)` (3 chars) — length increases
  *
- * ## 사용 패턴
+ * ## Usage pattern
  * ```kotlin
  * val (normalized, mapping) = OffsetMapping.build(originalText, NormalizationForm.NFC)
  * val emits = trie.parseText(normalized)
@@ -23,18 +23,18 @@ import java.text.Normalizer
  * }
  * ```
  *
- * @property normToOrig 정규화된 텍스트의 위치 → 원본 텍스트의 위치 (size = normLen + 1, sentinel 포함)
- * @property origToNorm 원본 텍스트의 위치 → 정규화된 텍스트의 위치 (size = origLen + 1, sentinel 포함)
+ * @property normToOrig normalized-text position → original-text position (size = normLen + 1, includes sentinel)
+ * @property origToNorm original-text position → normalized-text position (size = origLen + 1, includes sentinel)
  */
 internal class OffsetMapping private constructor(
     private val normToOrig: IntArray,
     private val origToNorm: IntArray,
 ) {
     /**
-     * 정규화된 offset을 원본 offset으로 변환한다.
+     * Converts a normalized-text offset to the corresponding original-text offset.
      *
-     * @param normOffset 정규화된 텍스트 내 offset (inclusive)
-     * @return 원본 텍스트 내 대응 offset
+     * @param normOffset inclusive offset in the normalized text
+     * @return corresponding inclusive offset in the original text
      */
     fun toOriginal(normOffset: Int): Int =
         when {
@@ -45,13 +45,12 @@ internal class OffsetMapping private constructor(
         }
 
     /**
-     * 정규화된 텍스트의 inclusive end offset을 원본 텍스트의 inclusive end offset으로 변환한다.
+     * Converts a normalized-text inclusive end offset to the corresponding original-text inclusive end offset.
      *
-     * `end + 1` (exclusive end)을 원본 exclusive end로 변환한 후 `-1`을 빼는 패턴.
-     * Aho-Corasick의 `Emit.end`가 inclusive이므로 별도의 헬퍼가 필요하다.
+     * Because `Emit.end` is inclusive, this helper converts via exclusive end (`+1`) then subtracts 1.
      *
-     * @param normEndInclusive 정규화된 텍스트 내 end offset (inclusive)
-     * @return 원본 텍스트 내 end offset (inclusive)
+     * @param normEndInclusive inclusive end offset in the normalized text
+     * @return inclusive end offset in the original text
      */
     fun toOriginalEndInclusive(normEndInclusive: Int): Int {
         val normEndExclusive = normEndInclusive + 1
@@ -64,10 +63,10 @@ internal class OffsetMapping private constructor(
     }
 
     /**
-     * 원본 offset을 정규화된 offset으로 변환한다.
+     * Converts an original-text offset to the corresponding normalized-text offset.
      *
-     * @param origOffset 원본 텍스트 내 offset (inclusive)
-     * @return 정규화된 텍스트 내 대응 offset
+     * @param origOffset inclusive offset in the original text
+     * @return corresponding inclusive offset in the normalized text
      */
     fun toNormalized(origOffset: Int): Int =
         when {
@@ -79,15 +78,14 @@ internal class OffsetMapping private constructor(
 
     companion object {
         /**
-         * [OffsetMapping]을 구축한다.
+         * Builds an [OffsetMapping] from [original] text and a normalization [form].
          *
-         * **알고리즘**: char 단위 sliding 정규화.
-         * 각 원본 문자를 개별로 정규화하여 정규화 후 길이를 누적하면서 매핑 배열을 구축한다.
-         * 전체 문자열을 한 번에 normalize한 결과와 동일하지만 offset 추적이 가능하다.
+         * Uses char-by-char sliding normalization to track per-position offset deltas.
+         * The resulting normalized string is identical to `Normalizer.normalize(original, form)`.
          *
-         * @param original 원본 [CharSequence]
-         * @param form 정규화 형식
-         * @return `(정규화된 문자열, OffsetMapping?)` — [NormalizationForm.NONE]이면 mapping은 `null`
+         * @param original original [CharSequence]
+         * @param form normalization form to apply
+         * @return `(normalizedString, OffsetMapping?)` — mapping is `null` when [form] is [NormalizationForm.NONE]
          */
         fun build(original: CharSequence, form: NormalizationForm): Pair<String, OffsetMapping?> {
             if (form == NormalizationForm.NONE) {
@@ -174,9 +172,9 @@ internal class OffsetMapping private constructor(
         }
 
         /**
-         * Identity 매핑 — `normOffset == origOffset` (정규화 미적용 케이스).
+         * Returns an identity mapping where `normOffset == origOffset` (no normalization applied).
          *
-         * @param length 매핑할 텍스트 길이
+         * @param length length of the text to map
          */
         fun identity(length: Int): OffsetMapping {
             val arr = IntArray(length + 1) { it }

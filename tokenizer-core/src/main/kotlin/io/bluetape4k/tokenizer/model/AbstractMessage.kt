@@ -1,33 +1,39 @@
 package io.bluetape4k.tokenizer.model
 
+import io.bluetape4k.logging.KLogging
 import java.io.Serializable
 
 /**
- * 토크나이저 요청/응답 메시지의 공통 타임스탬프를 제공하는 추상 타입이다.
+ * Abstract base that provides a creation timestamp for tokenizer request and response messages.
  *
- * ## 동작/계약
- * - 인스턴스 생성 시점의 `System.currentTimeMillis()` 값을 `timestamp`에 저장한다.
- * - `timestamp`는 `val`이므로 생성 이후 변경되지 않는다.
- * - 직렬화 가능한 메시지 계층을 위해 `Serializable`을 구현한다.
+ * ## Behavior / Contract
+ * - [timestamp] is set to `System.currentTimeMillis()` at construction time.
+ * - [timestamp] is immutable (`val`) and cannot change after creation.
+ * - Implements [Serializable] to support the serializable message hierarchy.
  *
  * ```kotlin
- * val request = tokenizeRequestOf("안녕")
- * val response = tokenizeResponseOf(request.text, listOf("안녕"))
+ * val request = tokenizeRequestOf("hello")
+ * val response = tokenizeResponseOf(request.text, listOf("hello"))
  * // request.timestamp > 0L
  * // response.timestamp >= request.timestamp
  * ```
  */
 abstract class AbstractMessage: Serializable {
 
+    companion object : KLogging() {
+        private const val serialVersionUID = 1L
+    }
+
+
     /**
-     * 메시지 인스턴스가 생성된 시각(밀리초 epoch)이다.
+     * The epoch-millisecond timestamp at which this message instance was created.
      *
-     * ## 동작/계약
-     * - 객체 생성 시 한 번만 초기화된다.
-     * - 같은 인스턴스에서 반복 조회해도 값이 변하지 않는다.
+     * ## Behavior / Contract
+     * - Initialized exactly once at construction time.
+     * - Repeated reads on the same instance always return the same value.
      *
      * ```kotlin
-     * val message = tokenizeRequestOf("문장")
+     * val message = tokenizeRequestOf("hello")
      * val first = message.timestamp
      * val second = message.timestamp
      * // first == second

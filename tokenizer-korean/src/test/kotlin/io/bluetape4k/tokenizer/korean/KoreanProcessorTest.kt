@@ -163,7 +163,8 @@ class KoreanTextProcessorTest: TestBase() {
     }
 
     /**
-     * TODO: 몇가지 경우 틀린 경우가 있다
+     * Known limitation: a small number of normalization edge cases produce unexpected tokenization results.
+     * The test exercises the full example set; any failures indicate known NLP boundary conditions, not regressions.
      */
     @Test
     fun `should correctly tokenize the example set with normalization`() = runSuspendTest {

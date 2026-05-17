@@ -1,17 +1,17 @@
 package io.bluetape4k.tokenizer.model
 
 /**
- * 형태소 분석 결과 토큰 목록을 반환하는 응답 모델이다.
+ * Response model that returns the token list produced by morphological analysis.
  *
- * ## 동작/계약
- * - `text`는 분석에 사용한 원문을 그대로 담는다.
- * - `tokens` 기본값은 빈 목록이며 토큰 추출 결과가 없음을 의미한다.
- * - `AbstractMessage`를 상속해 응답 생성 시각을 함께 기록한다.
+ * ## Behavior / Contract
+ * - [text] holds the original input string used for analysis.
+ * - [tokens] defaults to an empty list, indicating no tokens were extracted.
+ * - Inherits [AbstractMessage], so a response creation timestamp is recorded automatically.
  *
  * ```kotlin
- * val response = tokenizeResponseOf("코틀린 코루틴", listOf("코틀린", "코루틴"))
+ * val response = tokenizeResponseOf("Kotlin coroutines", listOf("Kotlin", "coroutines"))
  * // response.tokens.size == 2
- * // response.text == "코틀린 코루틴"
+ * // response.text == "Kotlin coroutines"
  * ```
  */
 data class TokenizeResponse(
@@ -20,14 +20,14 @@ data class TokenizeResponse(
 ): AbstractMessage()
 
 /**
- * 형태소 분석 응답 객체를 생성한다.
+ * Creates a [TokenizeResponse] with the given [text] and [tokens].
  *
- * ## 동작/계약
- * - 전달한 원문과 토큰 목록을 그대로 `TokenizeResponse`에 매핑한다.
- * - `tokens`를 생략하면 빈 목록이 사용된다.
+ * ## Behavior / Contract
+ * - Maps [text] and [tokens] directly into a new [TokenizeResponse].
+ * - [tokens] defaults to an empty list when omitted.
  *
  * ```kotlin
- * val response = tokenizeResponseOf("문장")
+ * val response = tokenizeResponseOf("sentence")
  * // response.tokens == emptyList<String>()
  * ```
  */

@@ -9,12 +9,10 @@ import io.bluetape4k.tokenizer.model.BlockwordRequest
 import io.bluetape4k.tokenizer.model.BlockwordResponse
 
 /**
- * 일본어 토큰화와 금칙어 검출/마스킹 기능을 한 곳에서 제공하는 파사드입니다.
+ * Facade for Japanese morphological tokenization and blockword detection/masking.
  *
- * ## 동작/계약
- * - 형태소 분석 계열 API는 `JapaneseTokenizer`로 위임합니다.
- * - 금칙어 계열 API는 `JapaneseBlockwordProcessor`와 `JapaneseDictionaryProvider`로 위임합니다.
- * - 내부적으로 상태를 저장하지 않고 하위 컴포넌트의 동작을 그대로 노출합니다.
+ * Delegates tokenization to [JapaneseTokenizer] and blockword operations to
+ * [JapaneseBlockwordProcessor] and [JapaneseDictionaryProvider].
  *
  * ```kotlin
  * val nouns = JapaneseProcessor
@@ -27,12 +25,7 @@ import io.bluetape4k.tokenizer.model.BlockwordResponse
 object JapaneseProcessor: KLogging() {
 
     /**
-     * 입력 문장을 형태소 토큰 목록으로 분석해 반환합니다.
-     *
-     * ## 동작/계약
-     * - `JapaneseTokenizer.tokenize`를 그대로 위임 호출합니다.
-     * - 빈 문자열 입력 시 빈 리스트를 반환합니다.
-     * - 반환 순서는 원문 토큰 순서를 유지합니다.
+     * Tokenizes the input sentence into a list of morphological tokens.
      *
      * ```kotlin
      * val tokens = JapaneseProcessor.tokenize("お寿司が食べたい。")
@@ -46,12 +39,7 @@ object JapaneseProcessor: KLogging() {
     }
 
     /**
-     * 토큰 목록에서 조건식을 만족하는 항목만 필터링해 반환합니다.
-     *
-     * ## 동작/계약
-     * - `JapaneseTokenizer.filter`를 그대로 위임 호출합니다.
-     * - 입력 리스트는 변경하지 않고 새 리스트를 반환합니다.
-     * - `predicate`의 평가 순서는 입력 순서를 따릅니다.
+     * Filters the token list to those matching the given predicate.
      *
      * ```kotlin
      * val tokens = JapaneseProcessor.tokenize("お寿司が食べたい。")
@@ -65,12 +53,7 @@ object JapaneseProcessor: KLogging() {
     }
 
     /**
-     * 토큰 목록에서 명사(`名詞`)만 필터링해 반환합니다.
-     *
-     * ## 동작/계약
-     * - `JapaneseTokenizer.filterNoun`를 그대로 위임 호출합니다.
-     * - 명사 판정은 `TokenBaseSupport.isNoun` 기준을 따릅니다.
-     * - 입력 순서를 유지한 새 리스트를 반환합니다.
+     * Filters the token list to nouns (`名詞`) only.
      *
      * ```kotlin
      * val tokens = JapaneseProcessor.tokenize("私は、日本語の勉強をしています。")
@@ -84,12 +67,10 @@ object JapaneseProcessor: KLogging() {
     }
 
     /**
-     * 문장에서 금칙어 사전에 등록된 토큰을 찾아 반환합니다.
+     * Finds tokens in the sentence that match entries in the blockword dictionary.
      *
-     * ## 동작/계약
-     * - `JapaneseBlockwordProcessor.findBlockwords`를 그대로 위임 호출합니다.
-     * - 입력이 공백 문자열이면 빈 리스트를 반환합니다.
-     * - 기본 토큰 매칭 실패 시 복합어(명사+명사/동사) 조합 검사 결과를 포함할 수 있습니다.
+     * Falls back to compound-word matching (noun+noun/verb combinations) when
+     * direct token matching fails.
      *
      * ```kotlin
      * val blockwords = JapaneseProcessor.findBlockwords("ホモの男性を理解できない").map { it.surface }
@@ -102,12 +83,7 @@ object JapaneseProcessor: KLogging() {
     }
 
     /**
-     * 금칙어를 마스크 문자열로 치환한 결과를 반환합니다.
-     *
-     * ## 동작/계약
-     * - `JapaneseBlockwordProcessor.maskBlockwords`를 그대로 위임 호출합니다.
-     * - 금칙어가 없으면 `maskedText`는 원문과 동일하고 `blockwordExists`는 `false`입니다.
-     * - 금칙어가 있으면 토큰 길이만큼 마스크 문자를 반복해 해당 위치를 치환합니다.
+     * Replaces blockword tokens in the sentence with a mask string.
      *
      * ```kotlin
      * val request = io.bluetape4k.tokenizer.model.blockwordRequestOf("ホモの男性を理解できない")
@@ -121,12 +97,7 @@ object JapaneseProcessor: KLogging() {
     }
 
     /**
-     * 금칙어 사전에 단어를 추가합니다.
-     *
-     * ## 동작/계약
-     * - `JapaneseDictionaryProvider.addBlockwords`를 그대로 위임 호출합니다.
-     * - 이미 존재하는 단어는 사전 집합 특성상 중복 저장되지 않습니다.
-     * - 이후 `findBlockwords`/`maskBlockwords` 호출부터 즉시 반영됩니다.
+     * Adds words to the in-memory blockword dictionary.
      *
      * ```kotlin
      * JapaneseProcessor.addBlockwords(listOf("東京"))
@@ -140,12 +111,7 @@ object JapaneseProcessor: KLogging() {
     }
 
     /**
-     * 금칙어 사전에서 단어를 제거합니다.
-     *
-     * ## 동작/계약
-     * - `JapaneseDictionaryProvider.removeBlockwords`를 그대로 위임 호출합니다.
-     * - 존재하지 않는 단어를 전달해도 예외 없이 무시됩니다.
-     * - 제거 후 동일 단어는 금칙어 탐지 대상에서 제외됩니다.
+     * Removes words from the in-memory blockword dictionary. Unknown words are silently ignored.
      *
      * ```kotlin
      * JapaneseProcessor.addBlockwords(listOf("東京"))
@@ -160,12 +126,7 @@ object JapaneseProcessor: KLogging() {
     }
 
     /**
-     * 메모리에 로드된 금칙어 사전을 비웁니다.
-     *
-     * ## 동작/계약
-     * - `JapaneseDictionaryProvider.clearBlockwords`를 그대로 위임 호출합니다.
-     * - 호출 이후 현재 프로세스 내 사전은 빈 상태가 됩니다.
-     * - 원본 리소스 파일을 삭제하지 않으며 재초기화 시 다시 로드됩니다.
+     * Clears the in-memory blockword dictionary. Does not delete the underlying resource files.
      *
      * ```kotlin
      * JapaneseProcessor.clearBlockwords()

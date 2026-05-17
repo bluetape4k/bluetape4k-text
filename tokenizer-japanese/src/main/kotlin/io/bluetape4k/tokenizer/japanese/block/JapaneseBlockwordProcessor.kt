@@ -16,12 +16,10 @@ import io.bluetape4k.tokenizer.model.BlockwordResponse
 import io.bluetape4k.tokenizer.model.blockwordResponseOf
 
 /**
- * 일본어 문장에서 금칙어를 탐지하고 마스킹 결과를 생성하는 처리기입니다.
+ * Detects and masks blockwords in Japanese sentences using the Kuromoji IPAdic tokenizer.
  *
- * ## 동작/계약
- * - 금칙어 판단은 `JapaneseDictionaryProvider.blockWordDictionary` 포함 여부를 기준으로 합니다.
- * - 탐지/마스킹 대상 품사는 명사 또는 동사(`isNounOrVerb`)로 제한됩니다.
- * - 단일 토큰 탐지 실패 시 복합어(앞 토큰 명사 + 뒤 토큰 명사/동사) 조합을 추가 검사합니다.
+ * Candidate tokens are limited to nouns and verbs. When single-token matching yields
+ * no results, compound-word combinations (noun + noun/verb) are also checked.
  *
  * ```kotlin
  * val blockwords = JapaneseBlockwordProcessor
@@ -34,12 +32,10 @@ import io.bluetape4k.tokenizer.model.blockwordResponseOf
 object JapaneseBlockwordProcessor: KLogging() {
 
     /**
-     * 입력 문장에서 금칙어에 해당하는 토큰 목록을 반환합니다.
+     * Returns tokens in the sentence that match entries in the blockword dictionary.
      *
-     * ## 동작/계약
-     * - `text`가 blank이면 즉시 빈 리스트를 반환합니다.
-     * - 토큰을 명사/동사로 1차 필터링한 뒤 사전 포함 여부를 검사합니다.
-     * - 1차 결과가 비어 있고 토큰이 2개 이상이면 복합어 검사 결과를 추가합니다.
+     * Blank input returns an empty list immediately. If noun/verb token matching yields
+     * no results and there are at least two tokens, compound-word matching is attempted.
      *
      * ```kotlin
      * val found = JapaneseBlockwordProcessor.findBlockwords("覚せい剤を注文できるサイトはありますか？")
@@ -67,11 +63,9 @@ object JapaneseBlockwordProcessor: KLogging() {
     }
 
     /**
-     * 복합 명사 또는 명사+동사 조합을 금칙어 사전으로 추가 검사합니다.
+     * Checks adjacent token pairs (noun + noun/verb) against the blockword dictionary.
      *
-     * 예:
-     *  覚せい剤 : 覚せい(각성) + 剤(제)
-     *  盗撮す: 盗(명사) + 撮す(동사), 도찰하다
+     * Examples: 覚せい剤 (覚せい + 剤), 盗撮す (盗 + 撮す).
      *
      * ```kotlin
      * val request = io.bluetape4k.tokenizer.model.blockwordRequestOf("覚せい剤を注文できるサイトはありますか？")
@@ -96,12 +90,11 @@ object JapaneseBlockwordProcessor: KLogging() {
     }
 
     /**
-     * 요청 텍스트에서 금칙어를 마스크 문자열로 치환한 응답을 반환합니다.
+     * Replaces blockword tokens in the request text with the configured mask string.
      *
-     * ## 동작/계약
-     * - 요청 텍스트가 blank이면 `maskedText`가 빈 문자열인 응답을 반환합니다.
-     * - 명사/동사 토큰 중 사전에 존재하는 표면형만 치환하고, 치환 길이는 토큰 길이와 동일합니다.
-     * - 처리 중 예외가 발생하면 `TokenizerException`으로 감싸 재전파합니다.
+     * Blank input returns a response with an empty masked text. Each matched token surface
+     * is replaced with the mask character repeated to match the token's length.
+     * Processing exceptions are wrapped and rethrown as [io.bluetape4k.tokenizer.exceptions.TokenizerException].
      *
      * ```kotlin
      * val request = io.bluetape4k.tokenizer.model.blockwordRequestOf("ホモの男性を理解できない")

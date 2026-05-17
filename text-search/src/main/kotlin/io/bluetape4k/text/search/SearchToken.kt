@@ -3,19 +3,19 @@ package io.bluetape4k.text.search
 import java.io.Serializable
 
 /**
- * [io.bluetape4k.text.search.AhoCorasickAutomaton.tokenize] 결과의 토큰.
+ * A token produced by [io.bluetape4k.text.search.AhoCorasickAutomaton.tokenize].
  *
- * 입력 텍스트를 키워드 매치 구간([Match])과 비매치 구간([Fragment])으로 분리한다.
+ * The input text is split into keyword-matching spans ([Match]) and non-matching spans ([Fragment]).
  *
- * @param V 키워드에 연관된 값 타입 (공변 `out V`)
+ * @param V covariant type of the value associated with matched keywords
  */
 sealed interface SearchToken<out V> : Serializable {
 
     /**
-     * 키워드 매치 구간.
+     * A keyword-matching span.
      *
-     * @param text 원본 텍스트에서 추출된 매치 문자열
-     * @param match 매치 상세 정보 ([AhoCorasickMatch])
+     * @param text the matched substring extracted from the original text
+     * @param match detailed match information ([AhoCorasickMatch])
      */
     data class Match<out V>(
         val text: String,
@@ -27,9 +27,9 @@ sealed interface SearchToken<out V> : Serializable {
     }
 
     /**
-     * 비매치 구간 (키워드 사이의 일반 텍스트).
+     * A non-matching span (plain text between keyword matches).
      *
-     * @param text 원본 텍스트에서 추출된 비매치 문자열
+     * @param text the non-matching substring extracted from the original text
      */
     data class Fragment(
         val text: String,

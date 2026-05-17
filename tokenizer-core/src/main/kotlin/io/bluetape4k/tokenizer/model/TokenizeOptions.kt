@@ -1,15 +1,16 @@
 package io.bluetape4k.tokenizer.model
 
+import io.bluetape4k.logging.KLogging
 import java.io.Serializable
 import java.util.*
 
 /**
- * 형태소 분석 실행 시 로캘 기반 동작을 지정하는 옵션이다.
+ * Options that control locale-based behaviour during morphological analysis.
  *
- * ## 동작/계약
- * - 기본 로캘은 `Locale.KOREAN`이다.
- * - 현재 공개 필드는 `locale` 하나이며 분석기 확장 시 옵션이 추가될 수 있다.
- * - 직렬화 가능한 요청 모델에서 재사용하도록 `Serializable`을 구현한다.
+ * ## Behavior / Contract
+ * - Default locale is `Locale.KOREAN`.
+ * - Currently exposes one public field (`locale`); additional options may be added as analyzers evolve.
+ * - Implements [Serializable] for reuse inside serializable request models.
  *
  * ```kotlin
  * val options = TokenizeOptions.DEFAULT
@@ -18,15 +19,16 @@ import java.util.*
  */
 data class TokenizeOptions(
     val locale: Locale = Locale.KOREAN,
-    // 추가로 필터링할 품사 정보를 표현해도 좋겠다
 ): Serializable {
-    companion object {
+    companion object : KLogging() {
+        private const val serialVersionUID = 1L
+
         /**
-         * 형태소 분석 기본 옵션 인스턴스다.
+         * The default [TokenizeOptions] instance.
          *
-         * ## 동작/계약
-         * - `locale=Locale.KOREAN`으로 초기화된 기본값이다.
-         * - 재사용 가능한 정적 옵션으로 제공된다.
+         * ## Behavior / Contract
+         * - Initialized with `locale=Locale.KOREAN`.
+         * - Provided as a reusable static default.
          *
          * ```kotlin
          * val defaults = TokenizeOptions.DEFAULT

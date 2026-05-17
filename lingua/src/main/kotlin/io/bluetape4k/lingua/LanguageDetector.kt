@@ -25,11 +25,7 @@ private const val preferredLatinConfidenceThreshold = 0.80
 
 
 /**
- * 모든 언어를 검출하는 [LanguageDetector]를 생성합니다.
- *
- * ## 동작/계약
- * - [LanguageDetectorBuilder.fromAllLanguages] 경로로 detector를 생성합니다.
- * - [builder] 설정을 적용한 새 detector 인스턴스를 반환합니다.
+ * Creates a [LanguageDetector] that detects all supported languages.
  *
  * ```
  * val detector = allLanguageDetector {
@@ -41,8 +37,7 @@ private const val preferredLatinConfidenceThreshold = 0.80
  * detector.detectLanguageOf("안녕하세요.") shouldBeEqualTo Language.KOREAN
  * ```
  *
- * @param builder [LanguageDetectorBuilder] 초기화 람다
- * @return [LanguageDetector] 인스턴스
+ * @param builder configuration block applied to [LanguageDetectorBuilder]
  */
 inline fun allLanguageDetector(
     builder: LanguageDetectorBuilder.() -> Unit,
@@ -53,11 +48,7 @@ inline fun allLanguageDetector(
         .build()
 
 /**
- * 지정된 [languages]를 제외한 언어를 검출하는 [LanguageDetector]를 생성합니다.
- *
- * ## 동작/계약
- * - [languages]를 제외한 전체 언어 집합으로 detector를 구성합니다.
- * - [builder] 설정을 적용한 새 detector 인스턴스를 반환합니다.
+ * Creates a [LanguageDetector] covering all languages except the specified [languages].
  *
  * ```
  * val exceptLanguages = setOf(Language.GERMAN, Language.THAI)
@@ -70,9 +61,8 @@ inline fun allLanguageDetector(
  * detector.detectLanguageOf("안녕하세요.") shouldBeEqualTo Language.KOREAN
  * ```
  *
- * @param languages 제외할 언어
- * @param builder [LanguageDetectorBuilder] 초기화 람다
- * @return [LanguageDetector] 인스턴스
+ * @param languages languages to exclude
+ * @param builder configuration block applied to [LanguageDetectorBuilder]
  */
 inline fun allLanguageWithoutDetector(
     languages: Set<Language>,
@@ -85,11 +75,7 @@ inline fun allLanguageWithoutDetector(
 
 
 /**
- * 모든 말로된 언어를 검출하는 [LanguageDetector]를 생성합니다.
- *
- * ## 동작/계약
- * - [LanguageDetectorBuilder.fromAllSpokenLanguages] 경로를 사용합니다.
- * - [builder]를 적용한 새 detector를 반환합니다.
+ * Creates a [LanguageDetector] covering all spoken languages.
  *
  * ```
  * val detector = allSpokenLanguageDetector {
@@ -102,8 +88,7 @@ inline fun allLanguageWithoutDetector(
  * detector.detectLanguageOf("안녕하세요.") shouldBeEqualTo Language.KOREAN
  * ```
  *
- * @param builder [LanguageDetectorBuilder] 초기화 람다
- * @return [LanguageDetector] 인스턴스
+ * @param builder configuration block applied to [LanguageDetectorBuilder]
  */
 inline fun allSpokenLanguageDetector(
     builder: LanguageDetectorBuilder.() -> Unit,
@@ -111,11 +96,7 @@ inline fun allSpokenLanguageDetector(
     LanguageDetectorBuilder.fromAllSpokenLanguages().apply(builder).build()
 
 /**
- * 지정된 [languages] 언어를 검출하는 [LanguageDetector]를 생성합니다.
- *
- * ## 동작/계약
- * - 전달된 언어 집합만 대상으로 detector를 구성합니다.
- * - [builder] 설정을 반영한 새 detector를 반환합니다.
+ * Creates a [LanguageDetector] limited to the specified [languages].
  *
  * ```
  * val languages = setOf(Language.ENGLISH, Language.KOREAN)
@@ -129,10 +110,8 @@ inline fun allSpokenLanguageDetector(
  * detector.detectLanguageOf("안녕하세요.") shouldBeEqualTo Language.KOREAN
  * ```
  *
- * @param languages 검출할 언어
- * @param builder [LanguageDetectorBuilder] 초기화 람다
- * @return [LanguageDetector] 인스턴스
- *
+ * @param languages languages to detect
+ * @param builder configuration block applied to [LanguageDetectorBuilder]
  */
 @JvmName("languageDetectorOfLanguage")
 inline fun languageDetectorOf(
@@ -145,11 +124,7 @@ inline fun languageDetectorOf(
         .build()
 
 /**
- * 지정된 [languages] 언어를 검출하는 [LanguageDetector]를 생성합니다.
- *
- * ## 동작/계약
- * - [languageDetectorOf] DSL 버전에 위임해 detector를 생성합니다.
- * - preload/low-accuracy 옵션은 boolean 인자에 따라 선택 적용됩니다.
+ * Creates a [LanguageDetector] limited to the specified [languages] with explicit options.
  *
  * ```
  * val languages = setOf(Language.ENGLISH, Language.KOREAN)
@@ -164,12 +139,10 @@ inline fun languageDetectorOf(
  * detector.detectLanguageOf("안녕하세요.") shouldBeEqualTo Language.KOREAN
  * ```
  *
- * @param languages 검출할 언어
- * @param minimumRelativeDistance 최소 상대 거리
- * @param isEveryLanguageModelPreloaded 모든 언어 모델을 미리 로드할지 여부
- * @param isLowAccuracyModeEnabled 저 정확도 모드를 사용할지 여부
- * @return [LanguageDetector] 인스턴스
- *
+ * @param languages languages to detect
+ * @param minimumRelativeDistance minimum relative distance threshold
+ * @param isEveryLanguageModelPreloaded whether to preload all language models
+ * @param isLowAccuracyModeEnabled whether to enable low-accuracy mode
  */
 fun languageDetectorOf(
     languages: Set<Language> = Language.all().toSet(),
@@ -188,11 +161,7 @@ fun languageDetectorOf(
     }
 
 /**
- * 지정된 [isoCodes] 언어를 검출하는 [LanguageDetector]를 생성합니다.
- *
- * ## 동작/계약
- * - ISO 639-1 코드 집합으로 detector를 구성합니다.
- * - [builder] 설정을 적용한 새 detector를 반환합니다.
+ * Creates a [LanguageDetector] from a set of ISO 639-1 codes.
  *
  * ```
  * val isoCodes = setOf(IsoCode639_1.EN, IsoCode639_1.KO)
@@ -206,9 +175,8 @@ fun languageDetectorOf(
  * detector.detectLanguageOf("안녕하세요.") shouldBeEqualTo Language.KOREAN
  * ```
  *
- * @param isoCodes 검출할 언어
- * @param builder [LanguageDetectorBuilder] 초기화 람다
- * @return [LanguageDetector] 인스턴스
+ * @param isoCodes ISO 639-1 codes for the languages to detect
+ * @param builder configuration block applied to [LanguageDetectorBuilder]
  */
 @JvmName("languageDetectorOfIsoCode639_1")
 inline fun languageDetectorOf(
@@ -221,11 +189,7 @@ inline fun languageDetectorOf(
         .build()
 
 /**
- * 지정된 [isoCodes] 언어를 검출하는 [LanguageDetector]를 생성합니다.
- *
- * ## 동작/계약
- * - ISO 639-3 코드 집합으로 detector를 구성합니다.
- * - [builder] 설정을 적용한 새 detector를 반환합니다.
+ * Creates a [LanguageDetector] from a set of ISO 639-3 codes.
  *
  * ```
  * val isoCodes = setOf(IsoCode639_3.EN, IsoCode639_3.KO)
@@ -239,9 +203,8 @@ inline fun languageDetectorOf(
  * detector.detectLanguageOf("안녕하세요.") shouldBeEqualTo Language.KOREAN
  * ```
  *
- * @param isoCodes 검출할 언어
- * @param builder [LanguageDetectorBuilder] 초기화 람다
- * @return [LanguageDetector] 인스턴스
+ * @param isoCodes ISO 639-3 codes for the languages to detect
+ * @param builder configuration block applied to [LanguageDetectorBuilder]
  */
 @JvmName("languageDetectorOfIsoCode639_3")
 inline fun languageDetectorOf(
@@ -254,14 +217,14 @@ inline fun languageDetectorOf(
         .build()
 
 /**
- * 텍스트에서 검출된 모든 언어를 집합으로 반환합니다.
+ * Detects all languages present in the text and returns them as a set.
  *
- * ## 동작/계약
- * - 공백 입력은 `emptySet()`을 반환합니다.
- * - Unicode letter 토큰별 [detectLanguageOf] 결과에서 `UNKNOWN`을 제거한 집합을 반환합니다.
- * - 짧은 Latin 토큰은 Lingua가 `Hello -> SOTHO`처럼 오탐할 수 있어, 상위 confidence 후보가 모호할 때만 제한적으로 보정합니다.
- * - usable token 결과가 없으면 전체 입력에 대한 [detectLanguageOf] 결과를 singleton set으로 반환합니다.
- * - detector 생성 비용이 있으므로 호출마다 새 detector를 만들지 말고 재사용하는 것을 권장합니다.
+ * Blank input returns an empty set. Each Unicode-letter token is classified independently;
+ * short Latin tokens are subject to confidence-based correction to avoid false positives
+ * (e.g. Lingua mis-classifying "Hello" as SOTHO). If no usable token results are found,
+ * the full-text detection result is returned as a singleton set.
+ *
+ * Reuse the detector instance across calls — construction is expensive.
  *
  * ```
  * val detector = allLanguageDetector {

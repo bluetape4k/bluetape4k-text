@@ -1,18 +1,12 @@
 package io.bluetape4k.lingua
 
 /**
- * 문자가 ASCII 문자인지 판단합니다.
- *
- * ## 동작/계약
- * - 유니코드 코드포인트 `0..127` 범위를 ASCII로 판단합니다.
+ * Returns `true` if this character is an ASCII character (code point `0..127`).
  */
 val Char.isAscii: Boolean get() = this.code in 0..127
 
 /**
- * 문자가 로마자인지 판단합니다.
- *
- * ## 동작/계약
- * - 라틴 관련 유니코드 블록 범위를 기준으로 판정합니다.
+ * Returns `true` if this character falls within a Latin Unicode block range.
  */
 val Char.isLatin: Boolean
     get() = this.code in 0x0000..0x007F ||      // 라틴 문자
@@ -26,10 +20,7 @@ val Char.isLatin: Boolean
             this.code in 0xA720..0xA7FF         // 라틴 확장 추가 D
 
 /**
- * 문자가 아랍 문자인지 판단합니다.
- *
- * ## 동작/계약
- * - 아랍 문자/확장 블록 범위를 기준으로 판정합니다.
+ * Returns `true` if this character falls within an Arabic Unicode block range.
  */
 val Char.isArabic: Boolean
     get() = this.code in 0x0600..0x06FF ||      // 아랍 문자
@@ -38,10 +29,7 @@ val Char.isArabic: Boolean
             this.code in 0xFE70..0xFEFF
 
 /**
- * 문자가 타이 문자인지 판단합니다.
- *
- * ## 동작/계약
- * - 타이 관련 유니코드 블록 범위를 기준으로 판정합니다.
+ * Returns `true` if this character falls within a Thai Unicode block range.
  */
 val Char.isThai: Boolean
     get() = this.code in 0x0E00..0x0E7F ||      // 타이 문자
@@ -50,10 +38,7 @@ val Char.isThai: Boolean
             this.code in 0x1A20..0x1AAF         // 타이 확장 추가
 
 /**
- * 문자가 한글인지 판단합니다.
- *
- * ## 동작/계약
- * - 한글 자모/완성형/반각 영역 범위를 기준으로 판정합니다.
+ * Returns `true` if this character falls within a Korean (Hangul) Unicode block range.
  */
 val Char.isKorean: Boolean
     get() = this.code in 0x1100..0x11FF ||      // 한글 자모
@@ -64,10 +49,9 @@ val Char.isKorean: Boolean
             this.code in 0xFFA0..0xFFDC         // 한글 반각
 
 /**
- * 문자가 일본어 문자인지 판단합니다. (한자 혼용이므로, 문자는 한자로 판단할 수 있습니다. 문장에서 판단해야 합니다)
- *
- * ## 동작/계약
- * - 히라가나/가타카나 및 일부 CJK 보조 블록을 기준으로 판정합니다.
+ * Returns `true` if this character falls within a Japanese Unicode block range (Hiragana, Katakana,
+ * or CJK supplement blocks). Note: kanji are shared with Chinese; sentence-level context is needed
+ * to distinguish the two scripts reliably.
  */
 val Char.isJapanese: Boolean
     get() = this.code in 0x3040..0x309F ||      // 히라가나 ひらがな
@@ -78,10 +62,9 @@ val Char.isJapanese: Boolean
             this.code in 0x2F00..0x2FDF       // Kangxi Radicals
 
 /**
- * 문자가 중국어인지 판단합니다.
+ * Returns `true` if this character falls within a Chinese (CJK Unified Ideographs or Extension A)
+ * Unicode block range.
  *
- * ## 동작/계약
- * - CJK 통합 한자 및 확장 A 블록 범위를 기준으로 판정합니다.
  * - `Char.code` is a UTF-16 code unit (max 0xFFFF), so supplementary-plane
  *   CJK Extension B–F ranges (0x20000..0x2EBEF) and the CJK Compatibility
  *   Supplement (0x2F800..0x2FA1F) can never match a single `Char` and are
