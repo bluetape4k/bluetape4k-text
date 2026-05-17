@@ -7,6 +7,8 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-05-17
+
 ### Added
 
 - Root README hero image plus refreshed project-purpose, feature, and language-switch entrypoint documentation ([PR #20](https://github.com/bluetape4k/bluetape4k-text/pull/20)).
