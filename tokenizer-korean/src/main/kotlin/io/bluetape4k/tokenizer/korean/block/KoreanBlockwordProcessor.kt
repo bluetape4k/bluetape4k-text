@@ -80,8 +80,8 @@ object KoreanBlockwordProcessor: KLogging() {
                 }
             return blockWords
         } catch (e: Throwable) {
-            log.error(e) { "Fail to mask block word. text=[$text]" }
-            throw TokenizerException("Fail to mask block word. text=[$text]", e)
+            log.error(e) { "Fail to mask block word. textLength=${text.length}" }
+            throw TokenizerException("Fail to mask block word. textLength=${text.length}", e)
         }
     }
 
@@ -133,8 +133,8 @@ object KoreanBlockwordProcessor: KLogging() {
             }
             return blockwordResponseOf(request, result.toString(), blockWords)
         } catch (e: Throwable) {
-            log.error(e) { "Fail to mask block word. request=$request" }
-            throw TokenizerException("Fail to mask block word. request=$request", e)
+            log.error(e) { "Fail to mask block word. textLength=${request.text.length}" }
+            throw TokenizerException("Fail to mask block word. textLength=${request.text.length}", e)
         }
     }
 

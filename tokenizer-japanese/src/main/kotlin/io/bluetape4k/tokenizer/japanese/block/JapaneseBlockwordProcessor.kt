@@ -139,8 +139,8 @@ object JapaneseBlockwordProcessor: KLogging() {
                 }
             return blockwordResponseOf(request, maskedText, blockwords)
         } catch (e: Throwable) {
-            log.error(e) { "Fail to mask block words. request=$request" }
-            throw TokenizerException("Fail to mask block words. request=$request", e)
+            log.error(e) { "Fail to mask block words. textLength=${request.text.length}" }
+            throw TokenizerException("Fail to mask block words. textLength=${request.text.length}", e)
         }
     }
 
