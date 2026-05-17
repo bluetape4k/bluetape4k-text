@@ -602,12 +602,12 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     inner class EntryIterator(private val allowModify: Boolean):
         MutableIterator<MutableMap.MutableEntry<Any, V>> {
 
+        private var pos = -1
+        private var lastPos: Int = 0
+
         init {
             goNext()
         }
-
-        private var pos = -1
-        private var lastPos: Int = 0
 
         private fun goNext() {
             lastPos = pos
