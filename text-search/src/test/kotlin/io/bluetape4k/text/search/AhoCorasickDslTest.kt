@@ -7,7 +7,7 @@ import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertThrows
+import io.bluetape4k.assertions.assertFailsWith
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AhoCorasickDslTest {
@@ -108,7 +108,7 @@ class AhoCorasickDslTest {
     @Test
     fun `blank keyword 등록 시 IllegalArgumentException 발생`() {
         // Act & Assert
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             ahoCorasick<String> {
                 keyword("  ", "value")
             }

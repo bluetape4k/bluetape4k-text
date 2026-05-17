@@ -10,7 +10,7 @@ import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertThrows
+import io.bluetape4k.assertions.assertFailsWith
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
@@ -159,11 +159,11 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
     @Test
     fun `Builder add - 빈 keyword는 IllegalArgumentException`() {
         // Act & Assert — empty string
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             AhoCorasickAutomaton.builder<String>().add("", "value")
         }
         // Act & Assert — blank string (whitespace only)
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             AhoCorasickAutomaton.builder<String>().add("   ", "value")
         }
         log.debug { "빈 keyword 검증 완료" }
