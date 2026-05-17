@@ -9,11 +9,15 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos
 
 
 /**
- * 단어 중간의 구두점 삽입 우회 패턴을 식별해 제거합니다.
+ * Identifies and removes mid-word evasion patterns that insert punctuation to bypass blockword filters.
  *
- * ## 동작/계약
- * - 3개 슬라이딩 윈도우에서 `일반 토큰-구두점-일반 토큰` 패턴만 제거 대상으로 판정한다.
- * - 제거는 뒤에서 앞으로 수행해 원문 인덱스 보정을 피한다.
+ * ## Behavior / Contract
+ * - Uses a sliding window of 3 tokens: removes the middle token when it is classified as an
+ *   evasion character ([Punctuation], [KoreanPos.Email], [KoreanPos.Hashtag], or [KoreanPos.CashTag])
+ *   and both neighbours are normal content tokens ([normalPos]).
+ * - Removal proceeds in reverse order to preserve original character offsets.
+ * - [KoreanPos.URL] tokens are intentionally excluded from the evasion set so that URLs
+ *   adjacent to Korean text are not silently deleted.
  *
  * ```kotlin
  * val cleaned = PunctuationProcessor().removePunctuation("섹.스")
@@ -36,7 +40,6 @@ class PunctuationProcessor {
             KoreanPos.Email,
             KoreanPos.Hashtag,
             KoreanPos.CashTag,
-            KoreanPos.URL,
         )
     }
 
