@@ -1,6 +1,7 @@
 package io.bluetape4k.tokenizer.korean.tokenizer
 
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.support.requireNotNull
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Alpha
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.CashTag
@@ -145,7 +146,7 @@ object KoreanChunker: KLogging() {
     }
 
     private fun splitBySpaceKeepingSpace(s: CharSequence): Sequence<String> = sequence {
-        val space = POS_PATTERNS[Space]!!
+        val space = POS_PATTERNS[Space].requireNotNull("POS_PATTERNS[Space]")
         val m = space.matcher(s)
         var index = 0
 
@@ -193,23 +194,28 @@ object KoreanChunker: KLogging() {
         return if (text.isNotEmpty() && text[0].isSpaceChar) {
             listOf(ChunkMatch(0, text.length, text, Space))
         } else {
-            val chunksBuf = mutableListOf<ChunkMatch>()
+            // TreeMap keyed by start offset: O(log n) disjoint check instead of O(n) scan.
+            val chunksMap = java.util.TreeMap<Int, ChunkMatch>()
             var matchedLen = 0
             CHUNKING_ORDER.forEach { pos ->
                 if (matchedLen < text.length) {
-                    val m: Matcher = POS_PATTERNS[pos]!!.matcher(text)
+                    val m: Matcher = POS_PATTERNS[pos].requireNotNull("POS_PATTERNS[$pos]").matcher(text)
                     while (m.find()) {
                         val cm = ChunkMatch(m.start(), m.end(), m.group(), pos)
-                        if (chunksBuf.all { cm.disjoint(it) }) {
-                            chunksBuf += cm
+                        val lower = chunksMap.floorEntry(cm.start)?.value
+                        val upper = chunksMap.ceilingEntry(cm.start)?.value
+                        val overlaps = (lower != null && lower.end > cm.start) ||
+                                (upper != null && cm.end > upper.start)
+                        if (!overlaps) {
+                            chunksMap[cm.start] = cm
                             matchedLen += cm.end - cm.start
                         }
                     }
                 }
             }
 
-            val sorted = chunksBuf.sortedBy { it.start }
-            fillInUnmatched(text, sorted, Foreign)
+            // TreeMap.values() is already ordered by start offset — no extra sort needed.
+            fillInUnmatched(text, chunksMap.values.toList(), Foreign)
         }
     }
 
@@ -232,14 +238,14 @@ object KoreanChunker: KLogging() {
         chunks.forEach { cm ->
             prevEnd = when {
                 cm.start == prevEnd -> {
-                    chunksWithForeign.add(0, cm)
+                    chunksWithForeign.add(cm)
                     cm.end
                 }
 
                 cm.start > prevEnd -> {
                     val cm2 = ChunkMatch(prevEnd, cm.start, text.slice(prevEnd until cm.start), pos)
-                    chunksWithForeign.add(0, cm2)
-                    chunksWithForeign.add(0, cm)
+                    chunksWithForeign.add(cm2)
+                    chunksWithForeign.add(cm)
                     cm.end
                 }
 
@@ -250,10 +256,10 @@ object KoreanChunker: KLogging() {
 
         if (prevEnd < text.length) {
             val cm = ChunkMatch(prevEnd, text.length, text.slice(prevEnd until text.length), pos)
-            chunksWithForeign.add(0, cm)
+            chunksWithForeign.add(cm)
         }
 
-        return chunksWithForeign.reversed()
+        return chunksWithForeign
     }
 
     /**

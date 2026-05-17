@@ -1,6 +1,7 @@
 package io.bluetape4k.tokenizer.korean.phrase
 
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.support.requireNotNull
 import io.bluetape4k.tokenizer.korean.tokenizer.KoreanToken
 import io.bluetape4k.tokenizer.korean.utils.Hangul
 import io.bluetape4k.tokenizer.korean.utils.KoreanDictionaryProvider
@@ -15,7 +16,6 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Suffix
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Verb
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosTrie
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosx
-import java.util.concurrent.CopyOnWriteArrayList
 
 
 /**
@@ -279,7 +279,7 @@ object NounPhraseExtractor: KLogging() {
             fun checkNoneDictionary(): Boolean {
                 if (phraseChunk.size == 1 && phraseChunk.all { it.tokens.size == 1 }) {
                     val singleTokenTest = phraseChunk[0].tokens[0].text
-                    return KoreanDictionaryProvider.koreanDictionary[Noun]!!.contains(singleTokenTest)
+                    return KoreanDictionaryProvider.koreanDictionary[Noun].requireNotNull("koreanDictionary[Noun]").contains(singleTokenTest)
                 }
                 return false
             }
@@ -402,8 +402,8 @@ object NounPhraseExtractor: KLogging() {
 
         fun collapseNounPhrases(phrases1: KoreanPhraseChunk): KoreanPhraseChunk {
 
-            val output = CopyOnWriteArrayList<KoreanPhrase>()
-            val buffer = CopyOnWriteArrayList<KoreanPhrase>()
+            val output = mutableListOf<KoreanPhrase>()
+            val buffer = mutableListOf<KoreanPhrase>()
 
             phrases1
                 .onEach { phrase ->
@@ -432,7 +432,7 @@ object NounPhraseExtractor: KLogging() {
             //
             fun newBuffer() = listOf(listOf<KoreanPhrase>())
 
-            val output = CopyOnWriteArrayList<KoreanPhraseChunk>()
+            val output = mutableListOf<KoreanPhraseChunk>()
             var buffer = newBuffer()
 
             phrases1
