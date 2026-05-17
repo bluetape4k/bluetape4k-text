@@ -233,6 +233,17 @@ class CharArrayMapTest {
     }
 
     @Test
+    fun `setValue updates map entry`() {
+        val map = CharArrayMap<String>(16)
+        map["key1"] = "original"
+
+        val entry = map.entries.first()
+        entry.setValue("updated")
+
+        map["key1"] shouldBeEqualTo "updated"
+    }
+
+    @Test
     fun `putAll adds all entries`() {
         val map = CharArrayMap<String>(16)
         val other =
