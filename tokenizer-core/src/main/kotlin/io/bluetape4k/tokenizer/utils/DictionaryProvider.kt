@@ -70,7 +70,7 @@ object DictionaryProvider: KLogging() {
         check(stream != null) { "Can't open file. path=$path" }
 
         return if (path.endsWith(".gz")) {
-            readStreamByLine(GZIPInputStream(stream))
+            stream.use { s -> readStreamByLine(GZIPInputStream(s)) }
         } else {
             readStreamByLine(stream)
         }

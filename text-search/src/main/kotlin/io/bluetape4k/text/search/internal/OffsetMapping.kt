@@ -138,18 +138,20 @@ internal class OffsetMapping private constructor(
                         repeat(curLen - lastNormLen) { normToOrigList.add(origPos) }
                     }
                     curLen < lastNormLen -> {
-                        // 합성으로 길이 감소: 잉여 trailing 매핑 제거 후 마지막 살아남은 위치를 origPos로 갱신
+                        // 합성으로 길이 감소: 잉여 trailing 매핑 제거.
+                        // 남은 마지막 위치는 현재 origPos(합성을 완성한 마지막 기여자)로 갱신.
                         while (normToOrigList.size > curLen) {
                             normToOrigList.removeAt(normToOrigList.size - 1)
                         }
-                        if (curLen > 0) {
-                            normToOrigList[curLen - 1] = origPos
+                        if (normToOrigList.isNotEmpty()) {
+                            normToOrigList[normToOrigList.size - 1] = origPos
                         }
                     }
                     else -> {
-                        // 길이 동일: trailing 위치가 reorder/replace로 갱신될 수 있으므로 origPos 재기록
-                        if (curLen > 0) {
-                            normToOrigList[curLen - 1] = origPos
+                        // 길이 동일: 합성/재배열로 마지막 normalized 문자가 교체됨.
+                        // 마지막 위치를 현재 origPos(합성을 완성한 마지막 기여자)로 갱신.
+                        if (normToOrigList.isNotEmpty()) {
+                            normToOrigList[normToOrigList.size - 1] = origPos
                         }
                     }
                 }
