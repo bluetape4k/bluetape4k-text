@@ -1,0 +1,12 @@
+iteration	vector	severity	owasp	stride	confidence	location	description
+0	-	-	-	-	-	-	baseline — no existing security audit
+1	exception-info-disclosure	Medium	A09	Information Disclosure	Confirmed	KoreanBlockwordProcessor.kt:84,137 JapaneseBlockwordProcessor.kt:142	Exception messages embed full user text; PII leakage in logs/error responses
+2	input-size-validation	Medium	A04	Denial of Service	Confirmed	TokenizeRequest.kt, KoreanProcessor.kt, JapaneseProcessor.kt	No maximum input length; combined with O(n²) complexity creates DoS risk in web service wrappers
+3	serialization-integrity	Medium	A08	Tampering	Confirmed	AbstractMessage, BlockwordOptions, TokenizeOptions, CharArrayMap, CharArraySet, KoreanToken + 15 more	20+ Serializable classes missing serialVersionUID — deserialization integrity risk
+4	path-disclosure	Low	A05	Information Disclosure	Confirmed	DictionaryProvider.kt:70	Error message exposes classpath resource path on missing dictionary
+5	regex-redos	N/A	A03	N/A	N/A	TwitterCompatPatterns.kt:VALID_URL	VALID_URL bare-domain pattern analyzed: character class [a-zA-Z0-9\-] and literal dot are unambiguous — no catastrophic backtracking
+6	hardcoded-secrets	N/A	A02	N/A	N/A	PublishingSigningSupport.kt, all sources	No hardcoded secrets found; signing uses SIGNING_KEY/SIGNING_PASSWORD env vars correctly
+7	injection	N/A	A03	N/A	N/A	All blockword processors	No SQL/shell/template injection surfaces; all operations are in-process string manipulation
+8	dependency-audit	Low	A06	N/A	Possible	gradle/libs.versions.toml	kuromoji 0.9.0 (2013) is very old but NLP-only with no network; no known CVEs. lingua/jackson/eclipse-collections current.
+9	access-control	N/A	A01	N/A	N/A	All modules	Pure library — no access control layer; N/A
+10	ssrf	N/A	A10	N/A	N/A	All modules	Zero outbound HTTP in production source; N/A
