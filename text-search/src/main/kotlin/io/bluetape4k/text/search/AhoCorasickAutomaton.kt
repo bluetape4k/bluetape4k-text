@@ -6,7 +6,6 @@ import io.bluetape4k.text.search.internal.InternalTrieConfig
 import io.bluetape4k.text.search.internal.OffsetMapping
 import io.bluetape4k.text.search.internal.TrieCore
 import io.bluetape4k.text.search.internal.applyPipeline
-import java.util.Locale
 
 /**
  * 키워드별 값을 보관하는 Aho-Corasick 자동자(Automaton).
@@ -67,7 +66,7 @@ class AhoCorasickAutomaton<V> internal constructor(
 
         // 2. ignoreCase 적용 — Locale.ROOT 기준 소문자 변환
         val processedText: CharSequence = if (options.ignoreCase) {
-            normalizedText.lowercase(Locale.ROOT)
+            normalizedText.lowercaseCharByChar()
         } else {
             normalizedText
         }
@@ -132,7 +131,7 @@ class AhoCorasickAutomaton<V> internal constructor(
         if (text.isEmpty() || values.isEmpty()) return false
         val (normalizedText, _) = OffsetMapping.build(text, options.normalization)
         val processedText: CharSequence = if (options.ignoreCase) {
-            normalizedText.lowercase(Locale.ROOT)
+            normalizedText.lowercaseCharByChar()
         } else {
             normalizedText
         }
@@ -328,4 +327,16 @@ class AhoCorasickAutomaton<V> internal constructor(
             return AhoCorasickAutomaton(core, normalizedValues.toMap(), opts)
         }
     }
+}
+
+/**
+ * Lowercase a string char-by-char using [Char.lowercaseChar].
+ *
+ * Unlike [String.lowercase] with [java.util.Locale.ROOT], `Char.lowercaseChar()` always returns
+ * a single `Char` (BMP-safe), so the resulting string is guaranteed to have the same length as
+ * the receiver. This prevents offset mismatches when `ignoreCase = true` is used together with
+ * [OffsetMapping]-based normalization.
+ */
+private fun String.lowercaseCharByChar(): String = buildString(length) {
+    for (c in this@lowercaseCharByChar) append(c.lowercaseChar())
 }

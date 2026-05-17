@@ -125,6 +125,7 @@ object JapaneseBlockwordProcessor: KLogging() {
             tokens
                 .onEach { token -> log.trace { "token=${token.surface}, ${token.allFeatures}" } }
                 .filter { it.isNounOrVerb() }
+                .sortedByDescending { it.position }
                 .forEach { token ->
                     if (canMask(token)) {
                         log.trace { "mask token=$token" }

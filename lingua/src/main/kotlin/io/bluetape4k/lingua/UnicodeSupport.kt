@@ -81,14 +81,12 @@ val Char.isJapanese: Boolean
  * 문자가 중국어인지 판단합니다.
  *
  * ## 동작/계약
- * - CJK 통합 한자 및 확장 블록 범위를 기준으로 판정합니다.
+ * - CJK 통합 한자 및 확장 A 블록 범위를 기준으로 판정합니다.
+ * - `Char.code` is a UTF-16 code unit (max 0xFFFF), so supplementary-plane
+ *   CJK Extension B–F ranges (0x20000..0x2EBEF) and the CJK Compatibility
+ *   Supplement (0x2F800..0x2FA1F) can never match a single `Char` and are
+ *   intentionally omitted. Use `String.codePoints()` to check those ranges.
  */
 val Char.isChinese: Boolean
     get() = this.code in 0x4E00..0x9FFF ||      // 한자
-            this.code in 0x3400..0x4DBF ||      // 한자 확장 A
-            this.code in 0x20000..0x2A6DF ||    // 한자 확장 B
-            this.code in 0x2A700..0x2B73F ||    // 한자 확장 C
-            this.code in 0x2B740..0x2B81F ||    // 한자 확장 D
-            this.code in 0x2B820..0x2CEAF ||    // 한자 확장 E
-            this.code in 0x2CEB0..0x2EBEF ||    // 한자 확장 F
-            this.code in 0x2F800..0x2FA1F       // 한자 보충
+            this.code in 0x3400..0x4DBF         // 한자 확장 A
