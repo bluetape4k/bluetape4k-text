@@ -27,16 +27,24 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
 
         @JvmStatic
         /**
-         * 수정이 불가능한 맵 뷰를 반환한다.
+         * Returns a read-only view of the given map that blocks all mutation operations.
          *
-         * ## 동작/계약
-         * - 빈 맵은 공유 `emptyMap()` 인스턴스를 반환한다.
-         * - 이미 읽기 전용 래퍼인 경우 동일 인스턴스를 그대로 반환한다.
-         * - 그 외에는 `UnmodifiableCharArrayMap`으로 감싼다.
+         * ## Behavior / Contract
+         * - Empty maps return the shared [emptyMap] singleton.
+         * - A map that is already an [UnmodifiableCharArrayMap] is returned as-is.
+         * - Otherwise, wraps the map in [UnmodifiableCharArrayMap].
+         *
+         * ## Aliasing Warning
+         * Like [java.util.Collections.unmodifiableMap], the returned view shares the backing
+         * arrays of the original map. If the caller retains a reference to the original mutable
+         * map and continues to write to it, those changes will be visible through the
+         * unmodifiable view. To prevent this, discard the original reference after calling
+         * `unmodifiableMap`:
          *
          * ```kotlin
-         * val source = CharArrayMap<Int>(2).apply { put("a", 1) }
+         * var source: CharArrayMap<Int> = CharArrayMap<Int>(2).apply { put("a", 1) }
          * val readonly = CharArrayMap.unmodifiableMap(source)
+         * source = CharArrayMap(0)  // discard original — readonly is now stable
          * // readonly["a"] == 1
          * // readonly.put("b", 2) throws UnsupportedOperationException
          * ```
@@ -602,12 +610,12 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     inner class EntryIterator(private val allowModify: Boolean):
         MutableIterator<MutableMap.MutableEntry<Any, V>> {
 
+        private var pos = -1
+        private var lastPos: Int = 0
+
         init {
             goNext()
         }
-
-        private var pos = -1
-        private var lastPos: Int = 0
 
         private fun goNext() {
             lastPos = pos
@@ -756,7 +764,7 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
                 throw UnsupportedOperationException()
 
             val old = _values[pos]
-            _values[pos] = value
+            _values[pos] = newValue
             return old!!
         }
 
@@ -884,15 +892,22 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * 모든 수정 연산을 차단하는 읽기 전용 `CharArrayMap` 구현체다.
+     * Read-only [CharArrayMap] wrapper that blocks all mutation operations.
      *
-     * ## 동작/계약
-     * - `put`, `remove`, `clear` 호출 시 `UnsupportedOperationException`을 던진다.
-     * - 조회 연산(`get`, `containsKey`)은 원본 데이터 기준으로 동작한다.
+     * ## Behavior / Contract
+     * - [put], [remove], and [clear] throw [UnsupportedOperationException].
+     * - Read operations ([get], [containsKey]) reflect the underlying backing arrays.
+     *
+     * ## Aliasing
+     * This class shares backing arrays with the source map (shallow copy), following the same
+     * contract as [java.util.Collections.unmodifiableMap]. Callers must not retain a mutable
+     * reference to the original after wrapping. Use [unmodifiableMap] rather than constructing
+     * this class directly.
      *
      * ```kotlin
-     * val readonly = CharArrayMap.UnmodifiableCharArrayMap(CharArrayMap<Int>(2))
-     * // readonly.isEmpty() == true
+     * val readonly = CharArrayMap.unmodifiableMap(CharArrayMap<Int>(2).apply { put("a", 1) })
+     * // readonly["a"] == 1
+     * // readonly.put("b", 2) throws UnsupportedOperationException
      * ```
      */
     open class UnmodifiableCharArrayMap<V>(map: CharArrayMap<V>): CharArrayMap<V>(map) {
