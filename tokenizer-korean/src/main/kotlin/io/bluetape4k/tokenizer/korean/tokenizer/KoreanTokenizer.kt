@@ -2,6 +2,7 @@ package io.bluetape4k.tokenizer.korean.tokenizer
 
 import io.bluetape4k.collections.eclipse.multi.listMultimapOf
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.support.requireNotNull
 import io.bluetape4k.logging.error
 import io.bluetape4k.logging.trace
 import io.bluetape4k.tokenizer.exceptions.TokenizerException
@@ -192,7 +193,7 @@ object KoreanTokenizer: KLogging() {
                 // Removing unused solutions from solutions hashmap as the chunk is getting processed
                 removeUnusedSolutions(start, end, solutions)
 
-                val curSolutions = solutions[start]!!
+                val curSolutions = solutions[start].requireNotNull("solutions[start=$start] in chunk '${chunk.text}'")
                 // log.trace { "chunk=${chunk.text} word=$word, curSolutions=${curSolutions.joinToString()}" }
 
                 val candidates: List<CandidateParse> = curSolutions.flatMap { solution: CandidateParse ->
@@ -248,12 +249,13 @@ object KoreanTokenizer: KLogging() {
             }
         }
 
+        val finalSolutions = solutions[chunk.length].requireNotNull("solutions[chunk.length=${chunk.length}] in chunk '${chunk.text}'")
         val topCandidates =
-            if (solutions[chunk.length]!!.isEmpty()) {
+            if (finalSolutions.isEmpty()) {
                 val token = KoreanToken(chunk.text, Noun, chunk.offset, chunk.length, unknown = true)
                 listOf(listOf(token))
             } else {
-                solutions[chunk.length]!!.sortedBy { it.parse.score }.map { it.parse.posNodes }
+                finalSolutions.sortedBy { it.parse.score }.map { it.parse.posNodes }
             }
 
         return (directMatch + topCandidates).distinct()

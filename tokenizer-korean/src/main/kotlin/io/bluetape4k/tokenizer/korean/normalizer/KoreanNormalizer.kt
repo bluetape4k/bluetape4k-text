@@ -2,6 +2,7 @@ package io.bluetape4k.tokenizer.korean.normalizer
 
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.trace
+import io.bluetape4k.support.requireNotNull
 import io.bluetape4k.support.sliding
 import io.bluetape4k.tokenizer.korean.tokenizer.KoreanTokenizer
 import io.bluetape4k.tokenizer.korean.utils.Hangul
@@ -228,7 +229,7 @@ object KoreanNormalizer: KLogging() {
                 append(composeHangul(hc.onset, hc.vowel))
             }
         } else if (hasSecondToLastDecomposed) {
-            val shc = secondToLastDecomposed!!
+            val shc = secondToLastDecomposed.requireNotNull("secondToLastDecomposed")
             return buildString {
                 append(init.subSequence(0, init.length - 1))
                 append(composeHangul(shc.onset, shc.vowel, hc.onset))

@@ -1,6 +1,7 @@
 package io.bluetape4k.tokenizer.utils
 
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.support.requireNotNull
 import java.io.Serializable
 
 /**
@@ -455,7 +456,7 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
         for (i in _keys.indices) {
             if (i != slot && _keys[i] != null) {
                 @Suppress("UNCHECKED_CAST")
-                entries.add(_keys[i]!! to (_values[i] as V))
+                entries.add(_keys[i].requireNotNull("_keys[$i]") to (_values[i] as V))
             }
         }
 
@@ -564,7 +565,7 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
                 override fun hasNext(): Boolean = pos < _keys.size
                 override fun next(): Any {
                     goNext()
-                    return _keys[lastPos]!!
+                    return _keys[lastPos].requireNotNull("_keys[lastPos=$lastPos]")
                 }
 
                 override fun remove() = throw UnsupportedOperationException()
@@ -654,7 +655,7 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
          */
         fun nextKey(): CharArray {
             goNext()
-            return _keys[lastPos]!!
+            return _keys[lastPos].requireNotNull("_keys[lastPos=$lastPos]")
         }
 
         /**
@@ -754,10 +755,10 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
         private val allowModify: Boolean,
     ): MutableMap.MutableEntry<Any, V> {
         override val key: Any
-            get() = _keys[pos]!!.clone()
+            get() = _keys[pos].requireNotNull("_keys[pos=$pos]").clone()
 
         override val value: V
-            get() = _values[pos]!!
+            get() = _values[pos].requireNotNull("_values[pos=$pos]")
 
         override fun setValue(newValue: V): V {
             if (!allowModify)
@@ -765,11 +766,11 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
 
             val old = _values[pos]
             _values[pos] = newValue
-            return old!!
+            return old.requireNotNull("_values[pos=$pos]")
         }
 
         override fun toString(): String {
-            return String(_keys[pos]!!) + '=' +
+            return String(_keys[pos].requireNotNull("_keys[pos=$pos]")) + '=' +
                     if (_values[pos] === this@CharArrayMap) "(this Map)" else _values[pos]
         }
     }
