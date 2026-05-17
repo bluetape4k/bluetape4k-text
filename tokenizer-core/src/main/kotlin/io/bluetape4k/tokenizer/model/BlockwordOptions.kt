@@ -1,15 +1,16 @@
 package io.bluetape4k.tokenizer.model
 
+import io.bluetape4k.logging.KLogging
 import java.io.Serializable
 import java.util.*
 
 /**
- * 금칙어 마스킹과 판정 강도를 제어하는 요청 옵션이다.
+ * Request options that control block-word masking and detection severity.
  *
- * ## 동작/계약
- * - 기본 마스크 문자열은 `*`이며 호출 측에서 다른 문자열로 교체할 수 있다.
- * - 기본 로캘은 `Locale.KOREAN`으로 설정된다.
- * - 기본 심각도는 `Severity.DEFAULT`(`LOW`)를 사용한다.
+ * ## Behavior / Contract
+ * - Default mask string is `"*"`; callers may substitute any replacement string.
+ * - Default locale is `Locale.KOREAN`.
+ * - Default severity is `Severity.DEFAULT` (`LOW`).
  *
  * ```kotlin
  * val options = blockwordOptionsOf(mask = "#", severity = Severity.HIGH)
@@ -23,13 +24,15 @@ data class BlockwordOptions(
     val locale: Locale = Locale.KOREAN,
     val severity: Severity = Severity.DEFAULT,
 ): Serializable {
-    companion object {
+    companion object : KLogging() {
+        private const val serialVersionUID = 1L
+
         /**
-         * 금칙어 처리 기본 옵션 인스턴스다.
+         * The default [BlockwordOptions] instance.
          *
-         * ## 동작/계약
-         * - `mask="*"`, `locale=Locale.KOREAN`, `severity=Severity.DEFAULT`를 사용한다.
-         * - 재사용 가능한 정적 기본값으로 제공된다.
+         * ## Behavior / Contract
+         * - Uses `mask="*"`, `locale=Locale.KOREAN`, `severity=Severity.DEFAULT`.
+         * - Provided as a reusable static default value.
          *
          * ```kotlin
          * val defaults = BlockwordOptions.DEFAULT
@@ -42,11 +45,11 @@ data class BlockwordOptions(
 }
 
 /**
- * 금칙어 처리 옵션 인스턴스를 간단히 생성한다.
+ * Creates a [BlockwordOptions] instance with the given parameters.
  *
- * ## 동작/계약
- * - 전달한 `mask`, `locale`, `severity`를 그대로 `BlockwordOptions`에 담아 반환한다.
- * - 인자를 생략하면 `BlockwordOptions.DEFAULT`와 동일한 기본값 조합이 적용된다.
+ * ## Behavior / Contract
+ * - Maps [mask], [locale], and [severity] directly into a new [BlockwordOptions].
+ * - Omitting arguments applies the same defaults as [BlockwordOptions.DEFAULT].
  *
  * ```kotlin
  * val options = blockwordOptionsOf()

@@ -3,17 +3,13 @@ package io.bluetape4k.text.search
 import io.bluetape4k.support.requireNotBlank
 
 /**
- * [AhoCorasickBuilder] DSL 빌더에 사용할 마커 어노테이션.
- *
- * `@DslMarker`를 통해 중첩 DSL 스코프에서 외부 빌더를 암묵적으로 참조하는 것을 방지한다.
+ * DSL marker annotation for [AhoCorasickBuilder] to prevent implicit outer-scope receiver access.
  */
 @DslMarker
 annotation class AhoCorasickDsl
 
 /**
- * [AhoCorasickAutomaton]을 DSL 방식으로 구성하는 빌더.
- *
- * `ahoCorasick { }` 최상위 함수를 통해 사용한다.
+ * DSL builder for [AhoCorasickAutomaton]. Use via the [ahoCorasick] top-level function.
  *
  * ```kotlin
  * val automaton = ahoCorasick<String> {
@@ -24,34 +20,34 @@ annotation class AhoCorasickDsl
  * }
  * ```
  *
- * @param V 키워드와 연관된 값 타입
+ * @param V type of value associated with each keyword
  */
 @AhoCorasickDsl
 class AhoCorasickBuilder<V> internal constructor() {
 
-    /** 대소문자를 무시할지 여부 (기본값: `false`) */
+    /** Whether to ignore case during matching (default: `false`). */
     var ignoreCase: Boolean = false
 
-    /** 겹치는 매치를 허용할지 여부 (기본값: `true`) */
+    /** Whether overlapping matches are allowed (default: `true`). */
     var allowOverlaps: Boolean = true
 
-    /** 단어 경계 탐지 방식 (기본값: [WordBoundary.NONE]) */
+    /** Word boundary detection mode (default: [WordBoundary.NONE]). */
     var wordBoundary: WordBoundary = WordBoundary.NONE
 
-    /** 유니코드 정규화 형식 (기본값: [NormalizationForm.NONE]) */
+    /** Unicode normalization form applied before matching (default: [NormalizationForm.NONE]). */
     var normalization: NormalizationForm = NormalizationForm.NONE
 
-    /** 첫 번째 매치 발견 시 즉시 중단할지 여부 (기본값: `false`) */
+    /** Whether to stop after the first match is found (default: `false`). */
     var stopOnFirstMatch: Boolean = false
 
     private val entries = mutableMapOf<String, V>()
 
     /**
-     * 키워드와 그에 대응하는 값을 등록한다.
+     * Registers a keyword and its associated value.
      *
-     * @param keyword 등록할 키워드 (blank 불가)
-     * @param value   키워드에 연관할 값
-     * @throws IllegalArgumentException [keyword]가 blank이면
+     * @param keyword keyword to register (must not be blank)
+     * @param value value associated with the keyword
+     * @throws IllegalArgumentException if [keyword] is blank
      */
     fun keyword(keyword: String, value: V) {
         keyword.requireNotBlank("keyword")
@@ -59,27 +55,25 @@ class AhoCorasickBuilder<V> internal constructor() {
     }
 
     /**
-     * 여러 키워드/값 쌍을 한 번에 등록한다.
+     * Registers multiple keyword/value pairs.
      *
-     * @param pairs 키워드→값 쌍 목록 (각 키는 blank 불가)
+     * @param pairs keyword-to-value pairs (each key must not be blank)
      */
     fun keywords(vararg pairs: Pair<String, V>) {
         pairs.forEach { (k, v) -> keyword(k, v) }
     }
 
     /**
-     * 맵으로 여러 키워드/값 쌍을 한 번에 등록한다.
+     * Registers multiple keyword/value pairs from a map.
      *
-     * @param map 키워드→값 맵 (각 키는 blank 불가)
+     * @param map keyword-to-value map (each key must not be blank)
      */
     fun keywords(map: Map<String, V>) {
         map.forEach { (k, v) -> keyword(k, v) }
     }
 
     /**
-     * 현재까지 등록된 설정으로 [AhoCorasickAutomaton]을 생성한다.
-     *
-     * @return 불변 상태의 [AhoCorasickAutomaton]
+     * Builds an immutable [AhoCorasickAutomaton] from the current configuration.
      */
     internal fun build(): AhoCorasickAutomaton<V> {
         val opts = SearchOptions(
@@ -96,7 +90,7 @@ class AhoCorasickBuilder<V> internal constructor() {
 }
 
 /**
- * DSL 블록으로 [AhoCorasickAutomaton]을 생성한다.
+ * Creates an [AhoCorasickAutomaton] using a DSL builder block.
  *
  * ```kotlin
  * val automaton = ahoCorasick<Int> {
@@ -106,23 +100,21 @@ class AhoCorasickBuilder<V> internal constructor() {
  * }
  * ```
  *
- * @param V 키워드와 연관된 값 타입
- * @param block [AhoCorasickBuilder] DSL 블록
- * @return 생성된 [AhoCorasickAutomaton]
+ * @param V type of value associated with each keyword
+ * @param block configuration block applied to [AhoCorasickBuilder]
  */
 fun <V> ahoCorasick(block: AhoCorasickBuilder<V>.() -> Unit): AhoCorasickAutomaton<V> =
     AhoCorasickBuilder<V>().apply(block).build()
 
 /**
- * 키워드 문자열 배열로부터 `keyword == value` 매핑의 [AhoCorasickAutomaton]을 생성한다.
+ * Creates an [AhoCorasickAutomaton] from keyword strings, mapping each keyword to itself.
  *
  * ```kotlin
  * val automaton = ahoCorasickOf("apple", "banana", "cherry")
  * ```
  *
- * @param keywords 등록할 키워드 목록 (각 키워드는 blank 불가)
- * @param options  검색 옵션 (기본값: [SearchOptions])
- * @return 생성된 [AhoCorasickAutomaton]
+ * @param keywords keywords to register (each must not be blank)
+ * @param options search options (default: [SearchOptions])
  */
 fun ahoCorasickOf(
     vararg keywords: String,
@@ -131,15 +123,14 @@ fun ahoCorasickOf(
     ahoCorasickOf(keywords.toList(), options)
 
 /**
- * 키워드 컬렉션으로부터 `keyword == value` 매핑의 [AhoCorasickAutomaton]을 생성한다.
+ * Creates an [AhoCorasickAutomaton] from a keyword collection, mapping each keyword to itself.
  *
  * ```kotlin
  * val automaton = ahoCorasickOf(listOf("apple", "banana"), SearchOptions(ignoreCase = true))
  * ```
  *
- * @param keywords 등록할 키워드 컬렉션 (각 키워드는 blank 불가)
- * @param options  검색 옵션 (기본값: [SearchOptions])
- * @return 생성된 [AhoCorasickAutomaton]
+ * @param keywords keywords to register (each must not be blank)
+ * @param options search options (default: [SearchOptions])
  */
 fun ahoCorasickOf(
     keywords: Collection<String>,

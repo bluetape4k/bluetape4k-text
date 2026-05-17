@@ -12,16 +12,16 @@ import io.bluetape4k.support.requireNotBlank
 const val MAX_BLOCKWORD_TEXT_LENGTH: Int = 100_000
 
 /**
- * 금칙어 탐지/마스킹 처리를 요청하는 입력 모델이다.
+ * Input model for requesting block-word detection and masking.
  *
- * ## 동작/계약
- * - 생성 시 `text.requireNotBlank("text")`를 검사해 공백 문자열 요청을 거부한다.
- * - `options`를 지정하지 않으면 `BlockwordOptions.DEFAULT`를 사용한다.
- * - `AbstractMessage`를 상속하므로 생성 타임스탬프가 함께 기록된다.
+ * ## Behavior / Contract
+ * - Validates `text.requireNotBlank("text")` at construction time; blank input is rejected.
+ * - When [options] is omitted, [BlockwordOptions.DEFAULT] is used.
+ * - Inherits [AbstractMessage], so a creation timestamp is recorded automatically.
  *
  * ```kotlin
- * val request = blockwordRequestOf("나쁜 단어", blockwordOptionsOf(mask = "*"))
- * // request.text == "나쁜 단어"
+ * val request = blockwordRequestOf("bad word", blockwordOptionsOf(mask = "*"))
+ * // request.text == "bad word"
  * // request.options.mask == "*"
  * ```
  */
@@ -35,12 +35,11 @@ data class BlockwordRequest(
 }
 
 /**
- * 금칙어 처리 요청 인스턴스를 생성한다.
+ * Creates a [BlockwordRequest] after validating [text].
  *
- * ## 동작/계약
- * - 생성 전에 `text.requireNotBlank("text")`를 호출해 비어 있거나 공백인 입력을 차단한다.
- * - `text.length > MAX_BLOCKWORD_TEXT_LENGTH`이면 `IllegalArgumentException`을 던진다.
- * - 검증을 통과하면 `BlockwordRequest(text, options)`를 반환한다.
+ * ## Behavior / Contract
+ * - Calls `text.requireNotBlank("text")` before construction; blank input is rejected.
+ * - Throws [IllegalArgumentException] when `text.length > MAX_BLOCKWORD_TEXT_LENGTH`.
  *
  * ## Input length
  * The factory rejects inputs longer than [MAX_BLOCKWORD_TEXT_LENGTH] characters.
@@ -48,8 +47,8 @@ data class BlockwordRequest(
  * perform their own length validation before calling the blockword processors.
  *
  * ```kotlin
- * val request = blockwordRequestOf("테스트 문장")
- * // request.text == "테스트 문장"
+ * val request = blockwordRequestOf("test sentence")
+ * // request.text == "test sentence"
  * // request.options == BlockwordOptions.DEFAULT
  * ```
  */

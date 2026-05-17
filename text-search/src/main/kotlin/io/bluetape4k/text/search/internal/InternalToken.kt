@@ -1,21 +1,20 @@
 package io.bluetape4k.text.search.internal
 
+import io.bluetape4k.logging.KLogging
 import java.io.Serializable
 
 /**
- * 토크나이징 결과 조각을 표현하는 공통 계약입니다.
+ * Common contract for an internal tokenization fragment.
  *
- * ## 동작/계약
- * - [fragment]는 원문 일부 문자열입니다.
- * - [emit]이 null이 아니면 키워드 매칭 토큰을 의미합니다.
+ * [fragment] holds a substring of the original text. A non-null [emit] indicates a keyword match.
  *
  * ```kotlin
  * val token: InternalToken = MatchToken("PM", Emit(0, 1, "PM"))
  * // token.isMatch() == true
  * ```
  *
- * @property fragment 문장의 조각 (키워드)
- * @property emit Emit 정보
+ * @property fragment substring of the original text
+ * @property emit emit information, or `null` for non-matching fragments
  */
 internal sealed interface InternalToken: Serializable {
     val fragment: String
@@ -25,28 +24,34 @@ internal sealed interface InternalToken: Serializable {
 }
 
 internal abstract class AbstractInternalToken(override val fragment: String): InternalToken {
+    companion object : KLogging() {
+        private const val serialVersionUID = 1L
+    }
+
     override fun toString(): String = "InternalToken(fragment=$fragment, emit=$emit)"
 }
 
 /**
- * 키워드를 포함한 Emit 을 나타내는 InternalToken
+ * An [InternalToken] that carries a keyword [Emit]. [isMatch] always returns `true`.
  *
- * ## 동작/계약
- * - 항상 [isMatch]가 `true`입니다.
- *
- * @property emit Emit 정보
+ * @property emit the associated emit
  */
 internal class MatchToken(fragment: String, override val emit: Emit): AbstractInternalToken(fragment) {
+    companion object : KLogging() {
+        private const val serialVersionUID = 1L
+    }
+
     override fun isMatch(): Boolean = true
 }
 
 /**
- * 키워드를 포함하지 않는 Emit을 나타내는 InternalToken
- *
- * ## 동작/계약
- * - 항상 [isMatch]가 `false`이며 [emit]은 null입니다.
+ * An [InternalToken] for a non-matching fragment. [isMatch] always returns `false`; [emit] is always `null`.
  */
 internal class FragmentToken(fragment: String): AbstractInternalToken(fragment) {
+    companion object : KLogging() {
+        private const val serialVersionUID = 1L
+    }
+
     override fun isMatch(): Boolean = false
     override val emit: Emit? = null
 }

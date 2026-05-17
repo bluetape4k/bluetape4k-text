@@ -1,102 +1,74 @@
 package io.bluetape4k.text.search.internal
 
 /**
- * Aho-Corasick 알고리즘에서 키워드 매칭이 발생했을 때 호출되는 핸들러 인터페이스.
+ * Callback invoked each time a keyword match is found during Aho-Corasick text parsing.
  *
- * 이 인터페이스를 구현하여 매칭된 키워드를 처리하는 사용자 정의 로직을 제공할 수 있습니다.
+ * Returning `false` signals the caller to stop processing (used with `stopOnHit`).
  *
  * ```
  * val handler = EmitHandler { emit ->
  *     println("Found: ${emit.keyword} at position ${emit.start}-${emit.end}")
- *     true // 계속 처리
+ *     true
  * }
  * trieCore.runParseText(text, handler)
  * ```
  *
  * @see StatefulEmitHandler
  * @see DefaultEmitHandler
- *
- * ## 동작/계약
- * - [emit] 반환값이 `false`면 호출자에서 중단 신호로 해석할 수 있습니다.
  */
 internal fun interface EmitHandler {
     /**
-     * 키워드 매칭이 발생했을 때 호출됩니다.
+     * Called when a keyword match is found.
      *
-     * @param emit 매칭된 키워드 정보 (시작 위치, 끝 위치, 키워드)
-     * @return true를 반환하면 계속 처리하고, false를 반환하면 중단합니다 (stopOnHit 설정 시)
+     * @param emit matched keyword information (start, end, keyword)
+     * @return `true` to continue processing; `false` to stop (when `stopOnHit` is active)
      */
     fun emit(emit: Emit): Boolean
 }
 
 /**
- * 상태를 유지하는 EmitHandler 인터페이스.
- *
- * 매칭된 모든 Emit을 리스트에 저장하여 나중에 조회할 수 있습니다.
+ * An [EmitHandler] that accumulates all matched emits into [emits].
  *
  * @see AbstractStatefulEmitHandler
  * @see DefaultEmitHandler
- *
- * ## 동작/계약
- * - [emits]에 수집된 매칭 결과를 저장합니다.
  */
 internal interface StatefulEmitHandler: EmitHandler {
-    /**
-     * 수집된 모든 Emit 리스트.
-     */
+    /** Accumulated list of all matched emits. */
     val emits: MutableList<Emit>
 }
 
 /**
- * StatefulEmitHandler의 추상 구현 클래스.
+ * Abstract base implementation of [StatefulEmitHandler].
  *
- * 기본적으로 모든 Emit을 내장 리스트에 저장합니다.
- * 사용자는 [emit] 메서드를 오버라이드하여 커스텀 로직을 구현할 수 있습니다.
+ * Stores all emits in an internal list. Override [emit] to apply custom filtering logic.
  *
  * ```
  * val handler = object : AbstractStatefulEmitHandler() {
  *     override fun emit(emit: Emit): Boolean {
- *         // 3글자 이상인 키워드만 수집
- *         if (emit.keyword?.length ?: 0 >= 3) {
+ *         if ((emit.keyword?.length ?: 0) >= 3) {
  *             return addEmit(emit)
  *         }
  *         return false
  *     }
  * }
  * ```
- *
- * ## 동작/계약
- * - 기본 [addEmit] 구현은 리스트에 append 후 `true`를 반환합니다.
  */
 internal abstract class AbstractStatefulEmitHandler: StatefulEmitHandler {
-    /**
-     * 수집된 Emit 리스트.
-     */
+    /** Accumulated emit list. */
     override val emits: MutableList<Emit> = mutableListOf()
 
     /**
-     * Emit을 리스트에 추가합니다.
+     * Appends [emit] to the list and returns `true`.
      *
-     * @param emit 추가할 Emit 객체
-     * @return 항상 true를 반환
+     * @param emit the emit to add
      */
     fun addEmit(emit: Emit): Boolean = emits.add(emit)
 }
 
 /**
- * 기본 StatefulEmitHandler 구현 클래스.
- *
- * 모든 Emit을 그대로 리스트에 저장합니다.
- *
- * ## 동작/계약
- * - 전달된 모든 Emit을 누락 없이 [emits]에 저장합니다.
+ * Default [StatefulEmitHandler] that stores every emit without filtering.
  */
 internal class DefaultEmitHandler: AbstractStatefulEmitHandler() {
-    /**
-     * Emit을 리스트에 추가합니다.
-     *
-     * @param emit 추가할 Emit 객체
-     * @return 항상 true를 반환
-     */
+    /** Appends [emit] to the list and returns `true`. */
     override fun emit(emit: Emit): Boolean = addEmit(emit)
 }
