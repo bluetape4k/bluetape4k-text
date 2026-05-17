@@ -3,6 +3,15 @@ package io.bluetape4k.tokenizer.model
 import io.bluetape4k.support.requireNotBlank
 
 /**
+ * Maximum number of characters accepted by the tokenize factory function.
+ *
+ * Callers that need a higher limit must construct [TokenizeRequest] directly and apply
+ * their own validation. This guard exists to protect library consumers that expose
+ * tokenize APIs over HTTP without an upstream input-length gate.
+ */
+const val MAX_TOKENIZE_TEXT_LENGTH: Int = 100_000
+
+/**
  * 형태소 분석 대상 텍스트와 옵션을 전달하는 요청 모델이다.
  *
  * ## 동작/계약
@@ -30,7 +39,13 @@ data class TokenizeRequest(
  *
  * ## 동작/계약
  * - `text.requireNotBlank("text")` 검증 후 `TokenizeRequest`를 생성한다.
+ * - `text.length > MAX_TOKENIZE_TEXT_LENGTH`이면 `IllegalArgumentException`을 던진다.
  * - 텍스트가 공백이면 검증 예외가 발생하고 인스턴스는 만들어지지 않는다.
+ *
+ * ## Input length
+ * The factory rejects inputs longer than [MAX_TOKENIZE_TEXT_LENGTH] characters.
+ * Callers that need a higher limit must construct [TokenizeRequest] directly and
+ * perform their own length validation before calling the tokenize processors.
  *
  * ```kotlin
  * val request = tokenizeRequestOf("비동기 처리", TokenizeOptions())
@@ -43,5 +58,8 @@ fun tokenizeRequestOf(
     options: TokenizeOptions = TokenizeOptions.DEFAULT,
 ): TokenizeRequest {
     text.requireNotBlank("text")
+    require(text.length <= MAX_TOKENIZE_TEXT_LENGTH) {
+        "text too long: ${text.length} chars (max $MAX_TOKENIZE_TEXT_LENGTH)"
+    }
     return TokenizeRequest(text, options)
 }
