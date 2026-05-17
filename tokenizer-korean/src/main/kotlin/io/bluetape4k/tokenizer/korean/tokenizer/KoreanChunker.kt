@@ -16,12 +16,6 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Space
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.URL
 import io.bluetape4k.tokenizer.korean.utils.TwitterCompatPatterns
 import io.bluetape4k.tokenizer.korean.utils.isSpaceChar
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.runBlocking
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -150,21 +144,21 @@ object KoreanChunker: KLogging() {
         }
     }
 
-    private fun splitBySpaceKeepingSpace(s: CharSequence): Flow<String> = flow {
+    private fun splitBySpaceKeepingSpace(s: CharSequence): Sequence<String> = sequence {
         val space = POS_PATTERNS[Space]!!
         val m = space.matcher(s)
         var index = 0
 
         while (m.find()) {
             if (index < m.start()) {
-                emit(s.subSequence(index, m.start()).toString())
+                yield(s.subSequence(index, m.start()).toString())
             }
-            emit(s.subSequence(m.start(), m.end()).toString())
+            yield(s.subSequence(m.start(), m.end()).toString())
             index = m.end()
         }
 
         if (index < s.length) {
-            emit(s.subSequence(index, s.length).toString())
+            yield(s.subSequence(index, s.length).toString())
         }
     }
 
@@ -298,15 +292,13 @@ object KoreanChunker: KLogging() {
         val tokens = mutableListOf<KoreanToken>()
         var i = 0
 
-        runBlocking(Dispatchers.Default) {
-            splitBySpaceKeepingSpace(s)
-                .flatMapConcat { splitChunks(it).asFlow() }
-                .collect { m ->
-                    val segStart = s.indexOf(m.text, i)
-                    tokens.add(0, KoreanToken(m.text, m.pos, segStart, m.text.length))
-                    i = segStart + m.text.length
-                }
-        }
+        splitBySpaceKeepingSpace(s)
+            .flatMap { splitChunks(it) }
+            .forEach { m ->
+                val segStart = s.indexOf(m.text, i)
+                tokens.add(0, KoreanToken(m.text, m.pos, segStart, m.text.length))
+                i = segStart + m.text.length
+            }
         return tokens.reversed()
     }
 }
