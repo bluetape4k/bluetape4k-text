@@ -22,6 +22,8 @@ import io.bluetape4k.tokenizer.utils.DictionaryProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /**
  * 토크나이저가 사용하는 한국어 사전과 파생 사전을 로드/조회합니다.
@@ -38,7 +40,7 @@ import kotlinx.coroutines.runBlocking
  */
 object KoreanDictionaryProvider: KLogging() {
 
-    private val dictionaryMutationLock = Any()
+    private val dictionaryMutationLock = ReentrantLock()
 
     /**
      * 한국어 사전 리소스의 루트 경로입니다.
@@ -119,7 +121,7 @@ object KoreanDictionaryProvider: KLogging() {
      * ```
      */
     fun addWordsToDictionary(pos: KoreanPos, words: Collection<String>) {
-        synchronized(dictionaryMutationLock) {
+        dictionaryMutationLock.withLock {
             koreanDictionary[pos]?.addAll(words)
         }
     }
@@ -139,7 +141,7 @@ object KoreanDictionaryProvider: KLogging() {
      */
     fun addWordsToDictionary(pos: KoreanPos, vararg words: String) {
         if (words.isNotEmpty()) {
-            synchronized(dictionaryMutationLock) {
+            dictionaryMutationLock.withLock {
                 koreanDictionary[pos]?.addAll(words)
             }
         }

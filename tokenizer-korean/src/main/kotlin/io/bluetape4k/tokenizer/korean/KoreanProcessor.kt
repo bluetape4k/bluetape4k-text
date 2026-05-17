@@ -187,14 +187,16 @@ object KoreanProcessor: KLogging() {
     }
 
     /**
-     * 금칙어 사전에서 단어를 제거합니다.
+     * Removes words from all dictionaries that [addBlockwords] writes to.
      *
-     * ## 동작/계약
-     * - `severity`에 해당하는 blockWords 사전(또는 포함 범위)에서 `removeAll(words)`를 수행한다.
+     * ## Behavior / Contract
+     * - Removes from the blockWords dictionary for the given [severity].
+     * - Also removes from [KoreanDictionaryProvider.koreanDictionary] `Noun` entry and
+     *   [KoreanDictionaryProvider.properNouns], mirroring [addBlockwords].
      *
      * ```kotlin
      * KoreanProcessor.removeBlockwords(listOf("금칙어"), Severity.HIGH)
-     * // removed from high dictionary
+     * // removed from blockWords, Noun dictionary, and properNouns
      * ```
      */
     fun removeBlockwords(
@@ -204,6 +206,8 @@ object KoreanProcessor: KLogging() {
         withBlockwordDictionary(severity) {
             removeAll(words)
         }
+        KoreanDictionaryProvider.koreanDictionary[KoreanPos.Noun]?.removeAll(words)
+        KoreanDictionaryProvider.properNouns.removeAll(words)
     }
 
     /**
