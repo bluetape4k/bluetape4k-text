@@ -37,7 +37,7 @@ Kotlin/JVM 텍스트 처리 라이브러리 — 한국어·일본어 형태소 �
 
 ## 아키텍처
 
-![Architecture 1](docs/images/readme-diagrams/root-readme-ko-diagram-01.svg)
+![Architecture 1](docs/images/readme-diagrams/root-readme-ko-diagram-01.png)
 
 ## 설치
 
