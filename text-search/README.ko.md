@@ -6,81 +6,7 @@ Kotlin/JVM용 Aho-Corasick 다중 키워드 검색 라이브러리입니다. N�
 
 ## 아키텍처
 
-```mermaid
-classDiagram
-    class AhoCorasickAutomaton~V~ {
-        -core: TrieCore
-        -values: Map~String, V~
-        +options: SearchOptions
-        +parseText(text): List~AhoCorasickMatch~V~~
-        +firstMatch(text): AhoCorasickMatch~V~?
-        +containsMatch(text): Boolean
-        +tokenize(text): List~SearchToken~V~~
-        +replaceAll(text, transform): String
-        +builder()$ Builder~V~
-    }
-
-    class Builder~V~ {
-        +add(keyword, value): Builder~V~
-        +addAll(map): Builder~V~
-        +options(opts): Builder~V~
-        +build(): AhoCorasickAutomaton~V~
-    }
-
-    class AhoCorasickBuilder~V~ {
-        +ignoreCase: Boolean
-        +allowOverlaps: Boolean
-        +wordBoundary: WordBoundary
-        +normalization: NormalizationForm
-        +stopOnFirstMatch: Boolean
-        +keyword(keyword, value)
-        +keywords(pairs)
-        +keywords(map)
-    }
-
-    class SearchOptions {
-        +ignoreCase: Boolean
-        +allowOverlaps: Boolean
-        +wordBoundary: WordBoundary
-        +normalization: NormalizationForm
-        +stopOnFirstMatch: Boolean
-    }
-
-    class AhoCorasickMatch~V~ {
-        +start: Int
-        +end: Int
-        +keyword: String
-        +value: V
-        +length: Int
-    }
-
-    class SearchToken~V~ {
-        <<sealed interface>>
-    }
-
-    class Match~V~ {
-        +text: String
-        +match: AhoCorasickMatch~V~
-    }
-
-    class Fragment {
-        +text: String
-    }
-
-    class TrieCore {
-        <<internal>>
-        +parseText(text): Collection~Emit~
-        +builder()$ TrieBuilder
-    }
-
-    AhoCorasickAutomaton --> SearchOptions
-    AhoCorasickAutomaton --> TrieCore
-    AhoCorasickAutomaton +-- Builder
-    AhoCorasickBuilder --> AhoCorasickAutomaton
-    SearchToken <|-- Match
-    SearchToken <|-- Fragment
-    Match --> AhoCorasickMatch
-```
+![아키텍처 1](../docs/images/readme-diagrams/text-search-ko-diagram-01.svg)
 
 ### 검색 파이프라인
 
@@ -109,15 +35,7 @@ sequenceDiagram
 
 ### 처리 흐름
 
-```mermaid
-flowchart LR
-    Input["입력 텍스트"] --> Normalize["유니코드 정규화\n(NFC / NFKC / NONE)"]
-    Normalize --> LowerCase["소문자 변환\n(ignoreCase=true)"]
-    LowerCase --> TrieSearch["Aho-Corasick\nTrieCore 검색"]
-    TrieSearch --> OffsetRestore["오프셋 복원\n(OffsetMapping)"]
-    OffsetRestore --> Filter["단어경계 &\n겹침 필터"]
-    Filter --> Output["List&lt;AhoCorasickMatch&lt;V&gt;&gt;"]
-```
+![처리 흐름 2](../docs/images/readme-diagrams/text-search-ko-diagram-02.svg)
 
 ## 주요 기능
 

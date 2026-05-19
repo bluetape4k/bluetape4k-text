@@ -6,53 +6,9 @@ A thin Kotlin DSL wrapper around `com.github.pemistahl:lingua` for language dete
 
 ## Architecture
 
-```mermaid
-flowchart TD
-    subgraph bluetape4k_lingua["bluetape4k-lingua"]
-        DSL["Detector DSL\nallLanguageDetector\nlanguageDetectorOf"]
-        MIXED["Mixed-language API\ndetectAllLanguagesOf(text)"]
-        UNICODE["Unicode helpers\nUnicodeDetector\nUnicodeSupport"]
-    end
+![Architecture 1](../docs/images/readme-diagrams/lingua-diagram-01.svg)
 
-    DSL --> UPSTREAM["Lingua LanguageDetectorBuilder"]
-    MIXED --> TOKENIZE["Unicode-letter tokenization"]
-    TOKENIZE --> DETECT["detectLanguageOf(token / phrase)"]
-    DETECT --> RESULT["Set&lt;Language&gt;"]
-    UNICODE --> SCRIPTS["Korean / Japanese / Chinese / Thai\ncharacter classification"]
-```
-
-```mermaid
-classDiagram
-    class LanguageDetectorBuilder
-    class LanguageDetector {
-        +detectLanguageOf(text) Language
-        +computeLanguageConfidenceValues(text) Map
-    }
-    class UnicodeDetector {
-        +filterString(text, locale) CharArray
-        +filterChar(char, locale) Char?
-        +containsAny(text, locale) Boolean
-        +containsAll(text, locale) Boolean
-    }
-    class UnicodeSupport {
-        <<extensions>>
-        +Char.isAscii Boolean
-        +Char.isLatin Boolean
-        +Char.isKorean Boolean
-        +Char.isJapanese Boolean
-        +Char.isChinese Boolean
-        +Char.isThai Boolean
-        +Char.isArabic Boolean
-    }
-    class LanguageDetectorExtensions {
-        <<extensions>>
-        +LanguageDetector.detectAllLanguagesOf(text) Set~Language~
-    }
-
-    LanguageDetectorBuilder --> LanguageDetector
-    LanguageDetector --> LanguageDetectorExtensions
-    UnicodeDetector --> UnicodeSupport
-```
+![Architecture 2](../docs/images/readme-diagrams/lingua-diagram-02.svg)
 
 ## Features
 

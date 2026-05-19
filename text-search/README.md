@@ -6,81 +6,7 @@ Aho-Corasick multi-keyword search library for Kotlin/JVM. Searches N keywords si
 
 ## Architecture
 
-```mermaid
-classDiagram
-    class AhoCorasickAutomaton~V~ {
-        -core: TrieCore
-        -values: Map~String, V~
-        +options: SearchOptions
-        +parseText(text): List~AhoCorasickMatch~V~~
-        +firstMatch(text): AhoCorasickMatch~V~?
-        +containsMatch(text): Boolean
-        +tokenize(text): List~SearchToken~V~~
-        +replaceAll(text, transform): String
-        +builder()$ Builder~V~
-    }
-
-    class Builder~V~ {
-        +add(keyword, value): Builder~V~
-        +addAll(map): Builder~V~
-        +options(opts): Builder~V~
-        +build(): AhoCorasickAutomaton~V~
-    }
-
-    class AhoCorasickBuilder~V~ {
-        +ignoreCase: Boolean
-        +allowOverlaps: Boolean
-        +wordBoundary: WordBoundary
-        +normalization: NormalizationForm
-        +stopOnFirstMatch: Boolean
-        +keyword(keyword, value)
-        +keywords(pairs)
-        +keywords(map)
-    }
-
-    class SearchOptions {
-        +ignoreCase: Boolean
-        +allowOverlaps: Boolean
-        +wordBoundary: WordBoundary
-        +normalization: NormalizationForm
-        +stopOnFirstMatch: Boolean
-    }
-
-    class AhoCorasickMatch~V~ {
-        +start: Int
-        +end: Int
-        +keyword: String
-        +value: V
-        +length: Int
-    }
-
-    class SearchToken~V~ {
-        <<sealed interface>>
-    }
-
-    class Match~V~ {
-        +text: String
-        +match: AhoCorasickMatch~V~
-    }
-
-    class Fragment {
-        +text: String
-    }
-
-    class TrieCore {
-        <<internal>>
-        +parseText(text): Collection~Emit~
-        +builder()$ TrieBuilder
-    }
-
-    AhoCorasickAutomaton --> SearchOptions
-    AhoCorasickAutomaton --> TrieCore
-    AhoCorasickAutomaton +-- Builder
-    AhoCorasickBuilder --> AhoCorasickAutomaton
-    SearchToken <|-- Match
-    SearchToken <|-- Fragment
-    Match --> AhoCorasickMatch
-```
+![Architecture 1](../docs/images/readme-diagrams/text-search-diagram-01.svg)
 
 ### Search Pipeline
 
@@ -109,15 +35,7 @@ sequenceDiagram
 
 ### Processing Flow
 
-```mermaid
-flowchart LR
-    Input["Input Text"] --> Normalize["Unicode Normalization\n(NFC / NFKC / NONE)"]
-    Normalize --> LowerCase["Lowercase\n(ignoreCase=true)"]
-    LowerCase --> TrieSearch["Aho-Corasick\nTrieCore Search"]
-    TrieSearch --> OffsetRestore["Offset Restore\n(OffsetMapping)"]
-    OffsetRestore --> Filter["WordBoundary\n& Overlap Filter"]
-    Filter --> Output["List&lt;AhoCorasickMatch&lt;V&gt;&gt;"]
-```
+![Processing Flow 2](../docs/images/readme-diagrams/text-search-diagram-02.svg)
 
 ## Features
 

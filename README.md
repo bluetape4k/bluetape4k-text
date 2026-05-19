@@ -43,24 +43,7 @@ and high-throughput keyword search.
 
 ## Architecture
 
-```mermaid
-graph TD
-    subgraph bluetape4k_text["bluetape4k-text"]
-        CORE["tokenizer-core\nModels · DictionaryProvider\nCharArraySet · Severity"]
-        KO["tokenizer-korean\nKoreanProcessor\nNormalizer · Tokenizer\nPhraseExtractor · Stemmer"]
-        JA["tokenizer-japanese\nJapaneseProcessor\nKuromoji IPAdic\nBlockword Masking"]
-        LINGUA["lingua\nLanguageDetector DSL\ndetectAllLanguagesOf()\nUnicodeDetector"]
-        SEARCH["text-search\nAhoCorasickAutomaton\nFlow · replaceAll · tokenize"]
-    end
-
-    KO --> CORE
-    JA --> CORE
-    LINGUA --> UPSTREAM["com.github.pemistahl:lingua"]
-    SEARCH --> CORE2["bluetape4k-core"]
-
-    KO --> ECLIPSE["eclipse-collections"]
-    JA --> KUROMOJI["kuromoji-ipadic"]
-```
+![Architecture 1](docs/images/readme-diagrams/root-readme-en-diagram-01.svg)
 
 ## Installation
 

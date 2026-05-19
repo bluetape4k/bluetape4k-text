@@ -7,23 +7,7 @@
 
 ## Architecture
 
-```mermaid
-graph TB
-    Consumer[소비 프로젝트]
-    BOM[bluetape4k-text-bom<br/>java-platform]
-    TC[tokenizer-core]
-    TK[tokenizer-korean]
-    TJ[tokenizer-japanese]
-    TS[text-search<br/>Aho-Corasick]
-    LG[lingua<br/>언어 감지]
-
-    Consumer -->|platform import| BOM
-    BOM -.->|버전 constraint| TC
-    BOM -.->|버전 constraint| TK
-    BOM -.->|버전 constraint| TJ
-    BOM -.->|버전 constraint| TS
-    BOM -.->|버전 constraint| LG
-```
+![Architecture 1](../docs/images/readme-diagrams/bom-ko-diagram-01.svg)
 
 BOM은 Gradle `java-platform` 으로 `<dependencyManagement>` constraint 만 게시한다.
 
