@@ -6,7 +6,7 @@
 
 ## 아키텍처
 
-![Architecture 1](../docs/images/readme-diagrams/tokenizer-japanese-ko-diagram-01.svg)
+![Architecture 1](../docs/images/readme-diagrams/tokenizer-japanese-ko-diagram-01.png)
 
 ## 주요 기능
 

@@ -6,7 +6,7 @@ bluetape4k 생태계에서 텍스트 토크나이저와 금칙어 처리기를 �
 
 ## 아키텍처
 
-![Architecture 1](../docs/images/readme-diagrams/tokenizer-core-ko-diagram-01.svg)
+![Architecture 1](../docs/images/readme-diagrams/tokenizer-core-ko-diagram-01.png)
 
 ## 주요 기능
 

@@ -6,9 +6,9 @@ A thin Kotlin DSL wrapper around `com.github.pemistahl:lingua` for language dete
 
 ## Architecture
 
-![Architecture 1](../docs/images/readme-diagrams/lingua-diagram-01.svg)
+![Architecture 1](../docs/images/readme-diagrams/lingua-diagram-01.png)
 
-![Architecture 2](../docs/images/readme-diagrams/lingua-diagram-02.svg)
+![Architecture 2](../docs/images/readme-diagrams/lingua-diagram-02.png)
 
 ## Features
 

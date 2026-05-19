@@ -6,9 +6,9 @@
 
 ## 아키텍처
 
-![Architecture 1](../docs/images/readme-diagrams/lingua-ko-diagram-01.svg)
+![Architecture 1](../docs/images/readme-diagrams/lingua-ko-diagram-01.png)
 
-![Architecture 2](../docs/images/readme-diagrams/lingua-ko-diagram-02.svg)
+![Architecture 2](../docs/images/readme-diagrams/lingua-ko-diagram-02.png)
 
 ## 주요 기능
 
