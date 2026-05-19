@@ -37,24 +37,7 @@ Kotlin/JVM 텍스트 처리 라이브러리 — 한국어·일본어 형태소 �
 
 ## 아키텍처
 
-```mermaid
-graph TD
-    subgraph bluetape4k_text["bluetape4k-text"]
-        CORE["tokenizer-core\n모델 · DictionaryProvider\nCharArraySet · Severity"]
-        KO["tokenizer-korean\nKoreanProcessor\n정규화 · 형태소 분석\n구 추출 · 어간 추출"]
-        JA["tokenizer-japanese\nJapaneseProcessor\nKuromoji IPAdic\n금칙어 마스킹"]
-        LINGUA["lingua\nLanguageDetector DSL\ndetectAllLanguagesOf()\nUnicodeDetector"]
-        SEARCH["text-search\nAhoCorasickAutomaton\nFlow · replaceAll · tokenize"]
-    end
-
-    KO --> CORE
-    JA --> CORE
-    LINGUA --> UPSTREAM["com.github.pemistahl:lingua"]
-    SEARCH --> CORE2["bluetape4k-core"]
-
-    KO --> ECLIPSE["eclipse-collections"]
-    JA --> KUROMOJI["kuromoji-ipadic"]
-```
+![Architecture diagram](docs/assets/readme-diagrams/bluetape4k-text-architecture-01.png)
 
 ## 설치
 
