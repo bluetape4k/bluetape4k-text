@@ -6,7 +6,7 @@ Korean NLP library for morphological analysis, normalization, phrase extraction,
 
 ## Architecture
 
-![Architecture diagram](../docs/images/readme-diagrams/tokenizer-korean-class-01.png)
+![tokenizer korean Class Structure diagram](../docs/images/readme-diagrams/tokenizer-korean-class-01.png)
 
 ## Features
 

@@ -37,7 +37,7 @@ Kotlin/JVM 텍스트 처리 라이브러리 — 한국어·일본어 형태소 �
 
 ## 아키텍처
 
-![Architecture diagram](docs/assets/readme-diagrams/bluetape4k-text-architecture-01.png)
+![text Architecture diagram](docs/assets/readme-diagrams/bluetape4k-text-architecture-01.png)
 
 ## 설치
 

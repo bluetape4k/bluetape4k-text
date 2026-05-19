@@ -6,7 +6,7 @@ Aho-Corasick multi-keyword search library for Kotlin/JVM. Searches N keywords si
 
 ## Architecture
 
-![Architecture diagram](../docs/images/readme-diagrams/text-search-class-01.png)
+![text search Class Structure diagram](../docs/images/readme-diagrams/text-search-class-01.png)
 
 ### Search Pipeline
 

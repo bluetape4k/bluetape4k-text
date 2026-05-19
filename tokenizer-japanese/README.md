@@ -6,7 +6,7 @@ Japanese morphological analysis and blockword filtering library powered by Kurom
 
 ## Architecture
 
-![Architecture diagram](../docs/images/readme-diagrams/tokenizer-japanese-class-01.png)
+![tokenizer japanese Class Structure diagram](../docs/images/readme-diagrams/tokenizer-japanese-class-01.png)
 
 ## Features
 
