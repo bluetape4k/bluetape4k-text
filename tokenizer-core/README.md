@@ -6,7 +6,7 @@ Core abstractions, domain models, and utilities for building text tokenizers and
 
 ## Architecture
 
-![Architecture diagram](../docs/images/readme-diagrams/tokenizer-core-class-01.png)
+![tokenizer core Class Structure diagram](../docs/images/readme-diagrams/tokenizer-core-class-01.png)
 
 ## Features
 

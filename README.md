@@ -43,7 +43,7 @@ and high-throughput keyword search.
 
 ## Architecture
 
-![Architecture diagram](docs/assets/readme-diagrams/bluetape4k-text-architecture-01.png)
+![text Architecture diagram](docs/assets/readme-diagrams/bluetape4k-text-architecture-01.png)
 
 ## Installation
 

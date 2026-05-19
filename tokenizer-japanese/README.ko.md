@@ -6,7 +6,7 @@
 
 ## 아키텍처
 
-![Architecture diagram](../docs/images/readme-diagrams/tokenizer-japanese-class-01.png)
+![tokenizer japanese Class Structure diagram](../docs/images/readme-diagrams/tokenizer-japanese-class-01.png)
 
 ## 주요 기능
 

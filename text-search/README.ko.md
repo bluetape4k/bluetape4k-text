@@ -6,15 +6,15 @@ Kotlin/JVM용 Aho-Corasick 다중 키워드 검색 라이브러리입니다. N�
 
 ## 아키텍처
 
-![Architecture diagram](../docs/images/readme-diagrams/text-search-class-01.png)
+![text search Class Structure diagram](../docs/images/readme-diagrams/text-search-class-01.png)
 
 ### 검색 파이프라인
 
-![Search diagram](../docs/images/readme-diagrams/text-search-sequence-02.png)
+![text search Sequence Flow 2 diagram](../docs/images/readme-diagrams/text-search-sequence-02.png)
 
 ### 처리 흐름
 
-![Processing diagram](../docs/images/readme-diagrams/text-search-architecture-03.png)
+![text search Architecture 3 diagram](../docs/images/readme-diagrams/text-search-architecture-03.png)
 
 ## 주요 기능
 
