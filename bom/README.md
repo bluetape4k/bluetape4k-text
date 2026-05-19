@@ -8,23 +8,7 @@ individual versions.
 
 ## Architecture
 
-```mermaid
-graph TB
-    Consumer[Consumer Project]
-    BOM[bluetape4k-text-bom<br/>java-platform]
-    TC[tokenizer-core]
-    TK[tokenizer-korean]
-    TJ[tokenizer-japanese]
-    TS[text-search<br/>Aho-Corasick]
-    LG[lingua<br/>language detection]
-
-    Consumer -->|platform import| BOM
-    BOM -.->|version constraints| TC
-    BOM -.->|version constraints| TK
-    BOM -.->|version constraints| TJ
-    BOM -.->|version constraints| TS
-    BOM -.->|version constraints| LG
-```
+![Architecture diagram](../docs/images/readme-diagrams/bom-architecture-01.png)
 
 The BOM is a Gradle `java-platform` that publishes only `<dependencyManagement>` constraints — no runtime classes.
 

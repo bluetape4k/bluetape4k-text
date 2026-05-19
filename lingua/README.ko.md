@@ -6,53 +6,9 @@
 
 ## 아키텍처
 
-```mermaid
-flowchart TD
-    subgraph bluetape4k_lingua["bluetape4k-lingua"]
-        DSL["Detector DSL\nallLanguageDetector\nlanguageDetectorOf"]
-        MIXED["혼합 언어 API\ndetectAllLanguagesOf(text)"]
-        UNICODE["Unicode 헬퍼\nUnicodeDetector\nUnicodeSupport"]
-    end
+![Architecture diagram](../docs/images/readme-diagrams/lingua-architecture-01.png)
 
-    DSL --> UPSTREAM["Lingua LanguageDetectorBuilder"]
-    MIXED --> TOKENIZE["Unicode letter 토큰화"]
-    TOKENIZE --> DETECT["detectLanguageOf(token / phrase)"]
-    DETECT --> RESULT["Set&lt;Language&gt;"]
-    UNICODE --> SCRIPTS["한글 / 일본어 / 중국어 / 태국어\n문자 분류"]
-```
-
-```mermaid
-classDiagram
-    class LanguageDetectorBuilder
-    class LanguageDetector {
-        +detectLanguageOf(text) Language
-        +computeLanguageConfidenceValues(text) Map
-    }
-    class UnicodeDetector {
-        +filterString(text, locale) CharArray
-        +filterChar(char, locale) Char?
-        +containsAny(text, locale) Boolean
-        +containsAll(text, locale) Boolean
-    }
-    class UnicodeSupport {
-        <<extensions>>
-        +Char.isAscii Boolean
-        +Char.isLatin Boolean
-        +Char.isKorean Boolean
-        +Char.isJapanese Boolean
-        +Char.isChinese Boolean
-        +Char.isThai Boolean
-        +Char.isArabic Boolean
-    }
-    class LanguageDetectorExtensions {
-        <<extensions>>
-        +LanguageDetector.detectAllLanguagesOf(text) Set~Language~
-    }
-
-    LanguageDetectorBuilder --> LanguageDetector
-    LanguageDetector --> LanguageDetectorExtensions
-    UnicodeDetector --> UnicodeSupport
-```
+![Architecture diagram](../docs/images/readme-diagrams/lingua-class-02.png)
 
 ## 주요 기능
 

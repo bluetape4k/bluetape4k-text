@@ -6,70 +6,7 @@ Japanese morphological analysis and blockword filtering library powered by Kurom
 
 ## Architecture
 
-```mermaid
-classDiagram
-    class JapaneseProcessor {
-        <<object>>
-        +tokenize(text) List~Token~
-        +filter(tokens, predicate) List~Token~
-        +filterNoun(tokens) List~Token~
-        +findBlockwords(text) List~Token~
-        +maskBlockwords(request) BlockwordResponse
-        +addBlockwords(words)
-        +removeBlockwords(words)
-        +clearBlockwords()
-    }
-
-    class JapaneseTokenizer {
-        <<object>>
-        -tokenizer: Tokenizer
-        +tokenize(text) List~Token~
-        +filter(tokens, predicate) List~Token~
-        +filterNoun(tokens) List~Token~
-    }
-
-    class JapaneseBlockwordProcessor {
-        <<object>>
-        +findBlockwords(text) List~Token~
-        +maskBlockwords(request) BlockwordResponse
-    }
-
-    class JapaneseDictionaryProvider {
-        <<object>>
-        +BASE_PATH: String
-        +blockWordDictionary: CharArraySet
-        +readWordsAsSet(paths) MutableSet~String~
-        +readWords(paths) CharArraySet
-        +addBlockwords(words)
-        +removeBlockwords(words)
-        +clearBlockwords()
-    }
-
-    class TokenBase {
-        <<Kuromoji>>
-        +surface: String
-        +position: Int
-        +allFeaturesArray: Array~String~
-    }
-
-    class TokenBaseSupport {
-        <<extensions>>
-        +isNoun() Boolean
-        +isVerb() Boolean
-        +isNounOrVerb() Boolean
-        +isAdjective() Boolean
-        +isJosa() Boolean
-        +isPunctuation() Boolean
-    }
-
-    JapaneseProcessor --> JapaneseTokenizer
-    JapaneseProcessor --> JapaneseBlockwordProcessor
-    JapaneseProcessor --> JapaneseDictionaryProvider
-    JapaneseBlockwordProcessor --> JapaneseTokenizer
-    JapaneseBlockwordProcessor --> JapaneseDictionaryProvider
-    JapaneseTokenizer --> TokenBase
-    TokenBase <.. TokenBaseSupport : extends via
-```
+![Architecture diagram](../docs/images/readme-diagrams/tokenizer-japanese-class-01.png)
 
 ## Features
 
