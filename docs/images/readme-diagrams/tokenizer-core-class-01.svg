@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1754" height="1252" viewBox="0 0 1754 1252" role="img" aria-label="tokenizer core Class Structure">
+<svg xmlns="http://www.w3.org/2000/svg" width="1754" height="1327" viewBox="0 0 1754 1327" role="img" aria-label="tokenizer core Class Structure">
 <defs>
   <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#1f2937" flood-opacity="0.10"/></filter>
   <marker id="openArrow" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 10 5 L 1 9" fill="none" stroke="#758297" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
@@ -20,105 +20,108 @@
     .implLine{stroke:#758297;stroke-width:2.2;stroke-dasharray:8 7;fill:none;marker-end:url(#inherit)}
   </style>
 </defs>
-<rect class="canvas" width="1754" height="1252"/>
-<rect class="frame" x="32" y="28" width="1690" height="1196" rx="28"/>
+<rect class="canvas" width="1754" height="1327"/>
+<rect class="frame" x="32" y="28" width="1690" height="1271" rx="28"/>
 <text class="title" x="66" y="82">tokenizer core Class Structure</text>
 <text class="subtitle" x="70" y="118">UML classes from the original Mermaid source</text>
-<path class="line" d="M672 832 C672 912 262 912 262 992"/>
-<path class="line" d="M672 172 C672 276 1492 276 1492 380"/>
-<path class="line" d="M262 832 C262 606 672 606 672 380"/>
-<path class="line" d="M1082 832 C1082 765 672 765 672 698"/>
-<path class="inheritLine" d="M672 832 C672 570 262 570 262 308"/>
-<path class="inheritLine" d="M262 832 C262 570 262 570 262 308"/>
-<path class="inheritLine" d="M1492 832 C1492 570 262 570 262 308"/>
-<path class="inheritLine" d="M1082 832 C1082 570 262 570 262 308"/>
+<path class="line" d="M672 903 C672 988 262 988 262 1073"/>
+<path class="line" d="M672 172 C672 278 1492 278 1492 384"/>
+<path class="line" d="M262 903 C262 643.5 672 643.5 672 384"/>
+<path class="line" d="M1082 903 C1082 836 672 836 672 769"/>
+<path class="inheritLine" d="M672 903 C672 612 262 612 262 321"/>
+<path class="inheritLine" d="M262 903 C262 612 262 612 262 321"/>
+<path class="inheritLine" d="M1492 903 C1492 612 262 612 262 321"/>
+<path class="inheritLine" d="M1082 903 C1082 612 262 612 262 321"/>
 <g transform="translate(92,180)">
-  <rect class="card" x="0" y="0" width="340" height="120" rx="5" fill="#E8F3FF" stroke="#5B8DEF"/>
+  <rect class="card" x="0" y="0" width="340" height="133" rx="5" fill="#E8F3FF" stroke="#5B8DEF"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#5B8DEF"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="57" text-anchor="middle">AbstractMessage</text>
+  <text class="label" x="170" y="61" text-anchor="middle">AbstractMessage</text>
   <text class="mono" x="18" y="108">+timestamp: Long</text>
 </g>
 <g transform="translate(502,180)">
-  <rect class="card" x="0" y="0" width="340" height="192" rx="5" fill="#EAF7EF" stroke="#58A978"/>
+  <rect class="card" x="0" y="0" width="340" height="196" rx="5" fill="#EAF7EF" stroke="#58A978"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#58A978"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="57" text-anchor="middle">BlockwordOptions</text>
+  <text class="label" x="170" y="61" text-anchor="middle">BlockwordOptions</text>
   <text class="mono" x="18" y="108">+mask: String</text>
-<text class="mono" x="18" y="132">+locale: Locale</text>
-<text class="mono" x="18" y="156">+severity: Severity</text>
-<text class="mono" x="18" y="180">+DEFAULT: BlockwordOptions$</text>
+<text class="mono" x="18" y="129">+locale: Locale</text>
+<text class="mono" x="18" y="150">+severity: Severity</text>
+<text class="mono" x="18" y="171">+DEFAULT: BlockwordOptions$</text>
 </g>
 <g transform="translate(912,180)">
-  <rect class="card" x="0" y="0" width="340" height="240" rx="5" fill="#FFF3D9" stroke="#D6A441"/>
+  <rect class="card" x="0" y="0" width="340" height="301" rx="5" fill="#FFF3D9" stroke="#D6A441"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#D6A441"/>
   <text class="small" x="170" y="26" text-anchor="middle">«object»</text>
-  <text class="label" x="170" y="57" text-anchor="middle">DictionaryProvider</text>
+  <text class="label" x="170" y="61" text-anchor="middle">DictionaryProvider</text>
   <text class="mono" x="18" y="108">+readStreamByLine(stream) Sequence~String~</text>
-<text class="mono" x="18" y="132">+readFileByLineFromResources(path) Sequence~String~</text>
-<text class="mono" x="18" y="156">+readWordFreqs(path) Map~CharSequence, Float~</text>
-<text class="mono" x="18" y="180">+readWordMap(filename) Sequence~Pair~</text>
-<text class="mono" x="18" y="204">+readWordsAsSequence(filename) Sequence~String~</text>
-<text class="mono" x="18" y="228">+readWordsAsSet(paths) MutableSet~String~</text>
+<text class="mono" x="18" y="129">+readFileByLineFromResources(path)</text>
+<text class="mono" x="18" y="150">Sequence~String~</text>
+<text class="mono" x="18" y="171">+readWordFreqs(path) Map~CharSequence,</text>
+<text class="mono" x="18" y="192">Float~</text>
+<text class="mono" x="18" y="213">+readWordMap(filename) Sequence~Pair~</text>
+<text class="mono" x="18" y="234">+readWordsAsSequence(filename)</text>
+<text class="mono" x="18" y="255">Sequence~String~</text>
+<text class="mono" x="18" y="276">+readWordsAsSet(paths) MutableSet~String~</text>
 </g>
 <g transform="translate(1322,180)">
-  <rect class="card" x="0" y="0" width="340" height="192" rx="5" fill="#FDECEF" stroke="#DC6B82"/>
+  <rect class="card" x="0" y="0" width="340" height="196" rx="5" fill="#FDECEF" stroke="#DC6B82"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#DC6B82"/>
   <text class="small" x="170" y="26" text-anchor="middle">«enumeration»</text>
-  <text class="label" x="170" y="57" text-anchor="middle">Severity</text>
+  <text class="label" x="170" y="61" text-anchor="middle">Severity</text>
   <text class="mono" x="18" y="108">LOW</text>
-<text class="mono" x="18" y="132">MIDDLE</text>
-<text class="mono" x="18" y="156">HIGH</text>
-<text class="mono" x="18" y="180">DEFAULT$</text>
+<text class="mono" x="18" y="129">MIDDLE</text>
+<text class="mono" x="18" y="150">HIGH</text>
+<text class="mono" x="18" y="171">DEFAULT$</text>
 </g>
-<g transform="translate(502,546)">
-  <rect class="card" x="0" y="0" width="340" height="144" rx="5" fill="#E9F7F6" stroke="#45A7A1"/>
+<g transform="translate(502,607)">
+  <rect class="card" x="0" y="0" width="340" height="154" rx="5" fill="#E9F7F6" stroke="#45A7A1"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#45A7A1"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="57" text-anchor="middle">TokenizeOptions</text>
+  <text class="label" x="170" y="61" text-anchor="middle">TokenizeOptions</text>
   <text class="mono" x="18" y="108">+locale: Locale</text>
-<text class="mono" x="18" y="132">+DEFAULT: TokenizeOptions$</text>
+<text class="mono" x="18" y="129">+DEFAULT: TokenizeOptions$</text>
 </g>
-<g transform="translate(912,546)">
-  <rect class="card" x="0" y="0" width="340" height="144" rx="5" fill="#F1ECFF" stroke="#8A72D6"/>
+<g transform="translate(912,607)">
+  <rect class="card" x="0" y="0" width="340" height="154" rx="5" fill="#F1ECFF" stroke="#8A72D6"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#8A72D6"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="57" text-anchor="middle">TokenizerException</text>
+  <text class="label" x="170" y="61" text-anchor="middle">TokenizerException</text>
   <text class="mono" x="18" y="108">+message: String</text>
-<text class="mono" x="18" y="132">+cause: Throwable</text>
+<text class="mono" x="18" y="129">+cause: Throwable</text>
 </g>
-<g transform="translate(92,840)">
-  <rect class="card" x="0" y="0" width="340" height="144" rx="5" fill="#F7F1E7" stroke="#B88A44"/>
+<g transform="translate(92,911)">
+  <rect class="card" x="0" y="0" width="340" height="154" rx="5" fill="#F7F1E7" stroke="#B88A44"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#B88A44"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="57" text-anchor="middle">BlockwordRequest</text>
+  <text class="label" x="170" y="61" text-anchor="middle">BlockwordRequest</text>
   <text class="mono" x="18" y="108">+text: String</text>
-<text class="mono" x="18" y="132">+options: BlockwordOptions</text>
+<text class="mono" x="18" y="129">+options: BlockwordOptions</text>
 </g>
-<g transform="translate(502,840)">
-  <rect class="card" x="0" y="0" width="340" height="192" rx="5" fill="#EEF6D9" stroke="#8BA84D"/>
+<g transform="translate(502,911)">
+  <rect class="card" x="0" y="0" width="340" height="196" rx="5" fill="#EEF6D9" stroke="#8BA84D"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#8BA84D"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="57" text-anchor="middle">BlockwordResponse</text>
+  <text class="label" x="170" y="61" text-anchor="middle">BlockwordResponse</text>
   <text class="mono" x="18" y="108">+request: BlockwordRequest</text>
-<text class="mono" x="18" y="132">+maskedText: String</text>
-<text class="mono" x="18" y="156">+blockWords: List~String~</text>
-<text class="mono" x="18" y="180">+blockwordExists: Boolean</text>
+<text class="mono" x="18" y="129">+maskedText: String</text>
+<text class="mono" x="18" y="150">+blockWords: List~String~</text>
+<text class="mono" x="18" y="171">+blockwordExists: Boolean</text>
 </g>
-<g transform="translate(912,840)">
-  <rect class="card" x="0" y="0" width="340" height="144" rx="5" fill="#E8F3FF" stroke="#5B8DEF"/>
+<g transform="translate(912,911)">
+  <rect class="card" x="0" y="0" width="340" height="154" rx="5" fill="#E8F3FF" stroke="#5B8DEF"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#5B8DEF"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="57" text-anchor="middle">TokenizeRequest</text>
+  <text class="label" x="170" y="61" text-anchor="middle">TokenizeRequest</text>
   <text class="mono" x="18" y="108">+text: String</text>
-<text class="mono" x="18" y="132">+options: TokenizeOptions</text>
+<text class="mono" x="18" y="129">+options: TokenizeOptions</text>
 </g>
-<g transform="translate(1322,840)">
-  <rect class="card" x="0" y="0" width="340" height="144" rx="5" fill="#EAF7EF" stroke="#58A978"/>
+<g transform="translate(1322,911)">
+  <rect class="card" x="0" y="0" width="340" height="154" rx="5" fill="#EAF7EF" stroke="#58A978"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#58A978"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="57" text-anchor="middle">TokenizeResponse</text>
+  <text class="label" x="170" y="61" text-anchor="middle">TokenizeResponse</text>
   <text class="mono" x="18" y="108">+text: String</text>
-<text class="mono" x="18" y="132">+tokens: List~String~</text>
+<text class="mono" x="18" y="129">+tokens: List~String~</text>
 </g>
 </svg>
