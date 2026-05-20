@@ -31,6 +31,16 @@ and high-throughput keyword search.
 - **Aho-Corasick search** — immutable automata, DSL builder, replacement, word
   boundary handling, and Kotlin Flow matching.
 
+<!-- README_VISUAL_OVERVIEW:START -->
+## Overview Diagram
+
+![Bluetape4k Text overview diagram](docs/assets/readme-diagrams/root-readme-overview-01.png)
+
+## Module Composition Chart
+
+![Bluetape4k Text module composition chart](docs/assets/readme-charts/root-readme-module-chart-01.png)
+<!-- README_VISUAL_OVERVIEW:END -->
+
 ## Modules
 
 | Module | Description | Artifact |
