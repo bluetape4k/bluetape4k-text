@@ -25,6 +25,16 @@ Kotlin/JVM 텍스트 처리 라이브러리 — 한국어·일본어 형태소 �
 - **언어 감지** — Lingua 기반 detector factory와 혼합 언어 감지 helper
 - **Aho-Corasick 검색** — 불변 automaton, DSL builder, replacement, word boundary, Kotlin Flow matching
 
+<!-- README_VISUAL_OVERVIEW:START -->
+## Overview Diagram
+
+![Bluetape4k Text overview diagram](docs/assets/readme-diagrams/root-readme-overview-01.png)
+
+## Module Composition Chart
+
+![Bluetape4k Text module composition chart](docs/assets/readme-charts/root-readme-module-chart-01.png)
+<!-- README_VISUAL_OVERVIEW:END -->
+
 ## 모듈
 
 | 모듈 | 설명 | 아티팩트 |
