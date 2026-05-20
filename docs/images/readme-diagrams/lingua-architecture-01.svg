@@ -24,11 +24,11 @@
 <rect class="frame" x="32" y="28" width="980" height="636" rx="28"/>
 <text class="title" x="66" y="82">lingua Architecture</text>
 <text class="subtitle" x="70" y="118">Architecture nodes and edges from the original Mermaid source</text>
-<path class="line" d="M856 220 C856 386 689 386 689 552"/>
-<path class="line" d="M856 386 C856 469 355 469 355 552"/>
-<path class="line" d="M522 386 C522 386 856 386 856 386"/>
-<path class="line" d="M522 220 C522 303 522 303 522 386"/>
-<path class="line" d="M188 220 C188 303 188 303 188 386"/>
+<path class="line" d="M856 280 C856 386 689 386 689 492"/>
+<path class="line" d="M706 386 C706 469 505 469 505 552"/>
+<path class="line" d="M672 386 C672 386 706 386 706 386"/>
+<path class="line" d="M522 280 C522 303 522 303 522 326"/>
+<path class="line" d="M188 280 C188 303 188 303 188 326"/>
 <g transform="translate(48,170)">
   <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
   <text class="smallLabel" x="140" y="21" text-anchor="middle">Detector DSL</text>
@@ -49,8 +49,8 @@
 </g>
 <g transform="translate(48,336)">
   <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
-  <text class="smallLabel" x="140" y="33" text-anchor="middle">Lingua</text>
-<text class="smallLabel" x="140" y="59" text-anchor="middle">LanguageDetectorBuilder</text>
+  <text class="smallLabel" x="140" y="33" text-anchor="middle">Lingua Language</text>
+<text class="smallLabel" x="140" y="59" text-anchor="middle">Detector Builder</text>
 </g>
 <g transform="translate(382,336)">
   <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
@@ -59,8 +59,8 @@
 </g>
 <g transform="translate(716,336)">
   <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
-  <text class="smallLabel" x="140" y="33" text-anchor="middle">detectLanguageOf(token /</text>
-<text class="smallLabel" x="140" y="59" text-anchor="middle">phrase)</text>
+  <text class="smallLabel" x="140" y="33" text-anchor="middle">detect Language</text>
+<text class="smallLabel" x="140" y="59" text-anchor="middle">Of(token / phrase)</text>
 </g>
 <g transform="translate(215,502)">
   <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#F7F1E7" stroke="#B88A44"/>
@@ -69,7 +69,7 @@
 <g transform="translate(549,502)">
   <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#EEF6D9" stroke="#8BA84D"/>
   <text class="smallLabel" x="140" y="21" text-anchor="middle">Korean / Japanese /</text>
-<text class="smallLabel" x="140" y="47" text-anchor="middle">Chinese / Thai character</text>
-<text class="smallLabel" x="140" y="73" text-anchor="middle">classification</text>
+<text class="smallLabel" x="140" y="47" text-anchor="middle">Chinese / Thai</text>
+<text class="smallLabel" x="140" y="73" text-anchor="middle">character</text>
 </g>
 </svg>

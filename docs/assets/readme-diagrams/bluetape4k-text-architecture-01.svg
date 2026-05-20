@@ -24,23 +24,23 @@
 <rect class="frame" x="32" y="28" width="980" height="636" rx="28"/>
 <text class="title" x="66" y="82">text Architecture</text>
 <text class="subtitle" x="70" y="118">Architecture nodes and edges from the original Mermaid source</text>
-<path class="line" d="M856 220 C856 386 856 386 856 552"/>
-<path class="line" d="M522 220 C522 386 522 386 522 552"/>
-<path class="line" d="M522 386 C522 469 188 469 188 552"/>
-<path class="line" d="M188 386 C188 386 856 386 856 386"/>
-<path class="line" d="M856 220 C856 220 188 220 188 220"/>
-<path class="line" d="M522 220 C522 220 188 220 188 220"/>
+<path class="line" d="M856 280 C856 386 856 386 856 492"/>
+<path class="line" d="M522 280 C522 386 522 386 522 492"/>
+<path class="line" d="M372 386 C372 469 338 469 338 552"/>
+<path class="line" d="M338 386 C338 386 706 386 706 386"/>
+<path class="line" d="M706 220 C706 220 338 220 338 220"/>
+<path class="line" d="M372 220 C372 220 338 220 338 220"/>
 <g transform="translate(48,170)">
   <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#E8F3FF" stroke="#5B8DEF"/>
-  <text class="smallLabel" x="140" y="21" text-anchor="middle">tokenizer-core Models ·</text>
-<text class="smallLabel" x="140" y="47" text-anchor="middle">DictionaryProvider</text>
-<text class="smallLabel" x="140" y="73" text-anchor="middle">CharArraySet · Severity</text>
+  <text class="smallLabel" x="140" y="21" text-anchor="middle">tokenizer-core</text>
+<text class="smallLabel" x="140" y="47" text-anchor="middle">Models ·</text>
+<text class="smallLabel" x="140" y="73" text-anchor="middle">DictionaryProvider</text>
 </g>
 <g transform="translate(382,170)">
   <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#EAF7EF" stroke="#58A978"/>
   <text class="smallLabel" x="140" y="21" text-anchor="middle">tokenizer-korean</text>
 <text class="smallLabel" x="140" y="47" text-anchor="middle">KoreanProcessor</text>
-<text class="smallLabel" x="140" y="73" text-anchor="middle">Normalizer · Tokenizer</text>
+<text class="smallLabel" x="140" y="73" text-anchor="middle">Normalizer ·</text>
 </g>
 <g transform="translate(716,170)">
   <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#FFF3D9" stroke="#D6A441"/>
@@ -50,9 +50,9 @@
 </g>
 <g transform="translate(48,336)">
   <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#FDECEF" stroke="#DC6B82"/>
-  <text class="smallLabel" x="140" y="21" text-anchor="middle">lingua LanguageDetector</text>
-<text class="smallLabel" x="140" y="47" text-anchor="middle">DSL</text>
-<text class="smallLabel" x="140" y="73" text-anchor="middle">detectAllLanguagesOf()</text>
+  <text class="smallLabel" x="140" y="21" text-anchor="middle">lingua</text>
+<text class="smallLabel" x="140" y="47" text-anchor="middle">LanguageDetector DSL</text>
+<text class="smallLabel" x="140" y="73" text-anchor="middle">detect All Languages</text>
 </g>
 <g transform="translate(382,336)">
   <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#E9F7F6" stroke="#45A7A1"/>
@@ -62,7 +62,8 @@
 </g>
 <g transform="translate(716,336)">
   <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#F1ECFF" stroke="#8A72D6"/>
-  <text class="smallLabel" x="140" y="45" text-anchor="middle">com.github.pemistahl:lingua</text>
+  <text class="smallLabel" x="140" y="33" text-anchor="middle">com.github.pemistahl</text>
+<text class="smallLabel" x="140" y="59" text-anchor="middle">:lingua</text>
 </g>
 <g transform="translate(48,502)">
   <rect class="card" x="0" y="0" width="280" height="100" rx="14" fill="#F7F1E7" stroke="#B88A44"/>

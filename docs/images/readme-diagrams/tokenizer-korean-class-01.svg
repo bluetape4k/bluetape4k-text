@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1754" height="1006" viewBox="0 0 1754 1006" role="img" aria-label="tokenizer korean Class Structure">
+<svg xmlns="http://www.w3.org/2000/svg" width="1754" height="1065" viewBox="0 0 1754 1065" role="img" aria-label="tokenizer korean Class Structure">
 <defs>
   <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#1f2937" flood-opacity="0.10"/></filter>
   <marker id="openArrow" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 10 5 L 1 9" fill="none" stroke="#758297" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
@@ -20,96 +20,100 @@
     .implLine{stroke:#758297;stroke-width:2.2;stroke-dasharray:8 7;fill:none;marker-end:url(#inherit)}
   </style>
 </defs>
-<rect class="canvas" width="1754" height="1006"/>
-<rect class="frame" x="32" y="28" width="1690" height="950" rx="28"/>
+<rect class="canvas" width="1754" height="1065"/>
+<rect class="frame" x="32" y="28" width="1690" height="1009" rx="28"/>
 <text class="title" x="66" y="82">tokenizer korean Class Structure</text>
 <text class="subtitle" x="70" y="118">UML classes from the original Mermaid source</text>
-<path class="line" d="M672 538 C672 483 1492 483 1492 428"/>
-<path class="line" d="M672 380 C672 459 672 459 672 538"/>
-<path class="line" d="M672 380 C672 459 1492 459 1492 538"/>
-<path class="line" d="M1082 538 C1082 459 672 459 672 380"/>
-<path class="line" d="M262 538 C262 435 262 435 262 332"/>
-<path class="line" d="M262 538 C262 618 1082 618 1082 698"/>
-<path class="line" d="M262 538 C262 447 1082 447 1082 356"/>
+<path class="line" d="M672 536 C672 481 1492 481 1492 426"/>
+<path class="line" d="M672 405 C672 470.5 672 470.5 672 536"/>
+<path class="line" d="M672 405 C672 470.5 1492 470.5 1492 536"/>
+<path class="line" d="M1082 536 C1082 470.5 672 470.5 672 405"/>
+<path class="line" d="M262 536 C262 439 262 439 262 342"/>
+<path class="line" d="M262 536 C262 621 1082 621 1082 706"/>
+<path class="line" d="M262 536 C262 449.5 1082 449.5 1082 363"/>
 <g transform="translate(92,180)">
-  <rect class="card" x="0" y="0" width="340" height="144" rx="5" fill="#E8F3FF" stroke="#5B8DEF"/>
+  <rect class="card" x="0" y="0" width="340" height="154" rx="5" fill="#E8F3FF" stroke="#5B8DEF"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#5B8DEF"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="57" text-anchor="middle">KoreanBlockwordProcessor</text>
+  <text class="label" x="170" y="61" text-anchor="middle">KoreanBlockwordProcessor</text>
   <text class="mono" x="18" y="108">+findBlockwords(text) List~KoreanToken~</text>
-<text class="mono" x="18" y="132">+maskBlockwords(request) BlockwordResponse</text>
+<text class="mono" x="18" y="129">+maskBlockwords(request) BlockwordResponse</text>
 </g>
 <g transform="translate(502,180)">
-  <rect class="card" x="0" y="0" width="340" height="192" rx="5" fill="#EAF7EF" stroke="#58A978"/>
+  <rect class="card" x="0" y="0" width="340" height="217" rx="5" fill="#EAF7EF" stroke="#58A978"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#58A978"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="57" text-anchor="middle">KoreanChunker</text>
+  <text class="label" x="170" y="61" text-anchor="middle">KoreanChunker</text>
   <text class="mono" x="18" y="108">+chunk(input) List~KoreanToken~</text>
-<text class="mono" x="18" y="132">+getChunks(input, keepSpace) List~String~</text>
-<text class="mono" x="18" y="156">+getChunksByPos(input, pos) List~KoreanToken~</text>
-<text class="mono" x="18" y="180">+POS_PATTERNS Map~KoreanPos, Pattern~</text>
+<text class="mono" x="18" y="129">+getChunks(input, keepSpace) List~String~</text>
+<text class="mono" x="18" y="150">+getChunksByPos(input, pos)</text>
+<text class="mono" x="18" y="171">List~KoreanToken~</text>
+<text class="mono" x="18" y="192">+POS_PATTERNS Map~KoreanPos, Pattern~</text>
 </g>
 <g transform="translate(912,180)">
-  <rect class="card" x="0" y="0" width="340" height="168" rx="5" fill="#FFF3D9" stroke="#D6A441"/>
+  <rect class="card" x="0" y="0" width="340" height="175" rx="5" fill="#FFF3D9" stroke="#D6A441"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#D6A441"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="57" text-anchor="middle">KoreanNormalizer</text>
+  <text class="label" x="170" y="61" text-anchor="middle">KoreanNormalizer</text>
   <text class="mono" x="18" y="108">+normalize(input) CharSequence</text>
-<text class="mono" x="18" y="132">+correctTypo(chunk) CharSequence</text>
-<text class="mono" x="18" y="156">+normalizeCodaN(chunk) CharSequence</text>
+<text class="mono" x="18" y="129">+correctTypo(chunk) CharSequence</text>
+<text class="mono" x="18" y="150">+normalizeCodaN(chunk) CharSequence</text>
 </g>
 <g transform="translate(1322,180)">
-  <rect class="card" x="0" y="0" width="340" height="240" rx="5" fill="#FDECEF" stroke="#DC6B82"/>
+  <rect class="card" x="0" y="0" width="340" height="238" rx="5" fill="#FDECEF" stroke="#DC6B82"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#DC6B82"/>
   <text class="small" x="170" y="26" text-anchor="middle">«enumeration»</text>
-  <text class="label" x="170" y="57" text-anchor="middle">KoreanPos</text>
+  <text class="label" x="170" y="61" text-anchor="middle">KoreanPos</text>
   <text class="mono" x="18" y="108">Noun Verb Adjective Adverb</text>
-<text class="mono" x="18" y="132">Josa Eomi PreEomi Suffix</text>
-<text class="mono" x="18" y="156">Hashtag ScreenName URL Email</text>
-<text class="mono" x="18" y="180">CashTag Number Korean Alpha</text>
-<text class="mono" x="18" y="204">KoreanParticle Punctuation Space Foreign</text>
-<text class="mono" x="18" y="228">Unknown ProperNoun</text>
+<text class="mono" x="18" y="129">Josa Eomi PreEomi Suffix</text>
+<text class="mono" x="18" y="150">Hashtag ScreenName URL Email</text>
+<text class="mono" x="18" y="171">CashTag Number Korean Alpha</text>
+<text class="mono" x="18" y="192">KoreanParticle Punctuation Space Foreign</text>
+<text class="mono" x="18" y="213">Unknown ProperNoun</text>
 </g>
-<g transform="translate(92,546)">
-  <rect class="card" x="0" y="0" width="340" height="240" rx="5" fill="#E9F7F6" stroke="#45A7A1"/>
+<g transform="translate(92,544)">
+  <rect class="card" x="0" y="0" width="340" height="301" rx="5" fill="#E9F7F6" stroke="#45A7A1"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#45A7A1"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="57" text-anchor="middle">KoreanProcessor</text>
+  <text class="label" x="170" y="61" text-anchor="middle">KoreanProcessor</text>
   <text class="mono" x="18" y="108">+normalize(text) CharSequence</text>
-<text class="mono" x="18" y="132">+tokenize(text, profile) List~KoreanToken~</text>
-<text class="mono" x="18" y="156">+tokenizeForNoun(text, profile) List~KoreanToken~</text>
-<text class="mono" x="18" y="180">+tokenizeTopN(text, n, profile) List</text>
-<text class="mono" x="18" y="204">+extractPhrases(tokens, filterSpam) List~KoreanPhr.</text>
-<text class="mono" x="18" y="228">+extractPhrasesForNoun(tokens) List~KoreanPhrase~</text>
+<text class="mono" x="18" y="129">+tokenize(text, profile) List~KoreanToken~</text>
+<text class="mono" x="18" y="150">+tokenizeForNoun(text, profile)</text>
+<text class="mono" x="18" y="171">List~KoreanToken~</text>
+<text class="mono" x="18" y="192">+tokenizeTopN(text, n, profile) List</text>
+<text class="mono" x="18" y="213">+extractPhrases(tokens, filterSpam)</text>
+<text class="mono" x="18" y="234">List~KoreanPhrase~</text>
+<text class="mono" x="18" y="255">+extractPhrasesForNoun(tokens)</text>
+<text class="mono" x="18" y="276">List~KoreanPhrase~</text>
 </g>
-<g transform="translate(502,546)">
-  <rect class="card" x="0" y="0" width="340" height="240" rx="5" fill="#F1ECFF" stroke="#8A72D6"/>
+<g transform="translate(502,544)">
+  <rect class="card" x="0" y="0" width="340" height="238" rx="5" fill="#F1ECFF" stroke="#8A72D6"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#8A72D6"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="57" text-anchor="middle">KoreanToken</text>
+  <text class="label" x="170" y="61" text-anchor="middle">KoreanToken</text>
   <text class="mono" x="18" y="108">+text String</text>
-<text class="mono" x="18" y="132">+pos KoreanPos</text>
-<text class="mono" x="18" y="156">+offset Int</text>
-<text class="mono" x="18" y="180">+length Int</text>
-<text class="mono" x="18" y="204">+stem String?</text>
-<text class="mono" x="18" y="228">+unknown Boolean</text>
+<text class="mono" x="18" y="129">+pos KoreanPos</text>
+<text class="mono" x="18" y="150">+offset Int</text>
+<text class="mono" x="18" y="171">+length Int</text>
+<text class="mono" x="18" y="192">+stem String?</text>
+<text class="mono" x="18" y="213">+unknown Boolean</text>
 </g>
-<g transform="translate(912,546)">
-  <rect class="card" x="0" y="0" width="340" height="144" rx="5" fill="#F7F1E7" stroke="#B88A44"/>
+<g transform="translate(912,544)">
+  <rect class="card" x="0" y="0" width="340" height="154" rx="5" fill="#F7F1E7" stroke="#B88A44"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#B88A44"/>
   <text class="small" x="170" y="26" text-anchor="middle"></text>
-  <text class="label" x="170" y="57" text-anchor="middle">KoreanTokenizer</text>
+  <text class="label" x="170" y="61" text-anchor="middle">KoreanTokenizer</text>
   <text class="mono" x="18" y="108">+tokenize(text, profile) List~KoreanToken~</text>
-<text class="mono" x="18" y="132">+tokenizeTopN(text, n, profile) List</text>
+<text class="mono" x="18" y="129">+tokenizeTopN(text, n, profile) List</text>
 </g>
-<g transform="translate(1322,546)">
-  <rect class="card" x="0" y="0" width="340" height="192" rx="5" fill="#EEF6D9" stroke="#8BA84D"/>
+<g transform="translate(1322,544)">
+  <rect class="card" x="0" y="0" width="340" height="196" rx="5" fill="#EEF6D9" stroke="#8BA84D"/>
   <line class="compartment" x1="0" y1="78" x2="340" y2="78" stroke="#8BA84D"/>
   <text class="small" x="170" y="26" text-anchor="middle">«internal»</text>
-  <text class="label" x="170" y="57" text-anchor="middle">TwitterCompatPatterns</text>
+  <text class="label" x="170" y="61" text-anchor="middle">TwitterCompatPatterns</text>
   <text class="mono" x="18" y="108">+VALID_URL Pattern</text>
-<text class="mono" x="18" y="132">+VALID_HASHTAG Pattern</text>
-<text class="mono" x="18" y="156">+VALID_MENTION_OR_LIST Pattern</text>
-<text class="mono" x="18" y="180">+VALID_CASHTAG Pattern</text>
+<text class="mono" x="18" y="129">+VALID_HASHTAG Pattern</text>
+<text class="mono" x="18" y="150">+VALID_MENTION_OR_LIST Pattern</text>
+<text class="mono" x="18" y="171">+VALID_CASHTAG Pattern</text>
 </g>
 </svg>
