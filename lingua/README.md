@@ -1,6 +1,6 @@
 [한국어](./README.ko.md) | English
 
-# bluetape4k-lingua
+# lingua
 
 A thin Kotlin DSL wrapper around `com.github.pemistahl:lingua` for language detection, plus a convenience API that returns all detected languages as a `Set<Language>` for mixed-language text.
 
@@ -108,9 +108,9 @@ detector.containsAny("Hello 안녕", Locale.KOREAN)  // true
 
 ```kotlin
 // build.gradle.kts
-implementation("io.bluetape4k:bluetape4k-lingua:1.7.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:lingua:1.7.0-SNAPSHOT")
 ```
 
-`bluetape4k-lingua` already brings the upstream Lingua dependency transitively.
+`lingua` already brings the upstream Lingua dependency transitively.
 
 > **Note**: Reuse detector instances instead of rebuilding them per call — model loading is expensive. Blank input returns `emptySet()`. If no usable per-token result is found, the extension falls back to whole-text detection.

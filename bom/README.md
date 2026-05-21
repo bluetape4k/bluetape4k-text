@@ -22,11 +22,11 @@ The BOM is a Gradle `java-platform` that publishes only `<dependencyManagement>`
 
 | Module | Description |
 |--------|-------------|
-| `bluetape4k-tokenizer-core` | Tokenizer core abstractions |
-| `bluetape4k-tokenizer-korean` | Korean morphological tokenizer |
-| `bluetape4k-tokenizer-japanese` | Japanese tokenizer |
-| `bluetape4k-text-search` | Aho-Corasick multi-pattern search |
-| `bluetape4k-lingua` | Multi-language detection |
+| `tokenizer-core` | Tokenizer core abstractions |
+| `tokenizer-korean` | Korean morphological tokenizer |
+| `tokenizer-japanese` | Japanese tokenizer |
+| `text-search` | Aho-Corasick multi-pattern search |
+| `lingua` | Multi-language detection |
 
 ## Usage Examples
 
@@ -44,8 +44,8 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation("io.github.bluetape4k.text:bluetape4k-tokenizer-korean")
-    implementation("io.github.bluetape4k.text:bluetape4k-text-search")
+    implementation("io.github.bluetape4k.text:tokenizer-korean")
+    implementation("io.github.bluetape4k.text:text-search")
 }
 ```
 
@@ -54,7 +54,7 @@ dependencies {
 ```kotlin
 dependencies {
     implementation(platform("io.github.bluetape4k.text:bluetape4k-text-bom:<version>"))
-    implementation("io.github.bluetape4k.text:bluetape4k-tokenizer-korean")
+    implementation("io.github.bluetape4k.text:tokenizer-korean")
 }
 ```
 

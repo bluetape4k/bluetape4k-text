@@ -1,6 +1,6 @@
 한국어 | [English](./README.md)
 
-# bluetape4k-tokenizer-korean
+# tokenizer-korean
 
 한국어 형태소 분석, 정규화, 구문 추출, 어간 복원, 문장 분리, 금칙어 마스킹을 제공하는 NLP 라이브러리입니다. `twitter-text` 의존성 없이 동작하며, URL/Hashtag/Mention/CashTag 패턴은 `TwitterCompatPatterns.kt`에서 내부적으로 구현됩니다.
 
@@ -82,7 +82,7 @@ runBlocking(Dispatchers.Default) {
 
 | 의존성 | 목적 |
 |---|---|
-| `bluetape4k-tokenizer-core` | `BlockwordRequest`, `Severity`, 토크나이저 계약 인터페이스 |
+| `tokenizer-core` | `BlockwordRequest`, `Severity`, 토크나이저 계약 인터페이스 |
 | `bluetape4k-coroutines` | 코루틴 기반 청킹 파이프라인 |
 | `bluetape4k-io` | I/O 유틸리티 |
 | `eclipse-collections` | 사전 저장을 위한 고성능 컬렉션 |
@@ -90,5 +90,5 @@ runBlocking(Dispatchers.Default) {
 
 ```kotlin
 // build.gradle.kts
-implementation("io.bluetape4k:bluetape4k-tokenizer-korean:1.7.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:tokenizer-korean:1.7.0-SNAPSHOT")
 ```

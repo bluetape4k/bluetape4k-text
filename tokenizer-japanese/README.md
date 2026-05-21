@@ -1,8 +1,8 @@
 [한국어](./README.ko.md) | English
 
-# bluetape4k-tokenizer-japanese
+# tokenizer-japanese
 
-Japanese morphological analysis and blockword filtering library powered by Kuromoji IPAdic, built on top of `bluetape4k-tokenizer-core`.
+Japanese morphological analysis and blockword filtering library powered by Kuromoji IPAdic, built on top of `tokenizer-core`.
 
 ## Architecture
 
@@ -90,13 +90,13 @@ JapaneseProcessor.clearBlockwords()
 
 | Dependency | Purpose |
 |---|---|
-| `bluetape4k-tokenizer-core` | Domain models, `DictionaryProvider`, `CharArraySet` |
+| `tokenizer-core` | Domain models, `DictionaryProvider`, `CharArraySet` |
 | `bluetape4k-coroutines` | Async dictionary loading |
 | `kuromoji-ipadic` | Kuromoji IPAdic morphological analyzer |
 
 ```kotlin
 dependencies {
-    implementation("io.bluetape4k:bluetape4k-tokenizer-japanese:1.7.0-SNAPSHOT")
+    implementation("io.github.bluetape4k.text:tokenizer-japanese:1.7.0-SNAPSHOT")
 }
 ```
 

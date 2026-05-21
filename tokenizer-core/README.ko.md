@@ -1,6 +1,6 @@
 한국어 | [English](./README.md)
 
-# bluetape4k-tokenizer-core
+# tokenizer-core
 
 bluetape4k 생태계에서 텍스트 토크나이저와 금칙어 처리기를 구축하기 위한 핵심 추상화, 도메인 모델, 유틸리티를 제공하는 모듈입니다.
 
@@ -88,6 +88,6 @@ val freqMap: Map<CharSequence, Float> = DictionaryProvider.readWordFreqs("dict/f
 
 ```kotlin
 dependencies {
-    implementation("io.bluetape4k:bluetape4k-tokenizer-core:1.7.0-SNAPSHOT")
+    implementation("io.github.bluetape4k.text:tokenizer-core:1.7.0-SNAPSHOT")
 }
 ```

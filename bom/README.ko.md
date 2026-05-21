@@ -5,7 +5,7 @@
 **bluetape4k-text** 생태계용 Maven BOM (Bill of Materials). 모든 `io.github.bluetape4k.text:*`
 모듈의 버전을 중앙 관리한다.
 
-## Architecture
+## 아키텍처
 
 ![bom Architecture diagram](../docs/images/readme-diagrams/bom-architecture-01.png)
 
@@ -21,11 +21,11 @@ BOM은 Gradle `java-platform` 으로 `<dependencyManagement>` constraint 만 게
 
 | 모듈 | 설명 |
 |------|------|
-| `bluetape4k-tokenizer-core` | Tokenizer 코어 추상화 |
-| `bluetape4k-tokenizer-korean` | 한국어 형태소 분석기 |
-| `bluetape4k-tokenizer-japanese` | 일본어 토크나이저 |
-| `bluetape4k-text-search` | Aho-Corasick 다중 패턴 검색 |
-| `bluetape4k-lingua` | 다국어 감지 |
+| `tokenizer-core` | Tokenizer 코어 추상화 |
+| `tokenizer-korean` | 한국어 형태소 분석기 |
+| `tokenizer-japanese` | 일본어 토크나이저 |
+| `text-search` | Aho-Corasick 다중 패턴 검색 |
+| `lingua` | 다국어 감지 |
 
 ## 사용 예제
 
@@ -43,8 +43,8 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation("io.github.bluetape4k.text:bluetape4k-tokenizer-korean")
-    implementation("io.github.bluetape4k.text:bluetape4k-text-search")
+    implementation("io.github.bluetape4k.text:tokenizer-korean")
+    implementation("io.github.bluetape4k.text:text-search")
 }
 ```
 
@@ -53,7 +53,7 @@ dependencies {
 ```kotlin
 dependencies {
     implementation(platform("io.github.bluetape4k.text:bluetape4k-text-bom:<version>"))
-    implementation("io.github.bluetape4k.text:bluetape4k-tokenizer-korean")
+    implementation("io.github.bluetape4k.text:tokenizer-korean")
 }
 ```
 

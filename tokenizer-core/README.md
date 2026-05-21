@@ -1,6 +1,6 @@
 [한국어](./README.ko.md) | English
 
-# bluetape4k-tokenizer-core
+# tokenizer-core
 
 Core abstractions, domain models, and utilities for building text tokenizers and blockword processors in the bluetape4k ecosystem.
 
@@ -88,6 +88,6 @@ val freqMap: Map<CharSequence, Float> = DictionaryProvider.readWordFreqs("dict/f
 
 ```kotlin
 dependencies {
-    implementation("io.bluetape4k:bluetape4k-tokenizer-core:1.7.0-SNAPSHOT")
+    implementation("io.github.bluetape4k.text:tokenizer-core:1.7.0-SNAPSHOT")
 }
 ```

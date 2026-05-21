@@ -1,6 +1,6 @@
 한국어 | [English](./README.md)
 
-# bluetape4k-text-search
+# text-search
 
 Kotlin/JVM용 Aho-Corasick 다중 키워드 검색 라이브러리입니다. N개의 키워드를 O(n+m+z) 시간 복잡도로 단일 패스에 동시 검색하며, 유니코드 정규화, 단어 경계 설정, 대소문자 무시, Kotlin 코루틴 Flow API를 완벽하게 지원합니다.
 
@@ -10,11 +10,11 @@ Kotlin/JVM용 Aho-Corasick 다중 키워드 검색 라이브러리입니다. N�
 
 ### 검색 파이프라인
 
-![text search Sequence Flow 2 diagram](../docs/images/readme-diagrams/text-search-sequence-02.png)
+![Search Pipeline diagram](../docs/images/readme-diagrams/text-search-sequence-02.png)
 
 ### 처리 흐름
 
-![text search Architecture 3 diagram](../docs/images/readme-diagrams/text-search-architecture-03.png)
+![Processing Flow diagram](../docs/images/readme-diagrams/text-search-architecture-03.png)
 
 ## 주요 기능
 
@@ -185,7 +185,7 @@ fun <V> AhoCorasickAutomaton<V>.matchesAsFlow(text: CharSequence): Flow<AhoCoras
 로컬 벤치마크 실행:
 
 ```bash
-./gradlew :bluetape4k-text-search:benchmark
+./gradlew :text-search:benchmark
 ```
 
 ## 의존성
@@ -197,7 +197,7 @@ fun <V> AhoCorasickAutomaton<V>.matchesAsFlow(text: CharSequence): Flow<AhoCoras
 
 ```kotlin
 // build.gradle.kts
-implementation("io.bluetape4k:bluetape4k-text-search:1.7.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:text-search:1.7.0-SNAPSHOT")
 
 // 선택사항: 코루틴 Flow 지원
 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
