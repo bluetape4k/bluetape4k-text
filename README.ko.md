@@ -39,11 +39,12 @@ Kotlin/JVM 텍스트 처리 라이브러리 — 한국어·일본어 형태소 �
 
 | 모듈 | 설명 | 아티팩트 |
 |---|---|---|
+| `bom` | 텍스트 아티팩트 버전 정렬용 소비자 BOM | `io.github.bluetape4k.text:bluetape4k-text-bom` |
 | `tokenizer-core` | 공통 도메인 모델 (`TokenizeRequest/Response`, `BlockwordRequest/Response`, `Severity`), 사전 유틸리티 (`DictionaryProvider`, `CharArraySet`) | `io.github.bluetape4k.text:tokenizer-core` |
-| `tokenizer-japanese` | Kuromoji IPAdic 기반 `JapaneseProcessor` 파사드 — 형태소 분석, POS 필터링, 금칙어 감지·마스킹 | `io.github.bluetape4k.text:tokenizer-japanese` |
-| `tokenizer-korean` | `KoreanProcessor` 파사드 — 한국어 전처리 전 파이프라인: 정규화, 형태소 분석, 구 추출, 어간 추출, 문장 분리, 금칙어 마스킹 | `io.github.bluetape4k.text:tokenizer-korean` |
 | `lingua` | Lingua 기반 Kotlin DSL — `LanguageDetector` 팩토리, 혼합 언어 감지 (`Set<Language>`), `UnicodeDetector` | `io.github.bluetape4k.text:lingua` |
 | `text-search` | `AhoCorasickAutomaton<V>` — O(n+m+z) 다중 키워드 검색, 유니코드 정규화, 단어 경계, Kotlin Flow API | `io.github.bluetape4k.text:text-search` |
+| `tokenizer-japanese` | Kuromoji IPAdic 기반 `JapaneseProcessor` 파사드 — 형태소 분석, POS 필터링, 금칙어 감지·마스킹 | `io.github.bluetape4k.text:tokenizer-japanese` |
+| `tokenizer-korean` | `KoreanProcessor` 파사드 — 한국어 전처리 전 파이프라인: 정규화, 형태소 분석, 구 추출, 어간 추출, 문장 분리, 금칙어 마스킹 | `io.github.bluetape4k.text:tokenizer-korean` |
 
 ## 아키텍처
 

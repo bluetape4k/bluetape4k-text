@@ -1,8 +1,8 @@
 한국어 | [English](./README.md)
 
-# bluetape4k-tokenizer-japanese
+# tokenizer-japanese
 
-`bluetape4k-tokenizer-core` 위에 구축된 Kuromoji IPAdic 기반 일본어 형태소 분석 및 금칙어 처리 라이브러리입니다.
+`tokenizer-core` 위에 구축된 Kuromoji IPAdic 기반 일본어 형태소 분석 및 금칙어 처리 라이브러리입니다.
 
 ## 아키텍처
 
@@ -88,13 +88,13 @@ JapaneseProcessor.clearBlockwords()
 
 | 의존성 | 역할 |
 |---|---|
-| `bluetape4k-tokenizer-core` | 도메인 모델, `DictionaryProvider`, `CharArraySet` |
+| `tokenizer-core` | 도메인 모델, `DictionaryProvider`, `CharArraySet` |
 | `bluetape4k-coroutines` | 비동기 사전 로딩 |
 | `kuromoji-ipadic` | Kuromoji IPAdic 형태소 분석기 |
 
 ```kotlin
 dependencies {
-    implementation("io.bluetape4k:bluetape4k-tokenizer-japanese:1.7.0-SNAPSHOT")
+    implementation("io.github.bluetape4k.text:tokenizer-japanese:1.7.0-SNAPSHOT")
 }
 ```
 

@@ -1,6 +1,6 @@
 [한국어](./README.ko.md) | English
 
-# bluetape4k-tokenizer-korean
+# tokenizer-korean
 
 Korean NLP library for morphological analysis, normalization, phrase extraction, stemming, sentence splitting, and blockword masking — with no `twitter-text` dependency (URL/Hashtag/Mention/CashTag patterns are implemented internally via `TwitterCompatPatterns.kt`).
 
@@ -82,7 +82,7 @@ runBlocking(Dispatchers.Default) {
 
 | Dependency | Purpose |
 |---|---|
-| `bluetape4k-tokenizer-core` | `BlockwordRequest`, `Severity`, tokenizer contract interfaces |
+| `tokenizer-core` | `BlockwordRequest`, `Severity`, tokenizer contract interfaces |
 | `bluetape4k-coroutines` | Coroutines-based chunker pipeline |
 | `bluetape4k-io` | I/O utilities |
 | `eclipse-collections` | High-performance collections for dictionary storage |
@@ -90,5 +90,5 @@ runBlocking(Dispatchers.Default) {
 
 ```kotlin
 // build.gradle.kts
-implementation("io.bluetape4k:bluetape4k-tokenizer-korean:1.7.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:tokenizer-korean:1.7.0-SNAPSHOT")
 ```

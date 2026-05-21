@@ -45,11 +45,12 @@ and high-throughput keyword search.
 
 | Module | Description | Artifact |
 |---|---|---|
+| `bom` | Consumer BOM for aligned text artifacts | `io.github.bluetape4k.text:bluetape4k-text-bom` |
 | `tokenizer-core` | Shared domain models (`TokenizeRequest/Response`, `BlockwordRequest/Response`, `Severity`), dictionary utilities (`DictionaryProvider`, `CharArraySet`) | `io.github.bluetape4k.text:tokenizer-core` |
-| `tokenizer-japanese` | `JapaneseProcessor` facade powered by Kuromoji IPAdic — morphological analysis, POS filtering, blockword detection and masking | `io.github.bluetape4k.text:tokenizer-japanese` |
-| `tokenizer-korean` | `KoreanProcessor` facade — full Korean NLP pipeline: normalization, POS tokenization, phrase extraction, stemming, sentence splitting, blockword masking | `io.github.bluetape4k.text:tokenizer-korean` |
 | `lingua` | Kotlin DSL wrapper around Lingua — factory functions for `LanguageDetector`, mixed-language detection via `Set<Language>`, `UnicodeDetector` | `io.github.bluetape4k.text:lingua` |
 | `text-search` | `AhoCorasickAutomaton<V>` — O(n+m+z) multi-keyword search, Unicode normalization, word boundaries, Kotlin Flow API | `io.github.bluetape4k.text:text-search` |
+| `tokenizer-japanese` | `JapaneseProcessor` facade powered by Kuromoji IPAdic — morphological analysis, POS filtering, blockword detection and masking | `io.github.bluetape4k.text:tokenizer-japanese` |
+| `tokenizer-korean` | `KoreanProcessor` facade — full Korean NLP pipeline: normalization, POS tokenization, phrase extraction, stemming, sentence splitting, blockword masking | `io.github.bluetape4k.text:tokenizer-korean` |
 
 ## Architecture
 

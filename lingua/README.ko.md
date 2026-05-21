@@ -1,6 +1,6 @@
 한국어 | [English](./README.md)
 
-# bluetape4k-lingua
+# lingua
 
 `com.github.pemistahl:lingua`를 감싸는 얇은 Kotlin DSL 래퍼이며, 혼합 언어 텍스트에서 검출된 모든 언어를 `Set<Language>`로 반환하는 편의 API를 제공합니다.
 
@@ -8,7 +8,7 @@
 
 ![lingua Architecture diagram](../docs/images/readme-diagrams/lingua-architecture-01.png)
 
-![lingua Class Structure 2 diagram](../docs/images/readme-diagrams/lingua-class-02.png)
+![lingua Class Structure diagram](../docs/images/readme-diagrams/lingua-class-02.png)
 
 ## 주요 기능
 
@@ -108,9 +108,9 @@ detector.containsAny("Hello 안녕", Locale.KOREAN)  // true
 
 ```kotlin
 // build.gradle.kts
-implementation("io.bluetape4k:bluetape4k-lingua:1.7.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:lingua:1.7.0-SNAPSHOT")
 ```
 
-`bluetape4k-lingua`는 upstream Lingua 의존성을 transitively 포함합니다.
+`lingua`는 upstream Lingua 의존성을 transitively 포함합니다.
 
 > **주의**: detector는 호출마다 새로 만들지 말고 재사용하는 것이 좋습니다 — 모델 로딩 비용이 큽니다. 공백 입력은 `emptySet()`을 반환합니다. 토큰 단위에서 usable result가 없으면 전체 문자열 감지로 fallback 합니다.

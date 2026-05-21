@@ -1,6 +1,6 @@
 [한국어](./README.ko.md) | English
 
-# bluetape4k-text-search
+# text-search
 
 Aho-Corasick multi-keyword search library for Kotlin/JVM. Searches N keywords simultaneously in O(n+m+z) time, with full support for Unicode normalization, word boundaries, case-insensitive matching, and Kotlin coroutines Flow API.
 
@@ -184,7 +184,7 @@ fun <V> AhoCorasickAutomaton<V>.matchesAsFlow(text: CharSequence): Flow<AhoCoras
 Run benchmarks locally:
 
 ```bash
-./gradlew :bluetape4k-text-search:benchmark
+./gradlew :text-search:benchmark
 ```
 
 ## Dependencies
@@ -196,7 +196,7 @@ Run benchmarks locally:
 
 ```kotlin
 // build.gradle.kts
-implementation("io.bluetape4k:bluetape4k-text-search:1.7.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:text-search:1.7.0-SNAPSHOT")
 
 // Optional: Coroutines Flow support
 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
