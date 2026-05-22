@@ -7,6 +7,10 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- `matchesAsFlow()` now streams default Aho-Corasick matches from trie traversal and stops cooperatively when collectors cancel with `take(N)`; overlap and word-boundary post-processing still uses the eager filtered path ([#67](https://github.com/bluetape4k/bluetape4k-text/issues/67)).
+
 ## [0.1.0] - 2026-05-17
 
 ### Added

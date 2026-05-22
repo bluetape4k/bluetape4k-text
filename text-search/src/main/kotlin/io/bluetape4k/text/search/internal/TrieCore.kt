@@ -200,7 +200,11 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
      *  Performs char-by-char state transitions and delivers each emit to [emitHandler].
      *  Stops immediately when [config.stopOnHit] is `true` and the handler returns `true`.
      */
-    fun runParseText(text: CharSequence, emitHandler: EmitHandler) {
+    fun runParseText(
+        text: CharSequence,
+        emitHandler: EmitHandler,
+        stopOnHit: Boolean = config.stopOnHit,
+    ) {
         var currentState = rootState
 
         text.forEachIndexed { pos, ch ->
@@ -208,8 +212,27 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
                 config.ignoreCase -> getState(currentState, ch.lowercaseChar())
                 else -> getState(currentState, ch)
             }
-            val stored = storeEmits(pos, currentState, emitHandler)
-            if (stored && config.stopOnHit) {
+            val stored = storeEmits(pos, currentState, emitHandler, stopOnHit)
+            if (stored && stopOnHit) {
+                return
+            }
+        }
+    }
+
+    suspend fun runParseTextSuspending(
+        text: CharSequence,
+        emitHandler: suspend (Emit) -> Boolean,
+        stopOnHit: Boolean = config.stopOnHit,
+    ) {
+        var currentState = rootState
+
+        text.forEachIndexed { pos, ch ->
+            currentState = when {
+                config.ignoreCase -> getState(currentState, ch.lowercaseChar())
+                else -> getState(currentState, ch)
+            }
+            val stored = storeEmitsSuspending(pos, currentState, emitHandler, stopOnHit)
+            if (stored && stopOnHit) {
                 return
             }
         }
@@ -366,13 +389,36 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
         }
     }
 
-    private fun storeEmits(position: Int, currentState: State, emitHandler: EmitHandler): Boolean {
+    private fun storeEmits(
+        position: Int,
+        currentState: State,
+        emitHandler: EmitHandler,
+        stopOnHit: Boolean,
+    ): Boolean {
         var emitted = false
         val emits = currentState.emit()
 
         emits.forEach { emit ->
             emitted = emitHandler.emit(Emit(position - emit.length + 1, position, emit))
-            if (emitted && config.stopOnHit) {
+            if (emitted && stopOnHit) {
+                return true
+            }
+        }
+        return emitted
+    }
+
+    private suspend fun storeEmitsSuspending(
+        position: Int,
+        currentState: State,
+        emitHandler: suspend (Emit) -> Boolean,
+        stopOnHit: Boolean,
+    ): Boolean {
+        var emitted = false
+        val emits = currentState.emit()
+
+        emits.forEach { emit ->
+            emitted = emitHandler(Emit(position - emit.length + 1, position, emit))
+            if (emitted && stopOnHit) {
                 return true
             }
         }
