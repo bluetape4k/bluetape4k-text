@@ -3,6 +3,7 @@ package io.bluetape4k.text.search
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.support.requireNotBlank
 import io.bluetape4k.text.search.internal.InternalTrieConfig
+import io.bluetape4k.text.search.internal.EmitHandler
 import io.bluetape4k.text.search.internal.OffsetMapping
 import io.bluetape4k.text.search.internal.TrieCore
 import io.bluetape4k.text.search.internal.applyPipeline
@@ -95,6 +96,49 @@ class AhoCorasickAutomaton<V> internal constructor(
             }
         }
         return matches
+    }
+
+    /**
+     * Traverses the trie and invokes [onMatch] as each raw match is found.
+     *
+     * This path intentionally bypasses post-processing filters such as overlap removal and word-boundary
+     * filtering. Callers that require those filters should use [parseText].
+     */
+    internal suspend fun forEachRawMatch(
+        text: CharSequence,
+        ignoreStopOnFirstMatch: Boolean,
+        onMatch: suspend (AhoCorasickMatch<V>) -> Unit,
+    ) {
+        if (text.isEmpty() || values.isEmpty()) {
+            return
+        }
+
+        val (normalizedText, mapping) = OffsetMapping.build(text, options.normalization)
+        val processedText: CharSequence = if (options.ignoreCase) {
+            normalizedText.lowercaseCharByChar()
+        } else {
+            normalizedText
+        }
+
+        core.runParseTextSuspending(
+            processedText,
+            { emit ->
+                val keyword = emit.keyword ?: return@runParseTextSuspending true
+                val value = values[keyword] ?: return@runParseTextSuspending true
+                val origStart = mapping?.toOriginal(emit.start) ?: emit.start
+                val origEnd = mapping?.toOriginalEndInclusive(emit.end) ?: emit.end
+                onMatch(
+                    AhoCorasickMatch(
+                        start = origStart,
+                        end = origEnd,
+                        keyword = keyword,
+                        value = value,
+                    )
+                )
+                true
+            },
+            stopOnHit = !ignoreStopOnFirstMatch && options.stopOnFirstMatch,
+        )
     }
 
     /**

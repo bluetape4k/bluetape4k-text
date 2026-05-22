@@ -121,6 +121,20 @@ class AhoCorasickFlowTest {
     }
 
     @Test
+    fun `stopOnFirstMatch=true 여도 기본 Flow 는 parseText를 materialize 하지 않는다`() = runTest(timeout = 30.seconds) {
+        // Arrange
+        val automaton = fixtureAutomaton(SearchOptions(stopOnFirstMatch = true))
+
+        // Act
+        val eagerMatches = automaton.parseText(SAMPLE_TEXT)
+        val flowMatches = automaton.matchesAsFlow(SAMPLE_TEXT).toList()
+
+        // Assert
+        eagerMatches shouldHaveSize 1
+        flowMatches shouldHaveSize 3
+    }
+
+    @Test
     fun `1만 매치 throughput micro-test`() = runTest(timeout = 30.seconds) {
         // Arrange: 키워드 100개 + 동일 텍스트 100번 반복 → 다수의 매치 생성
         val keywords = (0 until 100).map { "kw$it" }

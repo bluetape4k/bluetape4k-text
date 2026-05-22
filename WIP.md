@@ -1,8 +1,8 @@
 # WIP - bluetape4k-text
 
-Snapshot: 2026-05-18 KST
+Snapshot: 2026-05-22 KST
 Scope: open GitHub issues assigned to `debop`, created on or after 2026-01-01.
-Open count: 1 issue.
+Open count: 0 issues after #67 merges.
 
 ## Recently Completed
 
@@ -15,27 +15,26 @@ Open count: 1 issue.
   Maven Central publishing configuration, and release-note work are closed.
 - The 2026-05-17 security, correctness, performance, and test backlog (#31
   through #49) is closed and captured in `docs/lessons/`.
+- `matchesAsFlow()` streaming contract fix for #67 is implemented on the release branch.
 
 ## Current Direction
 
-Text-search streaming contract correction.
+0.1.1 release preparation.
 
-`matchesAsFlow()` currently documents backpressure and `take(N)` early
-termination, but it calls eager `parseText(text)` before emitting. Keep this
-work focused on preserving existing Aho-Corasick match semantics while making
-the Flow contract honest or truly streaming.
+The 0.1.1 release gate is clear after #67. Prepare release metadata after the
+fix PR merges and keep future feature work out of the patch release.
 
 ## Priority Queue
 
 | Priority | Issue | Difficulty | Notes |
 |---|---|---:|---|
-| P1 | [#67](https://github.com/bluetape4k/bluetape4k-text/issues/67) `matchesAsFlow` materializes all Aho-Corasick matches before emitting | M | Fix streaming/backpressure contract or revise public KDoc; preserve match ordering and offset behavior. |
+| P1 | Next assigned issue | TBD | No assigned open issue remains after #67 merges. |
 
 ## WIP Limits
 
 | Lane | Limit | Current next |
 |---|---:|---|
-| Correctness / performance | 1 | `#67` |
+| Correctness / performance | 1 | Wait for the next assigned issue. |
 | Feature work | 1 | Wait for a new assigned feature issue after `#67`. |
 | Build/CI maintenance | 1 | Handle only concrete failures from CI/Nightly. |
 | Docs/KDoc polish | 1 | Keep small and separate from tokenizer behavior changes. |
