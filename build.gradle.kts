@@ -27,6 +27,16 @@ plugins {
 }
 
 val rootLibs = libs
+val rootBt4k = bt4k
+
+val bt4kCatalog = extensions.getByType<org.gradle.api.artifacts.VersionCatalogsExtension>().named("bt4k")
+fun bt4kVersion(alias: String): String {
+    val version = bt4kCatalog.findVersion(alias).get()
+    return version.requiredVersion
+        .ifBlank { version.preferredVersion }
+        .ifBlank { version.strictVersion }
+}
+
 
 val centralPublishing = resolveCentralPublishingConfig()
 val centralUser: String = centralPublishing.username
@@ -226,6 +236,10 @@ subprojects {
             mavenBom(rootLibs.kotlin.bom.get().toString())
             mavenBom(rootLibs.junit.bom.get().toString())
             mavenBom(rootLibs.testcontainers.bom.get().toString())
+        }
+    
+        dependencies {
+            dependency("org.slf4j:slf4j-api:${bt4kVersion("slf4j")}")
         }
     }
 
