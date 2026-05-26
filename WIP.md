@@ -1,8 +1,52 @@
 # WIP - bluetape4k-text
 
-Snapshot: 2026-05-22 KST
-Scope: open GitHub issues assigned to `debop`, created on or after 2026-01-01.
+Snapshot: 2026-05-24 KST
+Scope: patch/minor milestone discovery plus open GitHub issue queue.
 Open count: 0 issues.
+
+## 2026-05-24 Milestone Refresh
+
+Current evidence: latest tags `0.1.2`, `0.1.1`, `0.1.0`. GitHub has no open
+issues; milestones `0.1.1` and `0.1.2` are clear, and `backlog` is empty.
+
+| Lane | Candidate milestone | Current candidates | Decision |
+|---|---|---|---|
+| Patch | `0.1.3` | none yet | Do not invent patch work. Use only for tokenizer/runtime regressions, dependency pins, CI failures, or release-doc drift. |
+| Minor | `0.2.0` | discovery needed | Start with benchmark/provider-quality discovery before creating feature issues. Candidate themes: tokenizer accuracy fixtures, dictionary update pipeline, language detection quality, and README visual/report refresh. |
+
+Recommended order: keep patch lane empty; create one `0.2.0` discovery issue
+before implementation issues; prefer measurable quality/benchmark work over
+broad API expansion.
+
+## New Milestone Queue - 2026-05-24
+
+### New patch milestone `0.1.3`
+
+- No issue yet. Keep this patch lane empty until a concrete regression appears.
+
+### New minor milestone `0.2.0`
+
+1. [#83](https://github.com/bluetape4k/bluetape4k-text/issues/83)
+   `research: define text quality benchmark and fixture corpus for 0.2.0`
+2. [#84](https://github.com/bluetape4k/bluetape4k-text/issues/84)
+   `test: add tokenizer accuracy fixtures for Korean/Japanese mixed text`
+3. [#85](https://github.com/bluetape4k/bluetape4k-text/issues/85)
+   `feat: define dictionary update pipeline for tokenizer and block-word data`
+4. [#86](https://github.com/bluetape4k/bluetape4k-text/issues/86)
+   `docs: publish README quality benchmark report for tokenizer and language detection`
+
+## Issue Discovery - 2026-05-24
+
+Patch candidates:
+
+- None currently. Do not create patch issues without a concrete regression.
+
+Minor candidates:
+
+- `research: define text quality benchmark and fixture corpus for 0.2.0`
+- `test: add tokenizer accuracy fixtures for Korean/Japanese mixed text`
+- `feat: define dictionary update pipeline for tokenizer/block-word data`
+- `docs: publish README quality/benchmark report for tokenizer and language detection`
 
 ## Recently Completed
 
