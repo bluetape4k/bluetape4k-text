@@ -13,6 +13,7 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Unknown
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosTrie
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosx
 import io.bluetape4k.tokenizer.korean.utils.KoreanSubstantive
+import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
 
 /**
  * 명사 중심 규칙으로 한국어 문장을 분석하는 토크나이저입니다.
@@ -109,6 +110,7 @@ object NounTokenizer: KLogging() {
         text: CharSequence,
         profile: TokenizerProfile = TokenizerProfile.DefaultProfile,
     ): List<KoreanToken> {
+        requireTokenizeTextLength(text)
         val tokenized = tokenizeTopN(text, 1, profile)
             .flatMap { it.firstOrNull() ?: emptyList() }
 
@@ -122,7 +124,7 @@ object NounTokenizer: KLogging() {
      * - 반환 구조는 `List<청크, List<후보, List<KoreanToken>>>`이며 각 후보는 점수순으로 정렬된다.
      * - `topN`은 1 이상이어야 하며, 0 이하를 전달하면 `IllegalArgumentException`을 던진다.
      * - 후보가 비어 있으면 `unknown=true`인 `Noun` 단일 토큰 후보를 생성한다.
-     * - 분석 중 예외는 `TokenizerException("Error tokenizing a chunk: $text", cause)`로 변환된다.
+     * - 분석 중 예외는 원문 대신 입력 길이만 포함한 `TokenizerException`으로 변환된다.
      *
      * ```kotlin
      * val top = NounTokenizer.tokenizeTopN("허니버터칩", topN = 1)
@@ -134,6 +136,7 @@ object NounTokenizer: KLogging() {
         topN: Int = 1,
         profile: TokenizerProfile = TokenizerProfile.DefaultProfile,
     ): List<List<List<KoreanToken>>> {
+        requireTokenizeTextLength(text)
         require(topN >= 1) { "topN must be greater than or equal to 1. topN=$topN" }
 
         try {
@@ -152,8 +155,8 @@ object NounTokenizer: KLogging() {
                     }
                 }
         } catch (e: Exception) {
-            log.error(e) { "Error tokenizing a chunk: $text" }
-            throw TokenizerException("Error tokenizing a chunk: $text", e)
+            log.error(e) { "Error tokenizing a chunk. textLength=${text.length}" }
+            throw TokenizerException("Error tokenizing a chunk. textLength=${text.length}", e)
         }
     }
 

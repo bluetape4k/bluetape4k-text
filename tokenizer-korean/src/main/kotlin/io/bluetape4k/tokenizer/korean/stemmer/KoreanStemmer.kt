@@ -108,11 +108,11 @@ object KoreanStemmer: KLogging() {
                     }
                 } else if (token.pos in Predicates) {
                     val stem = KoreanDictionaryProvider.predicateStems[token.pos]?.get(token.text)
-                    // val token1 = token.copy(stem = stem)
-                    // log.trace { "동사, 형용사 활용: text=${token.text}, stem=$stem : $token -> $token1" }
                     stemmed.add(0, token.copy(stem = stem))
                 } else {
-                    log.trace { "not found stem for $token" }
+                    log.trace {
+                        "not found stem. offset=${token.offset}, length=${token.length}, pos=${token.pos}"
+                    }
                     stemmed.add(0, token)
                 }
             }

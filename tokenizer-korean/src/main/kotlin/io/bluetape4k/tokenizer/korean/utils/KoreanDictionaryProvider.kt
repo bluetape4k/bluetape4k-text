@@ -373,9 +373,6 @@ object KoreanDictionaryProvider: KLogging() {
             return words
                 .flatMap { word ->
                     conjugatePredicated(setOf(word), isAdjective).map {
-                        //                        if(it.startsWith("가느")) {
-                        //                            log.trace { "활용=$it, 원형=${word + "다"}, 형용사=$isAdjective" }
-                        //                        }
                         it to word + "다"
                     }
                 }

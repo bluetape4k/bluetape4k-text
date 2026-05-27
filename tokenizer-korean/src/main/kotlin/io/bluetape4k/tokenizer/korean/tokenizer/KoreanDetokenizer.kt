@@ -11,6 +11,7 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Punctuation
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Suffix
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Verb
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.VerbPrefix
+import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
 
 
 /**
@@ -70,6 +71,8 @@ object KoreanDetokenizer: KLogging() {
      * ```
      */
     fun detokenize(input: Collection<String>): String {
+        requireTokenizeTextLength(input.sumOf { it.length })
+
         // Space guide prevents tokenizing a word that was not tokenized in the input.
         val spaceGuide = getSpaceGuide(input)
 

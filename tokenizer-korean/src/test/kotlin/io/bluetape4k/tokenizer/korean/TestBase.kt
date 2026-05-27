@@ -30,32 +30,33 @@ abstract class TestBase {
                 DictionaryProvider.readFileByLineFromResources("$BASE_PATH/$exampleFiles")
 
             var notMatchCount = 0
-            val (parseTimes, hasErrors) = input
-                .fold(Pair(listOf<ParseTime>(), true)) { (l, output), line ->
-                    val s = line.split("\t", limit = 2).map { it.trim() }
-                    val (chunk, parse) = Pair(s[0], if (s.size == 2) s[1] else "")
+            var hasErrors = true
+            val parseTimes = mutableListOf<ParseTime>()
+            input.forEach { line ->
+                val s = line.split("\t", limit = 2).map { it.trim() }
+                val (chunk, parse) = Pair(s[0], if (s.size == 2) s[1] else "")
 
-                    val oldTokens = parse
-                    val t0 = System.currentTimeMillis()
-                    val newTokens = func(chunk)
-                    val t1 = System.currentTimeMillis()
+                val oldTokens = parse
+                val t0 = System.currentTimeMillis()
+                val newTokens = func(chunk)
+                val t1 = System.currentTimeMillis()
 
-                    val oldParseMatches = oldTokens == newTokens
-                    if (!oldParseMatches) {
-                        notMatchCount++
-                        log.debug {
-                            """
-                            |
-                            |Example set match error:
-                            |$chunk
-                            |  - EXPECTED:$oldTokens 
-                            |  - ACTUAL  :$newTokens
-                            """.trimMargin()
-                        }
+                val oldParseMatches = oldTokens == newTokens
+                if (!oldParseMatches) {
+                    notMatchCount++
+                    log.debug {
+                        """
+                        |
+                        |Example set match error:
+                        |$chunk
+                        |  - EXPECTED:$oldTokens
+                        |  - ACTUAL  :$newTokens
+                        """.trimMargin()
                     }
-
-                    Pair(listOf(ParseTime(t1 - t0, chunk)) + l, output && oldParseMatches)
                 }
+                parseTimes.add(ParseTime(t1 - t0, chunk))
+                hasErrors = hasErrors && oldParseMatches
+            }
 
             val averageTime = parseTimes.sumOf { it.time }.toDouble() / parseTimes.size
             val maxItem = parseTimes.maxByOrNull { it.time }

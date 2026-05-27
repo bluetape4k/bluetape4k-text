@@ -61,12 +61,12 @@ class PunctuationProcessor {
         tokens.reversed()
             .forEach {
                 val token = it.first
-                log.trace { "remove token. $it" }
+                log.trace { "remove punctuation token. offset=${token.offset}, length=${token.length}, remove=${it.second}" }
                 if (it.second) {
                     result = result.removeRange(token.offset, token.offset + token.length)
                 }
             }
-        log.trace { "chunk removed text=$result" }
+        log.trace { "punctuation removed. beforeLength=${text.length}, afterLength=${result.length}" }
         return result
     }
 
@@ -88,10 +88,10 @@ class PunctuationProcessor {
         return chunks
             // .filter { it.pos != KoreanPos.Space }
             .sliding(3, false)
-            .onEach { log.trace { "sliding tokens=$it" } }
+            .onEach { tokens -> log.trace { "sliding token window. size=${tokens.size}" } }
             .mapIndexed { index, tokens -> (index + 1) to canRemovePunctuation(tokens) }
             .map { chunks[it.first] to it.second }
-            .onEach { log.trace { "can remove punctuation=$it" } }
+            .onEach { log.trace { "punctuation candidate. offset=${it.first.offset}, length=${it.first.length}, remove=${it.second}" } }
     }
 
 

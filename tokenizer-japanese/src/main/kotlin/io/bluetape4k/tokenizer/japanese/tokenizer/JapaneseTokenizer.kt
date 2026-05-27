@@ -3,6 +3,7 @@ package io.bluetape4k.tokenizer.japanese.tokenizer
 import com.atilika.kuromoji.ipadic.Token
 import com.atilika.kuromoji.ipadic.Tokenizer
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
 
 /**
  * Entry point for Japanese morphological analysis using the Kuromoji IPAdic tokenizer.
@@ -32,6 +33,7 @@ object JapaneseTokenizer: KLogging() {
      * ```
      */
     fun tokenize(text: String): List<Token> {
+        requireTokenizeTextLength(text)
         return tokenizer.tokenize(text)
     }
 

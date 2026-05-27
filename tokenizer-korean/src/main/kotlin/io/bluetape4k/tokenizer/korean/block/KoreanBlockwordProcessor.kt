@@ -14,6 +14,7 @@ import io.bluetape4k.tokenizer.model.BlockwordRequest
 import io.bluetape4k.tokenizer.model.BlockwordResponse
 import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.tokenizer.model.blockwordResponseOf
+import io.bluetape4k.tokenizer.model.requireBlockwordTextLength
 import java.util.*
 
 /**
@@ -52,6 +53,7 @@ object KoreanBlockwordProcessor: KLogging() {
      * 입력 문장에서 금칙어 토큰 목록을 반환합니다.
      *
      * ## 동작/계약
+     * - 토큰화 전에 최대 입력 길이를 검증한다.
      * - 공백/빈 문자열 입력이면 빈 리스트를 반환한다.
      * - 구두점 제거 후 토큰화한 결과에서 길이 2 이상 토큰만 검사한다.
      *
@@ -61,6 +63,7 @@ object KoreanBlockwordProcessor: KLogging() {
      * ```
      */
     fun findBlockwords(text: String): List<KoreanToken> {
+        requireBlockwordTextLength(text)
         if (text.isBlank()) {
             return emptyList()
         }
@@ -69,18 +72,25 @@ object KoreanBlockwordProcessor: KLogging() {
             val tokens = KoreanTokenizer.tokenize(punctuationRemoved)
             val blockWords = mutableListOf<KoreanToken>()
             tokens
-                .onEach { log.trace { "token=$it" } }
+                .onEach { token ->
+                    log.trace {
+                        "blockword candidate token. offset=${token.offset}, length=${token.length}, pos=${token.pos}"
+                    }
+                }
                 .filter { it.length > 1 }
-                .onEach { log.trace { "try to mask block word... token=$it" } }
+                .onEach { token ->
+                    log.trace {
+                        "try to mask block word. offset=${token.offset}, length=${token.length}, pos=${token.pos}"
+                    }
+                }
                 .forEach { token ->
                     if (canMask(token)) {
-                        log.trace { "mask token=$token" }
+                        log.trace { "mask block word. offset=${token.offset}, length=${token.length}" }
                         blockWords.add(token)
                     }
                 }
             return blockWords
         } catch (e: Error) {
-            log.error(e) { "Fail to mask block word. textLength=${text.length}" }
             throw e
         } catch (e: Exception) {
             log.error(e) { "Fail to mask block word. textLength=${text.length}" }
@@ -92,6 +102,7 @@ object KoreanBlockwordProcessor: KLogging() {
      * 요청 옵션에 따라 금칙어를 마스킹한 응답을 반환합니다.
      *
      * ## 동작/계약
+     * - 토큰화 전에 최대 입력 길이를 검증한다.
      * - 입력 텍스트가 비어 있으면 빈 문자열 응답을 반환한다.
      * - 요청 언어가 한국어가 아니면 `InvalidTokenizeRequestException`을 던진다.
      * - severity 조건을 만족하는 토큰 구간을 `mask` 문자열 반복값으로 치환한다.
@@ -102,6 +113,7 @@ object KoreanBlockwordProcessor: KLogging() {
      * ```
      */
     fun maskBlockwords(request: BlockwordRequest): BlockwordResponse {
+        requireBlockwordTextLength(request.text)
         if (request.text.isBlank()) {
             return BlockwordResponse(request, EMPTY_STRING)
         }
@@ -117,7 +129,11 @@ object KoreanBlockwordProcessor: KLogging() {
 
             val tokensToMask = tokens
                 .filter { !it.unknown && it.length > 1 }
-                .onEach { log.trace { "try to mask block word... token=$it" } }
+                .onEach { token ->
+                    log.trace {
+                        "try to mask block word. offset=${token.offset}, length=${token.length}, pos=${token.pos}"
+                    }
+                }
                 .filter { canMask(it, request.options.severity) }
 
             val result = StringBuilder(punctuationRemoved).apply {
@@ -125,7 +141,7 @@ object KoreanBlockwordProcessor: KLogging() {
                 tokensToMask
                     .sortedByDescending { it.offset }
                     .forEach { token ->
-                        log.trace { "mask token=$token" }
+                        log.trace { "mask block word. offset=${token.offset}, length=${token.length}" }
                         replace(
                             token.offset,
                             token.offset + token.length,
@@ -136,7 +152,6 @@ object KoreanBlockwordProcessor: KLogging() {
             }
             return blockwordResponseOf(request, result.toString(), blockWords)
         } catch (e: Error) {
-            log.error(e) { "Fail to mask block word. textLength=${request.text.length}" }
             throw e
         } catch (e: Exception) {
             log.error(e) { "Fail to mask block word. textLength=${request.text.length}" }

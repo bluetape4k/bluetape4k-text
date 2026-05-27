@@ -4,15 +4,22 @@ import io.bluetape4k.junit5.coroutines.runSuspendTest
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.tokenizer.korean.KoreanProcessor.addNounsToDictionary
+import io.bluetape4k.tokenizer.korean.KoreanProcessor.detokenize
 import io.bluetape4k.tokenizer.korean.KoreanProcessor.extractPhrases
 import io.bluetape4k.tokenizer.korean.KoreanProcessor.normalize
 import io.bluetape4k.tokenizer.korean.KoreanProcessor.splitSentences
 import io.bluetape4k.tokenizer.korean.KoreanProcessor.stem
 import io.bluetape4k.tokenizer.korean.KoreanProcessor.tokenize
+import io.bluetape4k.tokenizer.korean.KoreanProcessor.tokenizeForNoun
 import io.bluetape4k.tokenizer.korean.KoreanProcessor.tokenizeTopN
 import io.bluetape4k.tokenizer.korean.KoreanProcessor.tokensToStrings
 import io.bluetape4k.tokenizer.korean.block.KoreanBlockwordProcessor
+import io.bluetape4k.tokenizer.korean.normalizer.KoreanNormalizer
+import io.bluetape4k.tokenizer.korean.tokenizer.KoreanDetokenizer
+import io.bluetape4k.tokenizer.korean.tokenizer.KoreanSentenceSplitter
 import io.bluetape4k.tokenizer.korean.tokenizer.KoreanToken
+import io.bluetape4k.tokenizer.korean.tokenizer.KoreanTokenizer
+import io.bluetape4k.tokenizer.korean.tokenizer.NounTokenizer
 import io.bluetape4k.tokenizer.korean.tokenizer.Sentence
 import io.bluetape4k.tokenizer.korean.tokenizer.TokenizerProfile
 import io.bluetape4k.tokenizer.korean.utils.KoreanDictionaryProvider
@@ -23,16 +30,22 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Noun
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Space
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Verb
 import io.bluetape4k.tokenizer.model.BlockwordRequest
+import io.bluetape4k.tokenizer.model.MAX_BLOCKWORD_TEXT_LENGTH
+import io.bluetape4k.tokenizer.model.MAX_TOKENIZE_TEXT_LENGTH
 import io.bluetape4k.tokenizer.model.Severity
+import io.bluetape4k.tokenizer.model.blockwordRequestOf
 import io.bluetape4k.utils.Systemx
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeLessThan
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldContainAll
 import io.bluetape4k.assertions.shouldContainSame
+import io.bluetape4k.assertions.shouldNotContain
 import io.bluetape4k.assertions.shouldNotBeEqualTo
 import org.junit.jupiter.api.Test
 import kotlin.system.measureTimeMillis
@@ -87,6 +100,21 @@ class KoreanTextProcessorTest: TestBase() {
             KoreanToken("ㅋㅋㅋ", KoreanParticle, 15, 3)
         )
         actual shouldBeEqualTo expected
+    }
+
+    @Test
+    fun `should keep Korean tokens stable in mixed Korean Japanese text`() = runSuspendTest {
+        val cases = listOf(
+            "오늘은 カフェ에서 회의를 했다" to listOf("오늘", "은", "에서", "회의", "를", "했다"),
+            "서울에서 東京까지 주말 특가 티켓" to listOf("서울", "에서", "까지", "주말", "특가", "티켓"),
+            "ありがとう라고 말했더니 고마워 했어" to listOf("라고", "말", "했더니", "고마워", "했어"),
+        )
+
+        cases.forEach { (text, expectedTokens) ->
+            val actual = tokensToStrings(tokenize(normalize(text)))
+
+            actual shouldContainAll expectedTokens
+        }
     }
 
     @Test
@@ -271,6 +299,108 @@ class KoreanTextProcessorTest: TestBase() {
         log.debug { "maskedText=$response" }
         response.maskedText shouldBeEqualTo expected
         response.blockWords shouldContainSame setOf("걸레")
+    }
+
+    @Test
+    fun `blockword factory rejects oversized text before Korean processor work`() = runSuspendTest {
+        val rawText = "민감한원문".repeat((MAX_BLOCKWORD_TEXT_LENGTH / 5) + 1)
+
+        val exception = assertFailsWith<IllegalArgumentException> {
+            blockwordRequestOf(rawText)
+        }
+
+        val message = exception.message.orEmpty()
+        message shouldNotContain rawText
+        message shouldNotContain "민감한원문"
+        message shouldContain MAX_BLOCKWORD_TEXT_LENGTH.toString()
+    }
+
+    @Test
+    fun `tokenize facades reject oversized text before Korean tokenizer work`() = runSuspendTest {
+        val rawText = "민감한원문".repeat((MAX_TOKENIZE_TEXT_LENGTH / 5) + 1)
+
+        assertOversizedTextRejected(rawText, MAX_TOKENIZE_TEXT_LENGTH) {
+            normalize(rawText)
+        }
+        assertOversizedTextRejected(rawText, MAX_TOKENIZE_TEXT_LENGTH) {
+            tokenize(rawText)
+        }
+        assertOversizedTextRejected(rawText, MAX_TOKENIZE_TEXT_LENGTH) {
+            tokenizeForNoun(rawText)
+        }
+        assertOversizedTextRejected(rawText, MAX_TOKENIZE_TEXT_LENGTH) {
+            tokenizeTopN(rawText)
+        }
+        assertOversizedTextRejected(rawText, MAX_TOKENIZE_TEXT_LENGTH) {
+            splitSentences(rawText).toList()
+        }
+    }
+
+    @Test
+    fun `detokenize facade rejects oversized token collection before merging text`() = runSuspendTest {
+        val rawToken = "민감한원문".repeat((MAX_TOKENIZE_TEXT_LENGTH / 5) + 1)
+
+        assertOversizedTextRejected(rawToken, MAX_TOKENIZE_TEXT_LENGTH) {
+            detokenize(listOf(rawToken))
+        }
+    }
+
+    @Test
+    fun `lower level Korean text APIs reject oversized text before expensive work`() = runSuspendTest {
+        val rawText = "민감한원문".repeat((MAX_TOKENIZE_TEXT_LENGTH / 5) + 1)
+
+        assertOversizedTextRejected(rawText, MAX_TOKENIZE_TEXT_LENGTH) {
+            KoreanNormalizer.normalize(rawText)
+        }
+        assertOversizedTextRejected(rawText, MAX_TOKENIZE_TEXT_LENGTH) {
+            KoreanTokenizer.tokenize(rawText)
+        }
+        assertOversizedTextRejected(rawText, MAX_TOKENIZE_TEXT_LENGTH) {
+            KoreanTokenizer.tokenizeTopN(rawText)
+        }
+        assertOversizedTextRejected(rawText, MAX_TOKENIZE_TEXT_LENGTH) {
+            NounTokenizer.tokenize(rawText)
+        }
+        assertOversizedTextRejected(rawText, MAX_TOKENIZE_TEXT_LENGTH) {
+            NounTokenizer.tokenizeTopN(rawText)
+        }
+        assertOversizedTextRejected(rawText, MAX_TOKENIZE_TEXT_LENGTH) {
+            KoreanSentenceSplitter.split(rawText).toList()
+        }
+    }
+
+    @Test
+    fun `lower level Korean detokenizer rejects oversized token collection before merging text`() = runSuspendTest {
+        val rawToken = "민감한원문".repeat((MAX_TOKENIZE_TEXT_LENGTH / 5) + 1)
+
+        assertOversizedTextRejected(rawToken, MAX_TOKENIZE_TEXT_LENGTH) {
+            KoreanDetokenizer.detokenize(listOf(rawToken))
+        }
+    }
+
+    @Test
+    fun `blockword search rejects oversized text before Korean tokenizer work`() = runSuspendTest {
+        val rawText = "민감한원문".repeat((MAX_BLOCKWORD_TEXT_LENGTH / 5) + 1)
+
+        assertOversizedTextRejected(rawText, MAX_BLOCKWORD_TEXT_LENGTH) {
+            KoreanBlockwordProcessor.findBlockwords(rawText)
+        }
+    }
+
+    private fun assertOversizedTextRejected(
+        rawText: String,
+        maxLength: Int,
+        block: () -> Unit,
+    ) {
+        val exception = assertFailsWith<IllegalArgumentException> {
+            block()
+        }
+
+        val message = exception.message.orEmpty()
+        message shouldNotContain rawText
+        message shouldNotContain "민감한원문"
+        message shouldContain rawText.length.toString()
+        message shouldContain maxLength.toString()
     }
 
     @Test

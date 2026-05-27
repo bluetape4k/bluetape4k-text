@@ -7,6 +7,7 @@ import io.bluetape4k.tokenizer.japanese.tokenizer.JapaneseTokenizer
 import io.bluetape4k.tokenizer.japanese.utils.JapaneseDictionaryProvider
 import io.bluetape4k.tokenizer.model.BlockwordRequest
 import io.bluetape4k.tokenizer.model.BlockwordResponse
+import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
 
 /**
  * Facade for Japanese morphological tokenization and blockword detection/masking.
@@ -27,6 +28,9 @@ object JapaneseProcessor: KLogging() {
     /**
      * Tokenizes the input sentence into a list of morphological tokens.
      *
+     * Rejects inputs longer than `MAX_TOKENIZE_TEXT_LENGTH` before invoking
+     * Kuromoji.
+     *
      * ```kotlin
      * val tokens = JapaneseProcessor.tokenize("お寿司が食べたい。")
      * val surfaces = tokens.map { it.surface }
@@ -35,6 +39,7 @@ object JapaneseProcessor: KLogging() {
      * ```
      */
     fun tokenize(text: String): List<Token> {
+        requireTokenizeTextLength(text)
         return JapaneseTokenizer.tokenize(text)
     }
 
