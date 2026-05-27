@@ -46,6 +46,20 @@ Kotlin/JVM 텍스트 처리 라이브러리 — 한국어·일본어 형태소 �
 | `tokenizer-japanese` | Kuromoji IPAdic 기반 `JapaneseProcessor` 파사드 — 형태소 분석, POS 필터링, 금칙어 감지·마스킹 | `io.github.bluetape4k.text:tokenizer-japanese` |
 | `tokenizer-korean` | `KoreanProcessor` 파사드 — 한국어 전처리 전 파이프라인: 정규화, 형태소 분석, 구 추출, 어간 추출, 문장 분리, 금칙어 마스킹 | `io.github.bluetape4k.text:tokenizer-korean` |
 
+## 품질 근거
+
+0.2.0 품질 게이트는 저장소에 포함되어 있고 재현 가능합니다:
+
+| 근거 | 링크 |
+|---|---|
+| 텍스트 품질 게이트와 fixture corpus | [spec](docs/superpowers/specs/2026-05-27-issue-83-text-quality-benchmark-spec.md) |
+| 사전 및 금칙어 업데이트 파이프라인 | [plan](docs/superpowers/plans/2026-05-27-issue-85-dictionary-update-pipeline-plan.md) |
+| 토크나이저와 언어 감지 품질 리포트 | [report](docs/superpowers/research/2026-05-27-issue-86-quality-report.md) |
+
+이 리포트는 한국어/일본어 혼합 텍스트 토큰화, Lingua 언어 감지, 안전한 요청 경계 실패를
+결정적 테스트로 검증합니다. 대규모 통계 NLP 벤치마크 주장이 아니라 릴리스 준비 상태를
+확인하는 품질 게이트입니다.
+
 ## 아키텍처
 
 ![text Architecture diagram](docs/assets/readme-diagrams/bluetape4k-text-architecture-01.png)

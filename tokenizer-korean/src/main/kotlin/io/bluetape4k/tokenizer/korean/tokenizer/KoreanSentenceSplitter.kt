@@ -1,6 +1,7 @@
 package io.bluetape4k.tokenizer.korean.tokenizer
 
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
 
 /**
  * 입력 문자열을 문장 경계 정규식으로 분리합니다.
@@ -46,6 +47,7 @@ object KoreanSentenceSplitter: KLogging() {
      * ```
      */
     fun split(text: CharSequence): Sequence<Sentence> {
+        requireTokenizeTextLength(text)
         if (text.isEmpty()) {
             return emptySequence()
         }

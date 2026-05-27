@@ -3,7 +3,11 @@ package io.bluetape4k.tokenizer.korean.tokenizer
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.tokenizer.korean.TestBase
 import io.bluetape4k.tokenizer.korean.tokenizer.KoreanSentenceSplitter.split
+import io.bluetape4k.tokenizer.model.MAX_TOKENIZE_TEXT_LENGTH
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldContainSame
+import io.bluetape4k.assertions.shouldNotContain
 import org.junit.jupiter.api.Test
 
 
@@ -34,5 +38,20 @@ class KoreanSentenceSplitterTest: TestBase() {
             Sentence("이게 말이 돼?!", 0, 9),
             Sentence("으하하하 ㅋㅋㅋㅋㅋㅋㅋ…", 10, 23)
         )
+    }
+
+    @Test
+    fun `split rejects oversized text without leaking raw input`() {
+        val rawText = "민감한원문".repeat((MAX_TOKENIZE_TEXT_LENGTH / 5) + 1)
+
+        val exception = assertFailsWith<IllegalArgumentException> {
+            split(rawText).toList()
+        }
+
+        val message = exception.message.orEmpty()
+        message shouldNotContain rawText
+        message shouldNotContain "민감한원문"
+        message shouldContain rawText.length.toString()
+        message shouldContain MAX_TOKENIZE_TEXT_LENGTH.toString()
     }
 }

@@ -14,6 +14,7 @@ import io.bluetape4k.tokenizer.japanese.utils.JapaneseDictionaryProvider
 import io.bluetape4k.tokenizer.model.BlockwordRequest
 import io.bluetape4k.tokenizer.model.BlockwordResponse
 import io.bluetape4k.tokenizer.model.blockwordResponseOf
+import io.bluetape4k.tokenizer.model.requireBlockwordTextLength
 
 /**
  * Detects and masks blockwords in Japanese sentences using the Kuromoji IPAdic tokenizer.
@@ -34,6 +35,7 @@ object JapaneseBlockwordProcessor: KLogging() {
     /**
      * Returns tokens in the sentence that match entries in the blockword dictionary.
      *
+     * Oversized input is rejected before Kuromoji is invoked.
      * Blank input returns an empty list immediately. If noun/verb token matching yields
      * no results and there are at least two tokens, compound-word matching is attempted.
      *
@@ -45,12 +47,17 @@ object JapaneseBlockwordProcessor: KLogging() {
      * ```
      */
     fun findBlockwords(text: String): List<Token> {
+        requireBlockwordTextLength(text)
         if (text.isBlank()) {
             return emptyList()
         }
         val tokens = JapaneseTokenizer.tokenize(text)
         val blockwords = tokens
-            .onEach { token -> log.trace { "token=${token.surface}, ${token.allFeatures}" } }
+            .onEach { token ->
+                log.trace {
+                    "blockword candidate token. position=${token.position}, length=${token.surface.length}, featureCount=${token.featureCount}"
+                }
+            }
             .filter { it.isNounOrVerb() }
             .filter { isBlockword(it.surface) }
             .toMutableList()
@@ -81,7 +88,7 @@ object JapaneseBlockwordProcessor: KLogging() {
         return tokens.zipWithNext { t1, t2 ->
             if (t1.isNoun() && t2.isNounOrVerb()) {
                 val composite = t1.surface + t2.surface
-                log.debug { "check blockword for composite=$composite" }
+                log.debug { "check blockword composite. length=${composite.length}" }
                 if (isBlockword(composite)) t1 else null
             } else {
                 null
@@ -92,6 +99,7 @@ object JapaneseBlockwordProcessor: KLogging() {
     /**
      * Replaces blockword tokens in the request text with the configured mask string.
      *
+     * Oversized input is rejected before Kuromoji is invoked.
      * Blank input returns a response with an empty masked text. Each matched token surface
      * is replaced with the mask character repeated to match the token's length.
      * Processing exceptions are wrapped and rethrown as [io.bluetape4k.tokenizer.exceptions.TokenizerException].
@@ -104,6 +112,7 @@ object JapaneseBlockwordProcessor: KLogging() {
      * ```
      */
     fun maskBlockwords(request: BlockwordRequest): BlockwordResponse {
+        requireBlockwordTextLength(request.text)
         if (request.text.isBlank()) {
             return BlockwordResponse(request, EMPTY_STRING)
         }
@@ -116,12 +125,16 @@ object JapaneseBlockwordProcessor: KLogging() {
             val blockwords = mutableListOf<String>()
 
             tokens
-                .onEach { token -> log.trace { "token=${token.surface}, ${token.allFeatures}" } }
+                .onEach { token ->
+                    log.trace {
+                        "blockword candidate token. position=${token.position}, length=${token.surface.length}, featureCount=${token.featureCount}"
+                    }
+                }
                 .filter { it.isNounOrVerb() }
                 .sortedByDescending { it.position }
                 .forEach { token ->
                     if (canMask(token)) {
-                        log.trace { "mask token=$token" }
+                        log.trace { "mask block word. position=${token.position}, length=${token.surface.length}" }
                         maskedText = maskedText.replaceRange(
                             token.position,
                             token.position + token.surface.length,
@@ -131,7 +144,9 @@ object JapaneseBlockwordProcessor: KLogging() {
                     }
                 }
             return blockwordResponseOf(request, maskedText, blockwords)
-        } catch (e: Throwable) {
+        } catch (e: Error) {
+            throw e
+        } catch (e: Exception) {
             log.error(e) { "Fail to mask block words. textLength=${request.text.length}" }
             throw TokenizerException("Fail to mask block words. textLength=${request.text.length}", e)
         }
@@ -144,4 +159,6 @@ object JapaneseBlockwordProcessor: KLogging() {
     private fun isBlockword(text: String): Boolean {
         return JapaneseDictionaryProvider.blockWordDictionary.contains(text)
     }
+
+    private val Token.featureCount: Int get() = allFeaturesArray.size
 }

@@ -12,6 +12,7 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanDictionaryProvider
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosx
 import io.bluetape4k.tokenizer.korean.utils.koreanContains
+import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
 import java.util.regex.Matcher
 
 /**
@@ -55,6 +56,7 @@ object KoreanNormalizer: KLogging() {
      * ```
      */
     fun normalize(input: CharSequence): CharSequence {
+        requireTokenizeTextLength(input)
         if (input.isBlank()) return input
         var match: MatchResult = EXTENTED_KOREAN_REGEX.find(input) ?: return input
 
@@ -127,7 +129,7 @@ object KoreanNormalizer: KLogging() {
                 output.sliding(wordLen)
                     .forEach { slice ->
                         if (typoMap.containsKey(slice)) {
-                            log.trace { "Typo check: $slice -> ${typoMap[slice]}" }
+                            log.trace { "Typo check. sliceLength=${slice.length}, replacementLength=${typoMap[slice]?.length}" }
                             output = output.replace(slice, typoMap[slice].toString(), ignoreCase = true)
                         }
                     }

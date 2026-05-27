@@ -19,6 +19,7 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Unknown
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Verb
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosx
 import io.bluetape4k.tokenizer.korean.utils.KoreanSubstantive
+import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
 import org.eclipse.collections.api.multimap.MutableMultimap
 
 /**
@@ -102,6 +103,7 @@ object KoreanTokenizer: KLogging() {
         text: CharSequence,
         profile: TokenizerProfile = TokenizerProfile.DefaultProfile,
     ): List<KoreanToken> {
+        requireTokenizeTextLength(text)
         val tokenized = tokenizeTopN(text, 1, profile)
             .flatMap { it.firstOrNull() ?: emptyList() }
 
@@ -114,7 +116,7 @@ object KoreanTokenizer: KLogging() {
      * ## 동작/계약
      * - 반환 타입은 `List<청크, List<후보, List<KoreanToken>>>` 구조다.
      * - `topN`은 1 이상이어야 하며, 0 이하를 전달하면 `IllegalArgumentException`을 던진다.
-     * - 파싱 중 예외가 발생하면 `TokenizerException("Error tokenizing a chunk: $text", cause)`로 감싸서 던진다.
+     * - 파싱 중 예외가 발생하면 원문 대신 입력 길이만 포함한 `TokenizerException`으로 감싸서 던진다.
      * - `KoreanTokenizerTest`에서 사용자 사전 추가 전/후 결과가 달라지는 경로는 이 함수의 후보 생성 결과를 따른다.
      *
      * ```kotlin
@@ -127,6 +129,7 @@ object KoreanTokenizer: KLogging() {
         topN: Int = 1,
         profile: TokenizerProfile = TokenizerProfile.DefaultProfile,
     ): List<List<List<KoreanToken>>> {
+        requireTokenizeTextLength(text)
         require(topN >= 1) { "topN must be greater than or equal to 1. topN=$topN" }
 
         try {
@@ -144,8 +147,8 @@ object KoreanTokenizer: KLogging() {
                 }
             }
         } catch (e: Exception) {
-            log.error(e) { "Error tokenizing a chunk: $text" }
-            throw TokenizerException("Error tokenizing a chunk: $text", e)
+            log.error(e) { "Error tokenizing a chunk. textLength=${text.length}" }
+            throw TokenizerException("Error tokenizing a chunk. textLength=${text.length}", e)
         }
     }
 
@@ -188,13 +191,12 @@ object KoreanTokenizer: KLogging() {
             for (start in end - 1 downTo maxOf(end - MAX_TRACE_BACK, 0)) {
 
                 val word = chunk.text.slice(start until end)
-                // log.trace { "chunk text=${chunk.text}, start=$start, end=$end, word=$word" }
 
                 // Removing unused solutions from solutions hashmap as the chunk is getting processed
                 removeUnusedSolutions(start, end, solutions)
 
-                val curSolutions = solutions[start].requireNotNull("solutions[start=$start] in chunk '${chunk.text}'")
-                // log.trace { "chunk=${chunk.text} word=$word, curSolutions=${curSolutions.joinToString()}" }
+                val curSolutions =
+                    solutions[start].requireNotNull("solutions[start=$start] in chunkLength=${chunk.length}")
 
                 val candidates: List<CandidateParse> = curSolutions.flatMap { solution: CandidateParse ->
                     val possiblePoses: List<PossibleTrie> = solution.ending
@@ -209,7 +211,6 @@ object KoreanTokenizer: KLogging() {
                                     (koreanDictionary[it.curTrie.curPos]?.contains(word) == true)
                         }
                         .map { t: PossibleTrie ->
-                            // log.trace { "word=$word, trie=${t.curTrie}, pos=${t.curTrie.curPos}" }
                             val candidateToAdd =
                                 if (t.curTrie.curPos == Noun && nounDictionary?.contains(word) == false) {
                                     val isWordName: Boolean = KoreanSubstantive.isName(word)
@@ -227,8 +228,6 @@ object KoreanTokenizer: KLogging() {
                                     val token = KoreanToken(word, pos, chunk.offset + start, word.length)
                                     ParsedChunk(listOf(token), t.words, profile)
                                 }
-                            // log.trace { "candidateToAdd=$candidateToAdd" }
-
                             val nextTrie = t.curTrie.nextTrie
                                 ?.map { if (it == KoreanPosx.SelfNode) t.curTrie else it }
                                 ?.toList()
@@ -249,7 +248,8 @@ object KoreanTokenizer: KLogging() {
             }
         }
 
-        val finalSolutions = solutions[chunk.length].requireNotNull("solutions[chunk.length=${chunk.length}] in chunk '${chunk.text}'")
+        val finalSolutions =
+            solutions[chunk.length].requireNotNull("solutions[chunk.length=${chunk.length}]")
         val topCandidates =
             if (finalSolutions.isEmpty()) {
                 val token = KoreanToken(chunk.text, Noun, chunk.offset, chunk.length, unknown = true)
@@ -275,7 +275,9 @@ object KoreanTokenizer: KLogging() {
     }
 
     private fun findDirectMatch(chunk: KoreanToken): List<List<KoreanToken>> {
-        log.trace { "Find direct match. chunk=$chunk" }
+        log.trace {
+            "Find direct match. offset=${chunk.offset}, length=${chunk.length}, pos=${chunk.pos}"
+        }
         return koreanDictionary.entries
             .firstOrNull { (_, dict) ->
                 dict.contains(chunk.text)

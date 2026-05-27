@@ -52,6 +52,20 @@ and high-throughput keyword search.
 | `tokenizer-japanese` | `JapaneseProcessor` facade powered by Kuromoji IPAdic — morphological analysis, POS filtering, blockword detection and masking | `io.github.bluetape4k.text:tokenizer-japanese` |
 | `tokenizer-korean` | `KoreanProcessor` facade — full Korean NLP pipeline: normalization, POS tokenization, phrase extraction, stemming, sentence splitting, blockword masking | `io.github.bluetape4k.text:tokenizer-korean` |
 
+## Quality Evidence
+
+The 0.2.0 quality gate is source-controlled and reproducible:
+
+| Evidence | Link |
+|---|---|
+| Text quality gate and fixture corpus | [spec](docs/superpowers/specs/2026-05-27-issue-83-text-quality-benchmark-spec.md) |
+| Dictionary and blockword update pipeline | [plan](docs/superpowers/plans/2026-05-27-issue-85-dictionary-update-pipeline-plan.md) |
+| Tokenizer and language detection quality report | [report](docs/superpowers/research/2026-05-27-issue-86-quality-report.md) |
+
+The report uses deterministic tests for mixed Korean/Japanese tokenization,
+Lingua language detection, and sanitized request-boundary failures. It is a
+release-readiness gate, not a broad statistical NLP benchmark claim.
+
 ## Architecture
 
 ![text Architecture diagram](docs/assets/readme-diagrams/bluetape4k-text-architecture-01.png)

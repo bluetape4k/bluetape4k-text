@@ -3,18 +3,30 @@ package io.bluetape4k.tokenizer.model
 import io.bluetape4k.support.requireNotBlank
 
 /**
- * Maximum number of characters accepted by the blockword factory function.
+ * Maximum number of characters accepted by [BlockwordRequest].
  *
- * Callers that need a higher limit must construct [BlockwordRequest] directly and apply
- * their own validation. This guard exists to protect library consumers that expose
- * blockword APIs over HTTP without an upstream input-length gate.
+ * This guard exists to protect library consumers that expose blockword APIs over
+ * HTTP without an upstream input-length gate.
  */
 const val MAX_BLOCKWORD_TEXT_LENGTH: Int = 100_000
+
+/**
+ * Validates that [text] is within the blockword input-length contract.
+ *
+ * The exception message reports only lengths, so raw user input is not echoed
+ * into logs or API error payloads.
+ */
+fun requireBlockwordTextLength(text: CharSequence) {
+    require(text.length <= MAX_BLOCKWORD_TEXT_LENGTH) {
+        "text too long: ${text.length} chars (max $MAX_BLOCKWORD_TEXT_LENGTH)"
+    }
+}
 
 /**
  * Input model for requesting block-word detection and masking.
  *
  * ## Behavior / Contract
+ * - Rejects `text.length > MAX_BLOCKWORD_TEXT_LENGTH` at construction time.
  * - Validates `text.requireNotBlank("text")` at construction time; blank input is rejected.
  * - When [options] is omitted, [BlockwordOptions.DEFAULT] is used.
  * - Inherits [AbstractMessage], so a creation timestamp is recorded automatically.
@@ -30,6 +42,7 @@ data class BlockwordRequest(
     val options: BlockwordOptions = BlockwordOptions.DEFAULT,
 ): AbstractMessage() {
     init {
+        requireBlockwordTextLength(text)
         text.requireNotBlank("text")
     }
 }
@@ -38,13 +51,12 @@ data class BlockwordRequest(
  * Creates a [BlockwordRequest] after validating [text].
  *
  * ## Behavior / Contract
- * - Calls `text.requireNotBlank("text")` before construction; blank input is rejected.
  * - Throws [IllegalArgumentException] when `text.length > MAX_BLOCKWORD_TEXT_LENGTH`.
+ * - Calls `text.requireNotBlank("text")` before construction; blank input is rejected.
  *
  * ## Input length
- * The factory rejects inputs longer than [MAX_BLOCKWORD_TEXT_LENGTH] characters.
- * Callers that need a higher limit must construct [BlockwordRequest] directly and
- * perform their own length validation before calling the blockword processors.
+ * The request model rejects inputs longer than [MAX_BLOCKWORD_TEXT_LENGTH]
+ * characters across factory calls, direct construction, and JSON binding.
  *
  * ```kotlin
  * val request = blockwordRequestOf("test sentence")
@@ -56,9 +68,7 @@ fun blockwordRequestOf(
     text: String,
     options: BlockwordOptions = BlockwordOptions.DEFAULT,
 ): BlockwordRequest {
+    requireBlockwordTextLength(text)
     text.requireNotBlank("text")
-    require(text.length <= MAX_BLOCKWORD_TEXT_LENGTH) {
-        "text too long: ${text.length} chars (max $MAX_BLOCKWORD_TEXT_LENGTH)"
-    }
     return BlockwordRequest(text, options)
 }

@@ -87,7 +87,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      * ```
      */
     fun addBlockwords(words: Collection<String>) {
-        log.debug { "Add block words: ${words.joinToString(",")}" }
+        log.debug { "Add block words. count=${words.size}, totalLength=${words.sumOf { it.length }}" }
         blockWordDictionary.addAll(words)
     }
 
@@ -102,7 +102,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      * ```
      */
     fun removeBlockwords(words: Collection<String>) {
-        log.debug { "Remove block words: ${words.joinToString(",")}" }
+        log.debug { "Remove block words. count=${words.size}, totalLength=${words.sumOf { it.length }}" }
         blockWordDictionary.removeAll(words)
     }
 

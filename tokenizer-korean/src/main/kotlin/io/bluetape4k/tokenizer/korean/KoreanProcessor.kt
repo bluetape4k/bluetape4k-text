@@ -22,6 +22,7 @@ import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.tokenizer.model.Severity.HIGH
 import io.bluetape4k.tokenizer.model.Severity.LOW
 import io.bluetape4k.tokenizer.model.Severity.MIDDLE
+import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
 import io.bluetape4k.tokenizer.utils.CharArraySet
 
 /**
@@ -43,6 +44,7 @@ object KoreanProcessor: KLogging() {
      * 구어체/반복 문자/오타를 정규화합니다.
      *
      * ## 동작/계약
+     * - 정규화기 호출 전에 최대 입력 길이를 검증한다.
      * - 내부 구현은 `KoreanNormalizer.normalize`를 그대로 위임한다.
      * - 빈 입력/비한글 구간 처리는 정규화기 구현 규칙을 따른다.
      *
@@ -52,6 +54,7 @@ object KoreanProcessor: KLogging() {
      * ```
      */
     fun normalize(text: CharSequence): CharSequence {
+        requireTokenizeTextLength(text)
         return KoreanNormalizer.normalize(text)
     }
 
@@ -59,6 +62,7 @@ object KoreanProcessor: KLogging() {
      * 문장을 1-best 형태소 토큰 리스트로 분석합니다.
      *
      * ## 동작/계약
+     * - 토크나이저 호출 전에 최대 입력 길이를 검증한다.
      * - `KoreanTokenizer.tokenize(text, profile)`를 그대로 위임한다.
      * - 결과 토큰에는 필요 시 용언 `stem` 정보가 포함된다.
      *
@@ -71,6 +75,7 @@ object KoreanProcessor: KLogging() {
         text: CharSequence,
         profile: TokenizerProfile = TokenizerProfile.DefaultProfile,
     ): List<KoreanToken> {
+        requireTokenizeTextLength(text)
         return KoreanTokenizer.tokenize(text, profile)
     }
 
@@ -78,6 +83,7 @@ object KoreanProcessor: KLogging() {
      * 명사 중심 규칙으로 문장을 분석합니다.
      *
      * ## 동작/계약
+     * - 토크나이저 호출 전에 최대 입력 길이를 검증한다.
      * - `NounTokenizer.tokenize(text, profile)`를 위임 호출한다.
      * - phrase 추출 전처리용 명사 토큰화 경로로 사용된다.
      *
@@ -90,6 +96,7 @@ object KoreanProcessor: KLogging() {
         text: CharSequence,
         profile: TokenizerProfile = TokenizerProfile.DefaultProfile,
     ): List<KoreanToken> {
+        requireTokenizeTextLength(text)
         return NounTokenizer.tokenize(text, profile)
     }
 
@@ -97,6 +104,7 @@ object KoreanProcessor: KLogging() {
      * 문장을 청크별 상위 `n` 후보로 분석합니다.
      *
      * ## 동작/계약
+     * - 토크나이저 호출 전에 최대 입력 길이를 검증한다.
      * - `KoreanTokenizer.tokenizeTopN(text, n, profile)`를 그대로 위임한다.
      *
      * ```kotlin
@@ -108,7 +116,10 @@ object KoreanProcessor: KLogging() {
         text: CharSequence,
         n: Int = 1,
         profile: TokenizerProfile = TokenizerProfile.DefaultProfile,
-    ): List<List<List<KoreanToken>>> = KoreanTokenizer.tokenizeTopN(text, n, profile)
+    ): List<List<List<KoreanToken>>> {
+        requireTokenizeTextLength(text)
+        return KoreanTokenizer.tokenizeTopN(text, n, profile)
+    }
 
     /**
      * 명사 사전에 단어 목록을 추가합니다.
@@ -265,6 +276,7 @@ object KoreanProcessor: KLogging() {
      * 문장을 `Sentence` 시퀀스로 분리합니다.
      *
      * ## 동작/계약
+     * - 문장 분리기 호출 전에 최대 입력 길이를 검증한다.
      * - `KoreanSentenceSplitter.split(text)`를 그대로 위임한다.
      *
      * ```kotlin
@@ -272,8 +284,10 @@ object KoreanProcessor: KLogging() {
      * // sentences.size == 2
      * ```
      */
-    fun splitSentences(text: CharSequence): Sequence<Sentence> =
-        KoreanSentenceSplitter.split(text)
+    fun splitSentences(text: CharSequence): Sequence<Sentence> {
+        requireTokenizeTextLength(text)
+        return KoreanSentenceSplitter.split(text)
+    }
 
     /**
      * 토큰 목록에서 phrase를 추출합니다.
@@ -330,6 +344,7 @@ object KoreanProcessor: KLogging() {
      * 토큰 문자열 목록을 문장 문자열로 복원합니다.
      *
      * ## 동작/계약
+     * - 토큰 문자열 총 길이를 먼저 검증해 과도한 병합 문자열 할당을 막는다.
      * - `KoreanDetokenizer.detokenize(tokens)`를 그대로 위임한다.
      *
      * ```kotlin
@@ -338,6 +353,7 @@ object KoreanProcessor: KLogging() {
      * ```
      */
     fun detokenize(tokens: Collection<String>): String {
+        requireTokenizeTextLength(tokens.sumOf { it.length })
         return KoreanDetokenizer.detokenize(tokens)
     }
 

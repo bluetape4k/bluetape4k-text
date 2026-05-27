@@ -4,6 +4,7 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.tokenizer.japanese.AbstractTokenizerTest
 import io.bluetape4k.tokenizer.model.BlockwordResponse
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.tokenizer.model.blockwordOptionsOf
 import io.bluetape4k.tokenizer.model.blockwordRequestOf
 import io.bluetape4k.assertions.shouldBeEmpty
@@ -29,10 +30,10 @@ class JapaneseBlockwordProcessorTest: AbstractTokenizerTest() {
 
     @Test
     fun `빈 문자열 마스킹 요청 시 예외 발생`() {
-        org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             blockwordRequestOf("", options)
         }
-        org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             blockwordRequestOf("   ", options)
         }
     }
