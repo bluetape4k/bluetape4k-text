@@ -44,3 +44,13 @@ Root README visual assets live under `docs/assets/` and should be shared by
   `Flow.async`; preserve coroutine semantics.
 - `matchesAsFlow()` uses `channelFlow + flowOn(Dispatchers.Default)`.
 - Use `KoreanProcessor.kt` and `AhoCorasickAutomaton.kt` as KDoc style examples.
+
+## Cross-Repo Lesson Guards
+
+- Before issue, PR, workflow, release, benchmark, or module-registration work,
+  query GNO for this repo in both `bluetape4k-github` and `bluetape4k-docs`.
+- For tokenizer/search module changes, keep README locale sets, repo-local
+  module lists, CI/Nightly coverage, benchmark evidence, coverage artifacts,
+  and BOM/catalog constraints synchronized.
+- Keep Kover XML/Codecov visible without hard gates unless explicitly decided.
+  Preserve coroutine semantics when adding performance or benchmark coverage.
