@@ -7,6 +7,24 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-27
+
+### Added
+
+- Defined the tokenizer dictionary update pipeline and block-word governance so Korean and Japanese tokenizers can refresh dictionary data predictably ([#85](https://github.com/bluetape4k/bluetape4k-text/issues/85)).
+- Published the text quality benchmark plan, fixture corpus, and README benchmark report for tokenizer and language-detection quality tracking ([#83](https://github.com/bluetape4k/bluetape4k-text/issues/83), [#86](https://github.com/bluetape4k/bluetape4k-text/issues/86)).
+- Added Korean/Japanese mixed-text tokenizer accuracy fixtures and security regression coverage for validation and sanitized failures ([#84](https://github.com/bluetape4k/bluetape4k-text/issues/84), [#96](https://github.com/bluetape4k/bluetape4k-text/issues/96)).
+
+### Changed
+
+- Established the 0.2.0 quality gates in PR validation before opening the stable release line ([PR #106](https://github.com/bluetape4k/bluetape4k-text/pull/106)).
+
+## [0.1.2] - 2026-05-23
+
+### Changed
+
+- Parameterized the release catalog reference and resolved shared build aliases from the catalog source for the 0.1.2 release line ([PR #80](https://github.com/bluetape4k/bluetape4k-text/pull/80)).
+
 ## [0.1.1] - 2026-05-22
 
 ### Changed
