@@ -1,7 +1,7 @@
 # WIP - bluetape4k-text
 
-Snapshot: 2026-05-24 KST
-Scope: patch/minor milestone discovery plus open GitHub issue queue.
+Snapshot: 2026-06-01 KST
+Scope: post-0.2.0 release train version alignment.
 Open count: 0 issues.
 
 ## 2026-05-24 Milestone Refresh
@@ -63,16 +63,15 @@ Minor candidates:
 
 ## Current Direction
 
-0.1.1 release preparation.
-
-The 0.1.1 release gate is clear after #67. Keep future feature work out of the
-patch release.
+The `0.2.0` stable line has been published and consumed by
+`bluetape4k-dependencies` `1.2.0`. Development now moves to `0.3.0` with
+`snapshotVersion=` kept empty for workflow-injected snapshot publication.
 
 ## Priority Queue
 
 | Priority | Issue | Difficulty | Notes |
 |---|---|---:|---|
-| P1 | Next assigned issue | TBD | No assigned open issue remains after #67 merges. |
+| P1 | next minor development | 0.3.0 | Open the next minor line after the 0.2.0 release train. |
 
 ## WIP Limits
 
