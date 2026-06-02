@@ -1,8 +1,8 @@
 # WIP - bluetape4k-text
 
-Snapshot: 2026-06-01 KST
+Snapshot: 2026-06-02 KST
 Scope: post-0.2.0 release train version alignment.
-Open count: 0 issues.
+Open count: 20 issues.
 
 ## 2026-05-24 Milestone Refresh
 
