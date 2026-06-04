@@ -172,15 +172,28 @@ fun <V> AhoCorasickAutomaton<V>.matchesAsFlow(text: CharSequence): Flow<AhoCoras
 
 ## 벤치마크
 
-> Apple M3 Pro (JDK 21, JVM 워밍업 후) 기준 JMH 벤치마크 결과.
+처리량은 저장소의 kotlinx-benchmark Gradle 태스크를 통해 JMH로 측정합니다.
+`ops/s`는 높을수록 좋습니다. 0.2.1 기준선은 큰 사전, dense match, no-match
+입력, Unicode 정규화, Flow 수집 비용을 함께 다룹니다.
+
+실행 조건:
+
+- 명령: `./gradlew :text-search:benchmark`
+- 호스트: Apple M4 Pro, 메모리 48 GiB
+- benchmark JSON 기준 JVM: GraalVM JDK 21.0.11
+- raw 결과: [`docs/benchmark/2026-06-04-issue-97-ahocorasick-baselines.json`](../docs/benchmark/2026-06-04-issue-97-ahocorasick-baselines.json)
 
 | 벤치마크 | Ops/s | 비고 |
 |----------|-------|------|
-| `parseText` (키워드 50개, 텍스트 10K) | ~450,000 | Aho-Corasick 단일 패스 |
-| `matchesAsFlow` 전체 수집 | ~200,000 | Flow 오버헤드 포함 |
-| 단순 `String.contains` × 50 | ~15,000 | O(n×m) 기준선 |
+| `parseTextNoMatch` | 12,209.23 | 5,000-keyword automaton, 매치 없음 |
+| `parseTextDenseMatches` | 3,566.90 | 겹치는 dense match |
+| `parseTextLargeDictionary` | 3,116.99 | 5,000개 키워드, 2,000개 매치 토큰 |
+| `matchesAsFlowLargeDictionaryCollect` | 712.62 | 큰 사전 입력의 Flow 전체 수집 |
+| `naiveContainsSmallDictionary` | 248.39 | 1,000-keyword 순차 `String.contains` 기준선 |
+| `parseTextNfkcNormalization` | 3.68 | NFKC + ignore-case 정규화 경로 |
 
-> Aho-Corasick은 키워드 50개 기준 단순 contains 대비 **약 30배** 빠릅니다.
+> 이 수치는 로컬 비교용 snapshot이며 production ranking 이 아닙니다. 이후 비교는
+> 같은 명령과 같은 metric direction 을 기준으로 수행하세요.
 
 로컬 벤치마크 실행:
 

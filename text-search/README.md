@@ -171,15 +171,28 @@ fun <V> AhoCorasickAutomaton<V>.matchesAsFlow(text: CharSequence): Flow<AhoCoras
 
 ## Benchmark
 
-> Results from JMH benchmark on Apple M3 Pro (JDK 21, JVM warm).
+Throughput is measured with JMH through the repo-local kotlinx-benchmark task.
+Higher `ops/s` is better. The 0.2.1 baseline covers large dictionaries, dense
+matches, no-match input, Unicode normalization, and Flow collection.
+
+Run condition:
+
+- Command: `./gradlew :text-search:benchmark`
+- Host: Apple M4 Pro, 48 GiB memory
+- JVM from benchmark JSON: GraalVM JDK 21.0.11
+- Raw result: [`docs/benchmark/2026-06-04-issue-97-ahocorasick-baselines.json`](../docs/benchmark/2026-06-04-issue-97-ahocorasick-baselines.json)
 
 | Benchmark | Ops/s | Notes |
 |-----------|-------|-------|
-| `parseText` (50 keywords, 10K text) | ~450,000 | Single-pass Aho-Corasick |
-| `matchesAsFlow` collect | ~200,000 | Flow overhead included |
-| Naive `String.contains` × 50 | ~15,000 | O(n×m) baseline |
+| `parseTextNoMatch` | 12,209.23 | 5,000-keyword automaton, no matches |
+| `parseTextDenseMatches` | 3,566.90 | Overlapping dense matches |
+| `parseTextLargeDictionary` | 3,116.99 | 5,000 keywords, 2,000 matched tokens |
+| `matchesAsFlowLargeDictionaryCollect` | 712.62 | Flow collection over the large-dictionary input |
+| `naiveContainsSmallDictionary` | 248.39 | 1,000-keyword sequential `String.contains` baseline |
+| `parseTextNfkcNormalization` | 3.68 | NFKC + ignore-case normalization path |
 
-> Aho-Corasick provides **~30× speedup** over naive contains check with 50 keywords.
+> These are local comparable snapshots, not production rankings. Keep future
+> runs on the same command and metric direction before comparing deltas.
 
 Run benchmarks locally:
 
