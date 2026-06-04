@@ -40,6 +40,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
 
       - name: Build (compile only)
         run: ./gradlew build -x test --parallel --refresh-dependencies
@@ -74,6 +75,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
           cache-read-only: true
 
       - name: Test tokenizer-core
@@ -124,6 +126,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
           cache-read-only: true
 
       - name: Test tokenizer-japanese
@@ -174,6 +177,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
           cache-read-only: true
 
       - name: Test tokenizer-korean
@@ -224,6 +228,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
           cache-read-only: true
 
       - name: Test lingua
@@ -274,6 +279,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
+          cache-disabled: true
           cache-read-only: true
 
       - name: Test text-search
