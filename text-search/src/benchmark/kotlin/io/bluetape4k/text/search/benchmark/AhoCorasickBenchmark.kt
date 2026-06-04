@@ -2,6 +2,8 @@ package io.bluetape4k.text.search.benchmark
 
 import io.bluetape4k.text.search.AhoCorasickAutomaton
 import io.bluetape4k.text.search.AhoCorasickMatch
+import io.bluetape4k.text.search.NormalizationForm
+import io.bluetape4k.text.search.SearchOptions
 import io.bluetape4k.text.search.ahoCorasickOf
 import io.bluetape4k.text.search.flow.matchesAsFlow
 import kotlinx.coroutines.flow.toList
@@ -20,15 +22,18 @@ import org.openjdk.jmh.annotations.Warmup
 import java.util.concurrent.TimeUnit
 
 /**
- * Aho-Corasick 자동자의 세 가지 검색 경로에 대한 JMH 처리량 벤치마크.
+ * Aho-Corasick 자동자의 대표 검색 경로에 대한 JMH 처리량 벤치마크.
  *
- * - [parseText]: 내부 TrieCore 기반 배치 검색 — 기준선(baseline)
- * - [matchesAsFlowCollect]: `channelFlow` + `Dispatchers.Default` 기반 스트리밍 검색
- * - [naiveContains]: `String.contains` 순차 비교 — 비교군(naive baseline)
+ * - [parseTextLargeDictionary]: 큰 사전 + 긴 입력 기준선
+ * - [matchesAsFlowLargeDictionaryCollect]: `channelFlow` + `Dispatchers.Default` 기반 스트리밍 검색
+ * - [parseTextDenseMatches]: 겹치는 dense match 기준선
+ * - [parseTextNoMatch]: 매치가 없는 입력 기준선
+ * - [parseTextNfkcNormalization]: NFKC 정규화 경로 기준선
+ * - [naiveContainsSmallDictionary]: `String.contains` 순차 비교군
  *
  * **벤치마크 설계**:
- * - 키워드 1,000개 + 텍스트 내 키워드 매치 약 1,000회로 구성
- * - `keyword${it % 1_000}` 패턴으로 모든 토큰이 등록 키워드와 정확히 대응
+ * - 사전 크기, 매치 밀도, no-match 입력, Unicode 정규화, Flow 수집 비용을 분리한다.
+ * - 처리량 지표는 ops/s이며 높을수록 좋다.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.Throughput)
@@ -38,46 +43,113 @@ import java.util.concurrent.TimeUnit
 @Fork(value = 1)
 open class AhoCorasickBenchmark {
 
-    lateinit var matcher: AhoCorasickAutomaton<String>
-    lateinit var keywords: List<String>
-    lateinit var largeText: String
+    private lateinit var largeDictionaryMatcher: AhoCorasickAutomaton<String>
+    private lateinit var denseMatcher: AhoCorasickAutomaton<String>
+    private lateinit var normalizedMatcher: AhoCorasickAutomaton<String>
+    private lateinit var smallKeywords: List<String>
+    private lateinit var largeDictionaryText: String
+    private lateinit var noMatchText: String
+    private lateinit var denseText: String
+    private lateinit var normalizedText: String
 
     @Setup(Level.Trial)
     fun setup() {
-        keywords = (1..1_000).map { "keyword$it" }
-        matcher = ahoCorasickOf(keywords)
-        largeText = buildString {
-            repeat(1_000) { append("some keyword${it % 1_000} text ") }
+        smallKeywords = (1..SMALL_KEYWORD_COUNT).map { "keyword$it" }
+        val largeKeywords = (1..LARGE_KEYWORD_COUNT).map { "keyword$it" }
+
+        largeDictionaryMatcher = ahoCorasickOf(largeKeywords)
+        denseMatcher = ahoCorasickOf(listOf("a", "aa", "aaa", "aaaa", "aaaaa"))
+        normalizedMatcher = ahoCorasickOf(
+            listOf("cafe", "한글", "(주)"),
+            SearchOptions(ignoreCase = true, normalization = NormalizationForm.NFKC),
+        )
+
+        largeDictionaryText = buildString {
+            repeat(LARGE_TEXT_TOKEN_COUNT) { index ->
+                append("payload keyword${(index % LARGE_KEYWORD_COUNT) + 1} value ")
+            }
+        }
+        noMatchText = buildString {
+            repeat(LARGE_TEXT_TOKEN_COUNT) { index ->
+                append("payload unmatched-$index value ")
+            }
+        }
+        denseText = buildString {
+            repeat(DENSE_TOKEN_COUNT) {
+                append("aaaaa ")
+            }
+        }
+        normalizedText = buildString {
+            repeat(NORMALIZED_TOKEN_COUNT) {
+                append("ＣＡＦＥ 한글 ㈜ ")
+            }
         }
     }
 
     /**
-     * Aho-Corasick [AhoCorasickAutomaton.parseText]로 배치 검색 — 내부 TrieCore 직접 호출.
+     * 큰 사전과 긴 입력에서 [AhoCorasickAutomaton.parseText] 처리량을 측정한다.
      *
      * @return 매치 결과 리스트 (검색 경로 유지용 반환값)
      */
     @Benchmark
-    fun parseText(): List<AhoCorasickMatch<String>> = matcher.parseText(largeText)
+    fun parseTextLargeDictionary(): List<AhoCorasickMatch<String>> =
+        largeDictionaryMatcher.parseText(largeDictionaryText)
 
     /**
-     * [matchesAsFlow]로 Flow를 생성하고 전체 매치를 수집한다.
+     * 큰 사전과 긴 입력에서 [matchesAsFlow] 전체 수집 처리량을 측정한다.
      *
-     * `channelFlow` + `Dispatchers.Default` 오버헤드를 [parseText]와 비교한다.
+     * `channelFlow` + `Dispatchers.Default` 오버헤드를 [parseTextLargeDictionary]와 비교한다.
      *
      * @return 수집된 매치 수 (JMH dead-code 제거 방지용 반환값)
      */
     @Benchmark
-    fun matchesAsFlowCollect(): Int = runBlocking {
-        matcher.matchesAsFlow(largeText).toList().size
+    fun matchesAsFlowLargeDictionaryCollect(): Int = runBlocking {
+        largeDictionaryMatcher.matchesAsFlow(largeDictionaryText).toList().size
     }
 
     /**
-     * 순진한(naive) `String.contains` 순차 비교 — Aho-Corasick 대비 성능 열위를 확인한다.
+     * 겹치는 키워드가 많은 dense input에서 overlap 처리량을 측정한다.
+     *
+     * @return 매치 결과 리스트 (검색 경로 유지용 반환값)
+     */
+    @Benchmark
+    fun parseTextDenseMatches(): List<AhoCorasickMatch<String>> =
+        denseMatcher.parseText(denseText)
+
+    /**
+     * 매치가 없는 긴 입력에서 실패 탐색 비용을 측정한다.
+     *
+     * @return 매치 결과 리스트 (검색 경로 유지용 반환값)
+     */
+    @Benchmark
+    fun parseTextNoMatch(): List<AhoCorasickMatch<String>> =
+        largeDictionaryMatcher.parseText(noMatchText)
+
+    /**
+     * NFKC 정규화와 대소문자 무시 옵션을 함께 사용하는 경로의 처리량을 측정한다.
+     *
+     * @return 매치 결과 리스트 (검색 경로 유지용 반환값)
+     */
+    @Benchmark
+    fun parseTextNfkcNormalization(): List<AhoCorasickMatch<String>> =
+        normalizedMatcher.parseText(normalizedText)
+
+    /**
+     * 작은 사전 기준 순진한(naive) `String.contains` 순차 비교 처리량을 측정한다.
      *
      * O(k × n) 복잡도로 키워드 수(k)와 텍스트 길이(n)에 비례한다.
      *
      * @return 매치 횟수 (JMH dead-code 제거 방지용 반환값)
      */
     @Benchmark
-    fun naiveContains(): Int = keywords.count { largeText.contains(it) }
+    fun naiveContainsSmallDictionary(): Int =
+        smallKeywords.count { largeDictionaryText.contains(it) }
+
+    companion object {
+        private const val SMALL_KEYWORD_COUNT = 1_000
+        private const val LARGE_KEYWORD_COUNT = 5_000
+        private const val LARGE_TEXT_TOKEN_COUNT = 2_000
+        private const val DENSE_TOKEN_COUNT = 2_000
+        private const val NORMALIZED_TOKEN_COUNT = 1_000
+    }
 }
