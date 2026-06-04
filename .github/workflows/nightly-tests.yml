@@ -42,12 +42,12 @@ jobs:
           gradle-version: wrapper
 
       - name: Build (compile only)
-        run: ./gradlew build -x test --parallel
+        run: ./gradlew build -x test --parallel --refresh-dependencies
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
       - name: Detekt static analysis
-        run: ./gradlew detekt --parallel
+        run: ./gradlew detekt --parallel --refresh-dependencies
 
       - name: Upload detekt report
         if: always()
@@ -79,7 +79,7 @@ jobs:
       - name: Test tokenizer-core
         run: |
           for attempt in 1 2 3; do
-            ./gradlew :tokenizer-core:test --no-daemon && break
+            ./gradlew :tokenizer-core:test --no-daemon --refresh-dependencies && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
           done
@@ -88,7 +88,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-core:koverXmlReport --no-daemon
+        run: ./gradlew :tokenizer-core:koverXmlReport --no-daemon --refresh-dependencies
         continue-on-error: true
 
       - name: Upload test results
@@ -129,7 +129,7 @@ jobs:
       - name: Test tokenizer-japanese
         run: |
           for attempt in 1 2 3; do
-            ./gradlew :tokenizer-japanese:test --no-daemon && break
+            ./gradlew :tokenizer-japanese:test --no-daemon --refresh-dependencies && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
           done
@@ -138,7 +138,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-japanese:koverXmlReport --no-daemon
+        run: ./gradlew :tokenizer-japanese:koverXmlReport --no-daemon --refresh-dependencies
         continue-on-error: true
 
       - name: Upload test results
@@ -179,7 +179,7 @@ jobs:
       - name: Test tokenizer-korean
         run: |
           for attempt in 1 2 3; do
-            ./gradlew :tokenizer-korean:test --no-daemon && break
+            ./gradlew :tokenizer-korean:test --no-daemon --refresh-dependencies && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
           done
@@ -188,7 +188,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-korean:koverXmlReport --no-daemon
+        run: ./gradlew :tokenizer-korean:koverXmlReport --no-daemon --refresh-dependencies
         continue-on-error: true
 
       - name: Upload test results
@@ -229,7 +229,7 @@ jobs:
       - name: Test lingua
         run: |
           for attempt in 1 2 3; do
-            ./gradlew :lingua:test --no-daemon && break
+            ./gradlew :lingua:test --no-daemon --refresh-dependencies && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
           done
@@ -238,7 +238,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :lingua:koverXmlReport --no-daemon
+        run: ./gradlew :lingua:koverXmlReport --no-daemon --refresh-dependencies
         continue-on-error: true
 
       - name: Upload test results
@@ -279,7 +279,7 @@ jobs:
       - name: Test text-search
         run: |
           for attempt in 1 2 3; do
-            ./gradlew :text-search:test --no-daemon && break
+            ./gradlew :text-search:test --no-daemon --refresh-dependencies && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 3 ] && sleep 10 || exit 1
           done
@@ -288,7 +288,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :text-search:koverXmlReport --no-daemon
+        run: ./gradlew :text-search:koverXmlReport --no-daemon --refresh-dependencies
         continue-on-error: true
 
       - name: Upload test results
