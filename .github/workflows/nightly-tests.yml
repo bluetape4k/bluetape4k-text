@@ -40,12 +40,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
-          cache-disabled: true
 
       - name: Build (compile only)
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew build -x test --parallel --refresh-dependencies --no-configuration-cache && break
+            ./gradlew build -x test --parallel --no-configuration-cache && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -55,7 +54,7 @@ jobs:
       - name: Detekt static analysis
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew detekt --parallel --refresh-dependencies --no-configuration-cache && break
+            ./gradlew detekt --parallel --no-configuration-cache && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -85,13 +84,12 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
-          cache-disabled: true
           cache-read-only: true
 
       - name: Test tokenizer-core
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew :tokenizer-core:test --no-daemon --refresh-dependencies --no-configuration-cache && break
+            ./gradlew :tokenizer-core:test --no-daemon --no-configuration-cache && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -100,7 +98,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-core:koverXmlReport --no-daemon --refresh-dependencies --no-configuration-cache
+        run: ./gradlew :tokenizer-core:koverXmlReport --no-daemon --no-configuration-cache
         continue-on-error: true
 
       - name: Upload test results
@@ -136,13 +134,12 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
-          cache-disabled: true
           cache-read-only: true
 
       - name: Test tokenizer-japanese
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew :tokenizer-japanese:test --no-daemon --refresh-dependencies --no-configuration-cache && break
+            ./gradlew :tokenizer-japanese:test --no-daemon --no-configuration-cache && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -151,7 +148,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-japanese:koverXmlReport --no-daemon --refresh-dependencies --no-configuration-cache
+        run: ./gradlew :tokenizer-japanese:koverXmlReport --no-daemon --no-configuration-cache
         continue-on-error: true
 
       - name: Upload test results
@@ -187,13 +184,12 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
-          cache-disabled: true
           cache-read-only: true
 
       - name: Test tokenizer-korean
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew :tokenizer-korean:test --no-daemon --refresh-dependencies --no-configuration-cache && break
+            ./gradlew :tokenizer-korean:test --no-daemon --no-configuration-cache && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -202,7 +198,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-korean:koverXmlReport --no-daemon --refresh-dependencies --no-configuration-cache
+        run: ./gradlew :tokenizer-korean:koverXmlReport --no-daemon --no-configuration-cache
         continue-on-error: true
 
       - name: Upload test results
@@ -238,13 +234,12 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
-          cache-disabled: true
           cache-read-only: true
 
       - name: Test lingua
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew :lingua:test --no-daemon --refresh-dependencies --no-configuration-cache && break
+            ./gradlew :lingua:test --no-daemon --no-configuration-cache && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -253,7 +248,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :lingua:koverXmlReport --no-daemon --refresh-dependencies --no-configuration-cache
+        run: ./gradlew :lingua:koverXmlReport --no-daemon --no-configuration-cache
         continue-on-error: true
 
       - name: Upload test results
@@ -289,13 +284,12 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
-          cache-disabled: true
           cache-read-only: true
 
       - name: Test text-search
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew :text-search:test --no-daemon --refresh-dependencies --no-configuration-cache && break
+            ./gradlew :text-search:test --no-daemon --no-configuration-cache && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -304,7 +298,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :text-search:koverXmlReport --no-daemon --refresh-dependencies --no-configuration-cache
+        run: ./gradlew :text-search:koverXmlReport --no-daemon --no-configuration-cache
         continue-on-error: true
 
       - name: Upload test results
