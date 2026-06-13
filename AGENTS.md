@@ -1,5 +1,10 @@
 # AGENTS.md - bluetape4k-text
 
+This repository inherits the workspace guidance from `../AGENTS.md`.
+Read and follow the workspace root guide first. This file only adds
+repo-specific layout, commands, domain rules, and local exceptions.
+
+
 Text processing library for Korean/Japanese tokenization, language detection,
 and Aho-Corasick search.
 
@@ -16,9 +21,6 @@ and Aho-Corasick search.
 | `lingua` | `io.github.bluetape4k.text:lingua` | Language detector DSL and Unicode detector |
 | `text-search` | `io.github.bluetape4k.text:text-search` | Immutable generic `AhoCorasickAutomaton<V>` and DSL |
 | `bom/` | `io.github.bluetape4k.text:bluetape4k-text-bom` | Consumer BOM for aligned text artifacts |
-
-Root README visual assets live under `docs/assets/` and should be shared by
-`README.md` and `README.ko.md` through the same relative path.
 
 ## Commands
 
@@ -45,12 +47,8 @@ Root README visual assets live under `docs/assets/` and should be shared by
 - `matchesAsFlow()` uses `channelFlow + flowOn(Dispatchers.Default)`.
 - Use `KoreanProcessor.kt` and `AhoCorasickAutomaton.kt` as KDoc style examples.
 
-## Cross-Repo Lesson Guards
+## Repo-Specific Guards
 
-- Before issue, PR, workflow, release, benchmark, or module-registration work,
-  query GNO for this repo in both `bluetape4k-github` and `bluetape4k-docs`.
-- For tokenizer/search module changes, keep README locale sets, repo-local
-  module lists, CI/Nightly coverage, benchmark evidence, coverage artifacts,
-  and BOM/catalog constraints synchronized.
-- Keep Kover XML/Codecov visible without hard gates unless explicitly decided.
-  Preserve coroutine semantics when adding performance or benchmark coverage.
+- For tokenizer/search module changes, keep benchmark evidence and BOM/catalog
+  constraints synchronized with the changed module.
+- Preserve coroutine semantics when adding performance or benchmark coverage.
