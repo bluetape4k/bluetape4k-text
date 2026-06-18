@@ -34,11 +34,11 @@ and high-throughput keyword search.
 <!-- README_VISUAL_OVERVIEW:START -->
 ## Overview Diagram
 
-![Bluetape4k Text overview diagram](docs/assets/readme-diagrams/root-readme-overview-01.png)
+![Bluetape4k Text overview diagram](docs/images/readme-diagrams/root-readme-overview-01.png)
 
 ## Module Composition Chart
 
-![Bluetape4k Text module composition chart](docs/assets/readme-charts/root-readme-module-chart-01.png)
+![Bluetape4k Text module composition chart](docs/images/readme-diagrams/root-readme-module-chart-01.png)
 <!-- README_VISUAL_OVERVIEW:END -->
 
 ## Modules
@@ -68,7 +68,7 @@ release-readiness gate, not a broad statistical NLP benchmark claim.
 
 ## Architecture
 
-![text Architecture diagram](docs/assets/readme-diagrams/bluetape4k-text-architecture-01.png)
+![text Architecture diagram](docs/images/readme-diagrams/bluetape4k-text-architecture-01.png)
 
 ## Installation
 

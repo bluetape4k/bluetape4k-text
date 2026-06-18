@@ -1,118 +1,149 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="998" height="1986" viewBox="0 0 998 1986" role="img" aria-label="tokenizer korean Class Structure">
+<svg xmlns="http://www.w3.org/2000/svg" width="1960" height="1200" viewBox="0 0 1960 1200" role="img" aria-labelledby="title desc">
+<title id="title">tokenizer-korean class contract map</title>
+<desc id="desc">Class contract map for KoreanProcessor facade, normalization, tokenization, phrase/stem/sentence utilities, blockword masking, and Korean dictionary provider.</desc>
 <defs>
-  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#1f2937" flood-opacity="0.10"/></filter>
-  <marker id="openArrow" markerWidth="10" markerHeight="8" refX="8.5" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 8.5 4 L 1 7" fill="none" stroke="#758297" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></marker>
-  <marker id="inherit" markerWidth="11" markerHeight="10" refX="9.5" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 0.5 1 L 9.5 5 L 0.5 9 Z" fill="#ffffff" stroke="#758297" stroke-width="1.7"/></marker>
+  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%">
+    <feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#94a3b8" flood-opacity="0.16"/>
+  </filter>
+  <marker id="blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb" stroke-dasharray="none"/></marker>
+  <marker id="orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#d97706" stroke-dasharray="none"/></marker>
+  <marker id="green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669" stroke-dasharray="none"/></marker>
+  <marker id="purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed" stroke-dasharray="none"/></marker>
   <style>
-    .canvas{fill:#f7f9fc}.frame{fill:#fff;stroke:#d8e0ea;stroke-width:1.5}
-    .title{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:43px;font-weight:400;fill:#102033}
-    .subtitle{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:15px;font-weight:400;fill:#536273}
-    .label{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:25px;font-weight:400;fill:#102033}
-    .smallLabel{font-family:"Architects Daughter","Comic Sans MS","Comic Sans",cursive;font-size:21px;font-weight:400;fill:#102033}
-    .mono{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#102033}
-    .small{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:12px;font-weight:400;fill:#536273}
-    .strong{font-family:"Comic Sans MS","Comic Sans","Comic Neue",Arial,sans-serif;font-size:13px;font-weight:400;fill:#102033}
-    .card{stroke-width:2.1;filter:url(#shadow)}.compartment{stroke-width:1.5;fill:none}
-    .line{stroke:#758297;stroke-width:2.1;fill:none;marker-end:url(#openArrow)}
-    .plainLine{stroke:#758297;stroke-width:2.1;fill:none}
-    .dashed{stroke:#758297;stroke-width:2.1;stroke-dasharray:7 6;fill:none;marker-end:url(#openArrow)}
-    .inheritLine{stroke:#758297;stroke-width:2.2;fill:none;marker-end:url(#inherit)}
-    .implLine{stroke:#758297;stroke-width:2.2;stroke-dasharray:8 7;fill:none;marker-end:url(#inherit)}
+    .canvas{fill:#f8fafc}.frame{fill:#fff;stroke:#cbd5e1;stroke-width:1.4}
+    .group{fill:#f8fafc;stroke:#c6d3e1;stroke-width:1.1}
+    .title{font-family:"Architects Daughter","Comic Sans MS",cursive;font-size:50px;fill:#172033}
+    .subtitle,.body,.footer,.tag{font-family:"Comic Mono","Comic Sans MS",sans-serif;fill:#475569}
+    .subtitle{font-size:17px}.footer{font-size:14px}.tag{font-size:14px;font-weight:700}
+    .name{font-family:"Architects Daughter","Comic Sans MS",cursive;font-size:28px;fill:#172033}
+    .small-name{font-family:"Architects Daughter","Comic Sans MS",cursive;font-size:23px;fill:#172033}
+    .body{font-size:15px}.card{filter:url(#shadow);stroke-width:1.3}.sep{stroke-width:1.0}
+    .dep{fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:7 6}
   </style>
 </defs>
-<rect class="canvas" width="998" height="1986"/>
-<rect class="frame" x="32" y="28" width="934" height="1930" rx="28"/>
-<text class="title" x="66" y="82">tokenizer korean Class Structure</text>
-<text class="subtitle" x="70" y="118">UML classes from the original Mermaid source</text>
-<path class="line" d="M724 740 L724 1188"/>
-<path class="line" d="M499 376 L499 455 L724 455 L724 502"/>
-<path class="line" d="M499 376 L499 866"/>
-<path class="line" d="M274 502 L274 439 L499 439 L499 376"/>
-<path class="line" d="M274 1489 L274 1615"/>
-<path class="line" d="M274 1188 L274 656"/>
-<path class="line" d="M274 1489 L274 1528 L724 1528 L724 1615"/>
-<g transform="translate(309,180)">
-  <rect class="card" x="0" y="0" width="380" height="196" rx="5" fill="#E8F3FF" stroke="#5B8DEF"/>
-  <line class="compartment" x1="0" y1="78" x2="380" y2="78" stroke="#5B8DEF"/>
-  <text class="small" x="190" y="26" text-anchor="middle"></text>
-  <text class="label" x="190" y="61" text-anchor="middle">KoreanChunker</text>
-  <text class="mono" x="18" y="108">+chunk(input) List~KoreanToken~</text>
-<text class="mono" x="18" y="129">+getChunks(input, keepSpace) List~String~</text>
-<text class="mono" x="18" y="150">+getChunksByPos(input, pos) List~KoreanToken~</text>
-<text class="mono" x="18" y="171">+POS_PATTERNS Map~KoreanPos, Pattern~</text>
-</g>
-<g transform="translate(84,502)">
-  <rect class="card" x="0" y="0" width="380" height="154" rx="5" fill="#EAF7EF" stroke="#58A978"/>
-  <line class="compartment" x1="0" y1="78" x2="380" y2="78" stroke="#58A978"/>
-  <text class="small" x="190" y="26" text-anchor="middle"></text>
-  <text class="label" x="190" y="61" text-anchor="middle">KoreanTokenizer</text>
-  <text class="mono" x="18" y="108">+tokenize(text, profile) List~KoreanToken~</text>
-<text class="mono" x="18" y="129">+tokenizeTopN(text, n, profile) List</text>
-</g>
-<g transform="translate(534,502)">
-  <rect class="card" x="0" y="0" width="380" height="238" rx="5" fill="#FFF3D9" stroke="#D6A441"/>
-  <line class="compartment" x1="0" y1="78" x2="380" y2="78" stroke="#D6A441"/>
-  <text class="small" x="190" y="26" text-anchor="middle"></text>
-  <text class="label" x="190" y="61" text-anchor="middle">KoreanToken</text>
-  <text class="mono" x="18" y="108">+text String</text>
-<text class="mono" x="18" y="129">+pos KoreanPos</text>
-<text class="mono" x="18" y="150">+offset Int</text>
-<text class="mono" x="18" y="171">+length Int</text>
-<text class="mono" x="18" y="192">+stem String?</text>
-<text class="mono" x="18" y="213">+unknown Boolean</text>
-</g>
-<g transform="translate(309,866)">
-  <rect class="card" x="0" y="0" width="380" height="196" rx="5" fill="#FDECEF" stroke="#DC6B82"/>
-  <line class="compartment" x1="0" y1="78" x2="380" y2="78" stroke="#DC6B82"/>
-  <text class="small" x="190" y="26" text-anchor="middle">«internal»</text>
-  <text class="label" x="190" y="61" text-anchor="middle">TwitterCompatPatterns</text>
-  <text class="mono" x="18" y="108">+VALID_URL Pattern</text>
-<text class="mono" x="18" y="129">+VALID_HASHTAG Pattern</text>
-<text class="mono" x="18" y="150">+VALID_MENTION_OR_LIST Pattern</text>
-<text class="mono" x="18" y="171">+VALID_CASHTAG Pattern</text>
-</g>
-<g transform="translate(84,1188)">
-  <rect class="card" x="0" y="0" width="380" height="301" rx="5" fill="#E9F7F6" stroke="#45A7A1"/>
-  <line class="compartment" x1="0" y1="78" x2="380" y2="78" stroke="#45A7A1"/>
-  <text class="small" x="190" y="26" text-anchor="middle"></text>
-  <text class="label" x="190" y="61" text-anchor="middle">KoreanProcessor</text>
-  <text class="mono" x="18" y="108">+normalize(text) CharSequence</text>
-<text class="mono" x="18" y="129">+tokenize(text, profile) List~KoreanToken~</text>
-<text class="mono" x="18" y="150">+tokenizeForNoun(text, profile)</text>
-<text class="mono" x="18" y="171">List~KoreanToken~</text>
-<text class="mono" x="18" y="192">+tokenizeTopN(text, n, profile) List</text>
-<text class="mono" x="18" y="213">+extractPhrases(tokens, filterSpam)</text>
-<text class="mono" x="18" y="234">List~KoreanPhrase~</text>
-<text class="mono" x="18" y="255">+extractPhrasesForNoun(tokens)</text>
-<text class="mono" x="18" y="276">List~KoreanPhrase~</text>
-</g>
-<g transform="translate(534,1188)">
-  <rect class="card" x="0" y="0" width="380" height="238" rx="5" fill="#F1ECFF" stroke="#8A72D6"/>
-  <line class="compartment" x1="0" y1="78" x2="380" y2="78" stroke="#8A72D6"/>
-  <text class="small" x="190" y="26" text-anchor="middle">«enumeration»</text>
-  <text class="label" x="190" y="61" text-anchor="middle">KoreanPos</text>
-  <text class="mono" x="18" y="108">Noun Verb Adjective Adverb</text>
-<text class="mono" x="18" y="129">Josa Eomi PreEomi Suffix</text>
-<text class="mono" x="18" y="150">Hashtag ScreenName URL Email</text>
-<text class="mono" x="18" y="171">CashTag Number Korean Alpha</text>
-<text class="mono" x="18" y="192">KoreanParticle Punctuation Space Foreign</text>
-<text class="mono" x="18" y="213">Unknown ProperNoun</text>
-</g>
-<g transform="translate(84,1615)">
-  <rect class="card" x="0" y="0" width="380" height="154" rx="5" fill="#F7F1E7" stroke="#B88A44"/>
-  <line class="compartment" x1="0" y1="78" x2="380" y2="78" stroke="#B88A44"/>
-  <text class="small" x="190" y="26" text-anchor="middle"></text>
-  <text class="label" x="190" y="61" text-anchor="middle">KoreanBlockwordProcessor</text>
-  <text class="mono" x="18" y="108">+findBlockwords(text) List~KoreanToken~</text>
-<text class="mono" x="18" y="129">+maskBlockwords(request) BlockwordResponse</text>
-</g>
-<g transform="translate(534,1615)">
-  <rect class="card" x="0" y="0" width="380" height="175" rx="5" fill="#EEF6D9" stroke="#8BA84D"/>
-  <line class="compartment" x1="0" y1="78" x2="380" y2="78" stroke="#8BA84D"/>
-  <text class="small" x="190" y="26" text-anchor="middle"></text>
-  <text class="label" x="190" y="61" text-anchor="middle">KoreanNormalizer</text>
-  <text class="mono" x="18" y="108">+normalize(input) CharSequence</text>
-<text class="mono" x="18" y="129">+correctTypo(chunk) CharSequence</text>
-<text class="mono" x="18" y="150">+normalizeCodaN(chunk) CharSequence</text>
-</g>
+
+<rect class="canvas" width="1960" height="1200" rx="30"/>
+<rect class="frame" x="24" y="24" width="1912" height="1152" rx="26"/>
+<text class="title" x="60" y="82">tokenizer-korean Class Contract Map</text>
+<text class="subtitle" x="62" y="116">KoreanProcessor coordinates normalization, chunking/tokenization, phrase utilities, sentence helpers, blockword masking, and mutable dictionaries.</text>
+
+<rect class="group" x="58" y="152" width="336" height="900" rx="18"/>
+<text class="tag" x="86" y="184">FACADE</text>
+
+<rect class="group" x="430" y="152" width="962" height="332" rx="18"/>
+<text class="tag" x="458" y="184">NORMALIZE AND TOKENIZE</text>
+
+<rect class="group" x="430" y="520" width="962" height="250" rx="18"/>
+<text class="tag" x="458" y="552">PHRASE, STEM, SENTENCE</text>
+
+<rect class="group" x="1430" y="152" width="470" height="618" rx="18"/>
+<text class="tag" x="1458" y="184">DICTIONARY OWNERSHIP</text>
+
+<rect class="group" x="430" y="806" width="1470" height="246" rx="18"/>
+<text class="tag" x="458" y="838">BLOCKWORD MASKING</text>
+
+<rect class="card" x="92" y="390" width="268" height="286" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text class="tag" x="226" y="420" text-anchor="middle">object facade</text>
+<text class="name" x="226" y="456" text-anchor="middle">KoreanProcessor</text>
+<line class="sep" x1="92" y1="480" x2="360" y2="480" stroke="#93c5fd"/>
+<text class="body" x="120" y="512">+ normalize</text>
+<text class="body" x="120" y="540">+ tokenize / topN</text>
+<text class="body" x="120" y="568">+ extractPhrases / stem</text>
+<text class="body" x="120" y="596">+ split / detokenize</text>
+<text class="body" x="120" y="624">+ blockword APIs</text>
+<text class="body" x="120" y="652">+ runtime dictionary add</text>
+
+<rect class="card" x="470" y="236" width="214" height="144" rx="6" fill="#fef3c7" stroke="#d97706"/>
+<text class="small-name" x="577" y="278" text-anchor="middle">KoreanNormalizer</text>
+<line class="sep" x1="470" y1="304" x2="684" y2="304" stroke="#fcd34d"/>
+<text class="body" x="492" y="334">repeat collapse</text>
+<text class="body" x="492" y="358">typo + coda repair</text>
+
+<rect class="card" x="734" y="236" width="214" height="144" rx="6" fill="#e0f2fe" stroke="#0284c7"/>
+<text class="small-name" x="841" y="278" text-anchor="middle">KoreanChunker</text>
+<line class="sep" x1="734" y1="304" x2="948" y2="304" stroke="#7dd3fc"/>
+<text class="body" x="756" y="334">URL, hashtag, email</text>
+<text class="body" x="756" y="358">Korean / alpha / number</text>
+
+<rect class="card" x="998" y="236" width="214" height="144" rx="6" fill="#e0f2fe" stroke="#0284c7"/>
+<text class="small-name" x="1105" y="278" text-anchor="middle">KoreanTokenizer</text>
+<line class="sep" x1="998" y1="304" x2="1212" y2="304" stroke="#7dd3fc"/>
+<text class="body" x="1020" y="334">1-best and top-N</text>
+<text class="body" x="1020" y="358">26 POS classes</text>
+
+<rect class="card" x="1248" y="236" width="112" height="144" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+<text class="small-name" x="1304" y="286" text-anchor="middle">Noun</text>
+<text class="small-name" x="1304" y="314" text-anchor="middle">Tokenizer</text>
+<text class="body" x="1272" y="350">phrase path</text>
+
+<rect class="card" x="470" y="602" width="214" height="112" rx="6" fill="#ede9fe" stroke="#7c3aed"/>
+<text class="small-name" x="577" y="648" text-anchor="middle">PhraseExtractor</text>
+<text class="body" x="496" y="682">noun phrase candidates</text>
+
+<rect class="card" x="734" y="602" width="214" height="112" rx="6" fill="#ede9fe" stroke="#7c3aed"/>
+<text class="small-name" x="841" y="648" text-anchor="middle">KoreanStemmer</text>
+<text class="body" x="762" y="682">verb/adjective base</text>
+
+<rect class="card" x="998" y="602" width="214" height="112" rx="6" fill="#ede9fe" stroke="#7c3aed"/>
+<text class="small-name" x="1105" y="640" text-anchor="middle">Sentence</text>
+<text class="small-name" x="1105" y="668" text-anchor="middle">Splitter</text>
+<text class="body" x="1028" y="696">Sequence&lt;Sentence&gt;</text>
+
+<rect class="card" x="1248" y="602" width="112" height="112" rx="6" fill="#ede9fe" stroke="#7c3aed"/>
+<text class="small-name" x="1304" y="648" text-anchor="middle">De</text>
+<text class="small-name" x="1304" y="676" text-anchor="middle">tokenize</text>
+
+<rect class="card" x="1472" y="236" width="388" height="214" rx="6" fill="#ecfdf5" stroke="#059669"/>
+<text class="tag" x="1666" y="266" text-anchor="middle">object</text>
+<text class="name" x="1666" y="300" text-anchor="middle">KoreanDictionaryProvider</text>
+<line class="sep" x1="1472" y1="326" x2="1860" y2="326" stroke="#bbf7d0"/>
+<text class="body" x="1504" y="356">+ koreanDictionary: POS -> Set</text>
+<text class="body" x="1504" y="382">+ typoDictionaryByLength</text>
+<text class="body" x="1504" y="408">+ addWordsToDictionary</text>
+<text class="body" x="1504" y="434">protected by ReentrantLock</text>
+
+<rect class="card" x="1472" y="514" width="388" height="174" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+<text class="tag" x="1666" y="544" text-anchor="middle">lazy resources</text>
+<text class="name" x="1666" y="578" text-anchor="middle">koreantext/*</text>
+<line class="sep" x1="1472" y1="600" x2="1860" y2="600" stroke="#cbd5e1"/>
+<text class="body" x="1504" y="630">noun / verb / adjective / josa</text>
+<text class="body" x="1504" y="656">block_low / middle / high</text>
+
+<rect class="card" x="470" y="882" width="254" height="124" rx="6" fill="#fff7ed" stroke="#d97706"/>
+<text class="small-name" x="597" y="930" text-anchor="middle">PunctuationProcessor</text>
+<text class="body" x="500" y="964">remove punctuation bypass</text>
+
+<rect class="card" x="782" y="866" width="302" height="156" rx="6" fill="#f5f3ff" stroke="#7c3aed"/>
+<text class="small-name" x="933" y="914" text-anchor="middle">KoreanBlockword</text>
+<text class="small-name" x="933" y="942" text-anchor="middle">Processor</text>
+<line class="sep" x1="782" y1="964" x2="1084" y2="964" stroke="#ddd6fe"/>
+<text class="body" x="814" y="992">findBlockwords / maskBlockwords</text>
+
+<rect class="card" x="1142" y="882" width="302" height="124" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+<text class="tag" x="1293" y="912" text-anchor="middle">severity policy</text>
+<text class="small-name" x="1293" y="946" text-anchor="middle">LOW / MIDDLE / HIGH</text>
+<text class="body" x="1172" y="978">word or stem membership</text>
+
+<rect class="card" x="1502" y="882" width="302" height="124" rx="6" fill="#dcfce7" stroke="#059669"/>
+<text class="small-name" x="1653" y="930" text-anchor="middle">BlockwordResponse</text>
+<text class="body" x="1532" y="964">maskedText + blockWords</text>
+
+<path class="dep" d="M 360 512 L 430 512 L 430 308 L 470 308" stroke="#d97706" marker-end="url(#orange)"/>
+<path class="dep" d="M 360 540 L 410 540 L 410 424 L 841 424 L 841 380" stroke="#2563eb" marker-end="url(#blue)"/>
+<path class="dep" d="M 360 568 L 430 568 L 430 658 L 470 658" stroke="#7c3aed" marker-end="url(#purple)"/>
+<path class="dep" d="M 360 624 L 410 624 L 410 944 L 470 944" stroke="#7c3aed" marker-end="url(#purple)"/>
+
+<path class="dep" d="M 684 308 L 734 308" stroke="#d97706" marker-end="url(#orange)"/>
+<path class="dep" d="M 948 308 L 998 308" stroke="#2563eb" marker-end="url(#blue)"/>
+<path class="dep" d="M 1212 308 L 1248 308" stroke="#2563eb" marker-end="url(#blue)"/>
+
+<path class="dep" d="M 1084 944 L 1142 944" stroke="#7c3aed" marker-end="url(#purple)"/>
+<path class="dep" d="M 1444 944 L 1502 944" stroke="#059669" marker-end="url(#green)"/>
+
+<path class="dep" d="M 1212 334 L 1430 334 L 1430 356 L 1472 356" stroke="#059669" marker-end="url(#green)"/>
+<path class="dep" d="M 577 714 L 577 790 L 1418 790 L 1418 408 L 1472 408" stroke="#059669" marker-end="url(#green)"/>
+<path class="dep" d="M 1444 978 L 1452 978 L 1452 656 L 1472 656" stroke="#059669" marker-end="url(#green)"/>
+
+<rect x="110" y="1100" width="1740" height="54" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.1"/>
+<text class="footer" x="980" y="1134" text-anchor="middle">Runtime additions update the in-memory dictionaries; blockword additions also register nouns so compound terms tokenize consistently.</text>
 </svg>
