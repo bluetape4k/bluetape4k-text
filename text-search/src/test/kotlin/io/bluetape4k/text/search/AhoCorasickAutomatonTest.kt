@@ -229,7 +229,6 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
         // Assert
         restored.shouldNotBeNull()
         restored.shouldBeInstanceOf<SearchToken.Fragment>()
-        restored as SearchToken.Fragment
         restored.text shouldBeEqualTo original.text
         restored shouldBeEqualTo original
         log.debug { "SearchToken.Fragment 직렬화 round-trip 성공: $restored" }
@@ -254,7 +253,6 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
         // Assert
         restored.shouldNotBeNull()
         restored.shouldBeInstanceOf<SearchOptions>()
-        restored as SearchOptions
         restored.ignoreCase shouldBeEqualTo original.ignoreCase
         restored.allowOverlaps shouldBeEqualTo original.allowOverlaps
         restored.wordBoundary shouldBeEqualTo original.wordBoundary
