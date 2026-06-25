@@ -6,9 +6,9 @@ plugins {
 
 dependencies {
     constraints {
-        rootProject.subprojects {
-            if (name != "bluetape4k-text-bom") {
-                api(this)
+        rootProject.subprojects.forEach { subproject ->
+            if (subproject.name != "bluetape4k-text-bom") {
+                api(dependencies.project(mapOf("path" to subproject.path)))
             }
         }
     }
