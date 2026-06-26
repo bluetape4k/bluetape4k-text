@@ -94,8 +94,19 @@ JapaneseProcessor.clearBlockwords()
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.text:tokenizer-japanese:1.7.0-SNAPSHOT")
+    implementation("io.github.bluetape4k.text:tokenizer-japanese:<current release or snapshot>")
 }
 ```
+
+## 웹 서비스 입력 경계
+
+HTTP boundary에서는 `JapaneseProcessor` 호출 전에 `tokenizeRequestOf`와
+`blockwordRequestOf`로 입력을 검증하세요. blank 입력은 `400 Bad Request`,
+`MAX_TOKENIZE_TEXT_LENGTH` 또는 `MAX_BLOCKWORD_TEXT_LENGTH`를 초과한 입력은
+`413 Payload Too Large`로 매핑하는 것이 좋습니다. 오류 응답에는 status와 길이
+metadata만 담고 제출된 텍스트는 포함하지 마세요.
+
+실행 가능한 한국어/일본어 safety sample은
+[`../examples/tokenizer-safety-examples`](../examples/tokenizer-safety-examples)를 참고하세요.
 
 > 내부적으로 일본어 형태소 분석을 위해 [Kuromoji IPAdic](https://github.com/atilika/kuromoji)을 사용합니다.

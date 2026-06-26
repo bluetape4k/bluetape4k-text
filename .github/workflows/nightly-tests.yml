@@ -317,7 +317,44 @@ jobs:
           path: '**/build/reports/kover/'
           retention-days: 14
 
-  # ── 7. 커버리지 집계 ──────────────────────────────────────────────────────
+  # ── 7. examples ───────────────────────────────────────────────────────────
+  test-examples:
+    name: Test / examples
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: build
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: wrapper
+          cache-read-only: true
+
+      - name: Test and run examples
+        run: |
+          for attempt in 1 2 3 4 5; do
+            ./gradlew :examples:text-search-examples:test :examples:lingua-examples:test :examples:tokenizer-safety-examples:test :examples:text-search-examples:run :examples:lingua-examples:run :examples:tokenizer-safety-examples:run --no-daemon --no-configuration-cache && break
+            echo "Attempt $attempt failed"
+            [ $attempt -lt 5 ] && sleep 30 || exit 1
+          done
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results-examples
+          path: '**/build/test-results/test/*.xml'
+          retention-days: 14
+
+  # ── 8. 커버리지 집계 ──────────────────────────────────────────────────────
   coverage-report:
     name: Coverage Report
     runs-on: ubuntu-latest
@@ -400,6 +437,7 @@ jobs:
       - test-tokenizer-korean
       - test-lingua
       - test-text-search
+      - test-examples
       - coverage-report
     if: always()
     steps:

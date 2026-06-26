@@ -76,21 +76,22 @@ Add each module individually:
 
 ```kotlin
 // build.gradle.kts
+val textVersion = "<current release or snapshot>"
 
 // Korean NLP
-implementation("io.github.bluetape4k.text:tokenizer-korean:0.1.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:tokenizer-korean:$textVersion")
 
 // Japanese NLP
-implementation("io.github.bluetape4k.text:tokenizer-japanese:0.1.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:tokenizer-japanese:$textVersion")
 
 // Language detection
-implementation("io.github.bluetape4k.text:lingua:0.1.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:lingua:$textVersion")
 
 // Aho-Corasick search
-implementation("io.github.bluetape4k.text:text-search:0.1.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:text-search:$textVersion")
 
 // Core models only (if you build a custom tokenizer)
-implementation("io.github.bluetape4k.text:tokenizer-core:0.1.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:tokenizer-core:$textVersion")
 ```
 
 For snapshots, add the Maven Central Snapshots repository:
@@ -104,6 +105,15 @@ repositories {
 ```
 
 ## Usage
+
+Runnable examples live under `examples/` and are included in CI:
+
+- [`examples/text-search-examples`](examples/text-search-examples) covers
+  builder, DSL, replacement, and `matchesAsFlow(...).take(1)` scenarios.
+- [`examples/lingua-examples`](examples/lingua-examples) covers detector reuse,
+  language subsets, low-accuracy mode, and mixed-language text.
+- [`examples/tokenizer-safety-examples`](examples/tokenizer-safety-examples)
+  covers web-service request boundaries for tokenizer and blockword inputs.
 
 ### Korean Tokenizer
 
@@ -174,6 +184,7 @@ println(result.blockwordExists)  // true
 import com.github.pemistahl.lingua.api.Language
 import io.bluetape4k.lingua.allLanguageDetector
 import io.bluetape4k.lingua.detectAllLanguagesOf
+import io.bluetape4k.lingua.languageDetectorOf
 
 // Build a detector (reuse the instance — model loading is expensive)
 val detector = allLanguageDetector {
@@ -235,6 +246,29 @@ val clean = blocked.replaceAll("That's bad and worse!") { it.value }
 val firstAlert = automaton.matchesAsFlow("ERROR in disk")
     .take(1)
     .toList()
+```
+
+### Web-Service Input Boundaries
+
+`tokenizeRequestOf` and `blockwordRequestOf` reject blank text and enforce
+`MAX_TOKENIZE_TEXT_LENGTH` / `MAX_BLOCKWORD_TEXT_LENGTH` before downstream
+processing. HTTP adapters should map blank input to `400 Bad Request` and
+oversized input to `413 Payload Too Large`. Error responses should report only
+status, actual length, and max length; do not include the submitted text.
+
+```kotlin
+import io.bluetape4k.tokenizer.model.MAX_TOKENIZE_TEXT_LENGTH
+import io.bluetape4k.tokenizer.model.tokenizeRequestOf
+
+fun tokenizeHttp(text: String): Int =
+    when {
+        text.isBlank() -> 400
+        text.length > MAX_TOKENIZE_TEXT_LENGTH -> 413
+        else -> {
+            tokenizeRequestOf(text)
+            200
+        }
+    }
 ```
 
 ## Requirements

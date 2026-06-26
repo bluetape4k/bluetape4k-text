@@ -6,6 +6,7 @@ import com.github.pemistahl.lingua.api.Language
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 
 class LanguageDetectorBuilderTest: AbstractLinguaTest() {
@@ -84,5 +85,52 @@ class LanguageDetectorBuilderTest: AbstractLinguaTest() {
 
         detector.shouldNotBeNull()
         log.debug { "Detector: $detector" }
+    }
+
+    @Test
+    fun `low accuracy convenience overload detects stable subset language`() {
+        val detector = languageDetectorOf(
+            languages = setOf(Language.ENGLISH, Language.KOREAN, Language.JAPANESE),
+            minimumRelativeDistance = 0.0,
+            isEveryLanguageModelPreloaded = false,
+            isLowAccuracyModeEnabled = true,
+        )
+
+        detector.detectLanguageOf("Hello service users") shouldBeEqualTo Language.ENGLISH
+    }
+
+    @Test
+    fun `minimum relative distance can return unknown for ambiguous short input`() {
+        val detector = languageDetectorOf(
+            languages = setOf(Language.ENGLISH, Language.GERMAN),
+            minimumRelativeDistance = 0.99,
+            isEveryLanguageModelPreloaded = false,
+            isLowAccuracyModeEnabled = false,
+        )
+
+        detector.detectLanguageOf("in") shouldBeEqualTo Language.UNKNOWN
+    }
+
+    @Test
+    fun `reused detector reports mixed language set consistently`() {
+        val detector = languageDetectorOf(
+            languages = setOf(Language.ENGLISH, Language.KOREAN, Language.JAPANESE),
+            minimumRelativeDistance = 0.0,
+            isEveryLanguageModelPreloaded = true,
+            isLowAccuracyModeEnabled = false,
+        )
+
+        val mixedText = "Hello service. 안녕하세요. こんにちは。"
+
+        detector.detectAllLanguagesOf(mixedText) shouldBeEqualTo setOf(
+            Language.ENGLISH,
+            Language.KOREAN,
+            Language.JAPANESE,
+        )
+        detector.detectAllLanguagesOf(mixedText) shouldBeEqualTo setOf(
+            Language.ENGLISH,
+            Language.KOREAN,
+            Language.JAPANESE,
+        )
     }
 }

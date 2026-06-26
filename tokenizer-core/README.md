@@ -88,6 +88,44 @@ val freqMap: Map<CharSequence, Float> = DictionaryProvider.readWordFreqs("dict/f
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.text:tokenizer-core:1.7.0-SNAPSHOT")
+    implementation("io.github.bluetape4k.text:tokenizer-core:<current release or snapshot>")
 }
 ```
+
+## Web-Service Input Boundaries
+
+`TokenizeRequest` and `BlockwordRequest` validate inputs before processor work:
+blank text is invalid, `MAX_TOKENIZE_TEXT_LENGTH` caps tokenizer requests, and
+`MAX_BLOCKWORD_TEXT_LENGTH` caps blockword requests. HTTP adapters should map
+blank input to `400 Bad Request` and oversized input to `413 Payload Too Large`.
+Return only status, actual length, and max length in error bodies.
+
+```kotlin
+import io.bluetape4k.tokenizer.model.MAX_BLOCKWORD_TEXT_LENGTH
+import io.bluetape4k.tokenizer.model.MAX_TOKENIZE_TEXT_LENGTH
+import io.bluetape4k.tokenizer.model.blockwordRequestOf
+import io.bluetape4k.tokenizer.model.tokenizeRequestOf
+
+fun tokenizeStatus(text: String): Int =
+    when {
+        text.isBlank() -> 400
+        text.length > MAX_TOKENIZE_TEXT_LENGTH -> 413
+        else -> {
+            tokenizeRequestOf(text)
+            200
+        }
+    }
+
+fun blockwordStatus(text: String): Int =
+    when {
+        text.isBlank() -> 400
+        text.length > MAX_BLOCKWORD_TEXT_LENGTH -> 413
+        else -> {
+            blockwordRequestOf(text)
+            200
+        }
+    }
+```
+
+See [`../examples/tokenizer-safety-examples`](../examples/tokenizer-safety-examples)
+for a runnable sample.

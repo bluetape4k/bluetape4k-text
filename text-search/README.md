@@ -169,6 +169,12 @@ val result = automaton.parseText("아름다운 나라")
 fun <V> AhoCorasickAutomaton<V>.matchesAsFlow(text: CharSequence): Flow<AhoCorasickMatch<V>>
 ```
 
+## Runnable Example
+
+See [`../examples/text-search-examples`](../examples/text-search-examples) for a
+console sample covering the builder API, `ahoCorasick` DSL, replacement, and
+`matchesAsFlow(...).take(1)` early collection for alert-style search.
+
 ## Benchmark
 
 Throughput is measured with JMH through the repo-local kotlinx-benchmark task.
@@ -209,7 +215,7 @@ Run benchmarks locally:
 
 ```kotlin
 // build.gradle.kts
-implementation("io.github.bluetape4k.text:text-search:1.7.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:text-search:<current release or snapshot>")
 
 // Optional: Coroutines Flow support
 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
