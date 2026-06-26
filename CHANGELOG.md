@@ -7,6 +7,8 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-06-26
+
 ### Added
 
 - Added runnable text-search, Lingua, and tokenizer web-safety examples for the 0.2.1 readiness milestone ([#109](https://github.com/bluetape4k/bluetape4k-text/issues/109), [#110](https://github.com/bluetape4k/bluetape4k-text/issues/110), [#111](https://github.com/bluetape4k/bluetape4k-text/issues/111)).
@@ -15,8 +17,8 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Opened the `0.3.0` development line after the `0.2.0` stable release.
-- Aligned the local `bluetape4k-bom` reference to `1.11.0-SNAPSHOT`.
+- Prepared the 0.2.1 release line to consume `io.github.bluetape4k:bluetape4k-bom:1.10.0` and the stable `catalog/2026-06-01-01` dependency catalog.
+- Excluded runnable example projects from `bluetape4k-text-bom` dependency constraints so release metadata only publishes library modules.
 
 ## [0.2.0] - 2026-05-27
 

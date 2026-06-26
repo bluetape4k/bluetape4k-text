@@ -6,11 +6,15 @@ plugins {
 
 dependencies {
     constraints {
-        rootProject.subprojects.forEach { subproject ->
-            if (subproject.name != "bluetape4k-text-bom") {
+        rootProject.subprojects
+            .filterNot { subproject ->
+                subproject.name == "bluetape4k-text-bom" ||
+                    subproject.path == ":examples" ||
+                    subproject.path.startsWith(":examples:")
+            }
+            .forEach { subproject ->
                 api(dependencies.project(mapOf("path" to subproject.path)))
             }
-        }
     }
 }
 
