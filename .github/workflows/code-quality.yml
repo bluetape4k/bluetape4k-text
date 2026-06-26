@@ -22,7 +22,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [java-kotlin, actions]
+        # TODO(#148): Re-enable java-kotlin after CodeQL supports Kotlin 2.4.x.
+        # Keep actions analysis active while the Kotlin extractor support window
+        # catches up.
+        language: [actions]
 
     steps:
       - name: Checkout repository
@@ -47,7 +50,8 @@ jobs:
 
       - name: Build with Gradle
         if: matrix.language == 'java-kotlin'
-        run: ./gradlew build -x test --no-daemon
+        # Keep the dormant java-kotlin build compile-only for the re-enable path.
+        run: ./gradlew assemble --no-daemon
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
