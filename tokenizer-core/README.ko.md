@@ -88,6 +88,44 @@ val freqMap: Map<CharSequence, Float> = DictionaryProvider.readWordFreqs("dict/f
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.text:tokenizer-core:1.7.0-SNAPSHOT")
+    implementation("io.github.bluetape4k.text:tokenizer-core:<current release or snapshot>")
 }
 ```
+
+## 웹 서비스 입력 경계
+
+`TokenizeRequest`와 `BlockwordRequest`는 processor 작업 전에 입력을 검증합니다.
+blank text는 invalid이고, tokenizer 요청은 `MAX_TOKENIZE_TEXT_LENGTH`, blockword
+요청은 `MAX_BLOCKWORD_TEXT_LENGTH`를 초과할 수 없습니다. HTTP adapter는 blank
+입력을 `400 Bad Request`, 너무 긴 입력을 `413 Payload Too Large`로 매핑하는 것이
+좋습니다. 오류 응답에는 status, 실제 길이, 최대 길이만 담으세요.
+
+```kotlin
+import io.bluetape4k.tokenizer.model.MAX_BLOCKWORD_TEXT_LENGTH
+import io.bluetape4k.tokenizer.model.MAX_TOKENIZE_TEXT_LENGTH
+import io.bluetape4k.tokenizer.model.blockwordRequestOf
+import io.bluetape4k.tokenizer.model.tokenizeRequestOf
+
+fun tokenizeStatus(text: String): Int =
+    when {
+        text.isBlank() -> 400
+        text.length > MAX_TOKENIZE_TEXT_LENGTH -> 413
+        else -> {
+            tokenizeRequestOf(text)
+            200
+        }
+    }
+
+fun blockwordStatus(text: String): Int =
+    when {
+        text.isBlank() -> 400
+        text.length > MAX_BLOCKWORD_TEXT_LENGTH -> 413
+        else -> {
+            blockwordRequestOf(text)
+            200
+        }
+    }
+```
+
+실행 가능한 예제는
+[`../examples/tokenizer-safety-examples`](../examples/tokenizer-safety-examples)를 참고하세요.

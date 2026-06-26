@@ -90,5 +90,16 @@ runBlocking(Dispatchers.Default) {
 
 ```kotlin
 // build.gradle.kts
-implementation("io.github.bluetape4k.text:tokenizer-korean:1.7.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:tokenizer-korean:<current release or snapshot>")
 ```
+
+## Web-Service Input Boundaries
+
+Use `tokenizeRequestOf` and `blockwordRequestOf` at HTTP boundaries before
+calling `KoreanProcessor`. Blank input should map to `400 Bad Request`; text
+longer than `MAX_TOKENIZE_TEXT_LENGTH` or `MAX_BLOCKWORD_TEXT_LENGTH` should map
+to `413 Payload Too Large`. Error bodies should include only status and length
+metadata, not the submitted text.
+
+See [`../examples/tokenizer-safety-examples`](../examples/tokenizer-safety-examples)
+for a runnable Korean/Japanese safety sample.

@@ -66,6 +66,9 @@ include(
     "tokenizer-korean",
     "lingua",
     "text-search",
+    "examples:text-search-examples",
+    "examples:lingua-examples",
+    "examples:tokenizer-safety-examples",
 )
 
 include("bluetape4k-text-bom")

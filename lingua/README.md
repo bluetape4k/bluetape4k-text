@@ -108,9 +108,17 @@ detector.containsAny("Hello 안녕", Locale.KOREAN)  // true
 
 ```kotlin
 // build.gradle.kts
-implementation("io.github.bluetape4k.text:lingua:1.7.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:lingua:<current release or snapshot>")
 ```
 
 `lingua` already brings the upstream Lingua dependency transitively.
+
+## Runnable Example
+
+See [`../examples/lingua-examples`](../examples/lingua-examples) for a console
+sample covering detector reuse, language subsets, low-accuracy mode, and
+mixed-language text. Prefer reusing a configured `LanguageDetector` instance for
+repeated calls; choose preloaded models when startup cost is acceptable and lazy
+loading when smaller initial footprint matters.
 
 > **Note**: Reuse detector instances instead of rebuilding them per call — model loading is expensive. Blank input returns `emptySet()`. If no usable per-token result is found, the extension falls back to whole-text detection.

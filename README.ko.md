@@ -70,21 +70,22 @@ Kotlin/JVM 텍스트 처리 라이브러리 — 한국어·일본어 형태소 �
 
 ```kotlin
 // build.gradle.kts
+val textVersion = "<current release or snapshot>"
 
 // 한국어 NLP
-implementation("io.github.bluetape4k.text:tokenizer-korean:0.1.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:tokenizer-korean:$textVersion")
 
 // 일본어 NLP
-implementation("io.github.bluetape4k.text:tokenizer-japanese:0.1.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:tokenizer-japanese:$textVersion")
 
 // 언어 감지
-implementation("io.github.bluetape4k.text:lingua:0.1.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:lingua:$textVersion")
 
 // Aho-Corasick 검색
-implementation("io.github.bluetape4k.text:text-search:0.1.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:text-search:$textVersion")
 
 // 공통 모델만 필요한 경우 (커스텀 토크나이저 구현 시)
-implementation("io.github.bluetape4k.text:tokenizer-core:0.1.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:tokenizer-core:$textVersion")
 ```
 
 SNAPSHOT 버전 사용 시 Maven Central Snapshots 저장소를 추가하세요:
@@ -98,6 +99,15 @@ repositories {
 ```
 
 ## 사용법
+
+실행 가능한 예제는 `examples/` 아래에 있으며 CI에서 함께 검증됩니다:
+
+- [`examples/text-search-examples`](examples/text-search-examples): builder,
+  DSL, replacement, `matchesAsFlow(...).take(1)` 시나리오
+- [`examples/lingua-examples`](examples/lingua-examples): detector 재사용,
+  언어 subset, low-accuracy mode, 혼합 언어 텍스트
+- [`examples/tokenizer-safety-examples`](examples/tokenizer-safety-examples):
+  tokenizer/blockword 입력을 웹 서비스 경계에서 처리하는 예제
 
 ### 한국어 토크나이저
 
@@ -168,6 +178,7 @@ println(result.blockwordExists)  // true
 import com.github.pemistahl.lingua.api.Language
 import io.bluetape4k.lingua.allLanguageDetector
 import io.bluetape4k.lingua.detectAllLanguagesOf
+import io.bluetape4k.lingua.languageDetectorOf
 
 // 감지기 생성 (인스턴스 재사용 권장 — 모델 로딩 비용이 있음)
 val detector = allLanguageDetector {
@@ -229,6 +240,29 @@ val clean = blocked.replaceAll("That's bad and worse!") { it.value }
 val firstAlert = automaton.matchesAsFlow("ERROR in disk")
     .take(1)
     .toList()
+```
+
+### 웹 서비스 입력 경계
+
+`tokenizeRequestOf`와 `blockwordRequestOf`는 downstream 처리 전에 blank text와
+`MAX_TOKENIZE_TEXT_LENGTH` / `MAX_BLOCKWORD_TEXT_LENGTH` 초과 입력을 거부합니다.
+HTTP adapter는 blank 입력을 `400 Bad Request`, 너무 긴 입력을
+`413 Payload Too Large`로 매핑하는 것이 좋습니다. 오류 응답에는 status, 실제
+길이, 최대 길이만 담고 제출된 텍스트는 포함하지 마세요.
+
+```kotlin
+import io.bluetape4k.tokenizer.model.MAX_TOKENIZE_TEXT_LENGTH
+import io.bluetape4k.tokenizer.model.tokenizeRequestOf
+
+fun tokenizeHttp(text: String): Int =
+    when {
+        text.isBlank() -> 400
+        text.length > MAX_TOKENIZE_TEXT_LENGTH -> 413
+        else -> {
+            tokenizeRequestOf(text)
+            200
+        }
+    }
 ```
 
 ## 요구사항

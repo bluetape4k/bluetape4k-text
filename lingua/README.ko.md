@@ -108,9 +108,16 @@ detector.containsAny("Hello 안녕", Locale.KOREAN)  // true
 
 ```kotlin
 // build.gradle.kts
-implementation("io.github.bluetape4k.text:lingua:1.7.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:lingua:<current release or snapshot>")
 ```
 
 `lingua`는 upstream Lingua 의존성을 transitively 포함합니다.
+
+## 실행 예제
+
+[`../examples/lingua-examples`](../examples/lingua-examples)에 detector 재사용,
+언어 subset, low-accuracy mode, 혼합 언어 텍스트를 다루는 console 예제가 있습니다.
+반복 호출에서는 설정된 `LanguageDetector` 인스턴스를 재사용하세요. 시작 시 모델 로딩을
+감당할 수 있으면 preload를, 초기 footprint를 줄이고 싶으면 lazy loading을 선택하면 됩니다.
 
 > **주의**: detector는 호출마다 새로 만들지 말고 재사용하는 것이 좋습니다 — 모델 로딩 비용이 큽니다. 공백 입력은 `emptySet()`을 반환합니다. 토큰 단위에서 usable result가 없으면 전체 문자열 감지로 fallback 합니다.

@@ -49,6 +49,12 @@ val projectGroup = providers.gradleProperty("projectGroup").get()
 val baseVersion = providers.gradleProperty("baseVersion").get()
 val snapshotVersion = providers.gradleProperty("snapshotVersion").get()
 
+fun Project.isNonPublishedModule(): Boolean =
+    path == ":examples" || path.startsWith(":examples:")
+
+fun Project.isRunnableExampleModule(): Boolean =
+    path.startsWith(":examples:")
+
 allprojects {
     group = projectGroup
     version = baseVersion + snapshotVersion
@@ -66,6 +72,10 @@ allprojects {
 }
 
 subprojects {
+    if (isNonPublishedModule()) {
+        return@subprojects
+    }
+
     apply(plugin = "com.gradleup.nmcp")
 
     configurations.matching { it.name.startsWith("nmcp") }.configureEach {
@@ -93,16 +103,23 @@ subprojects {
     // BOM 모듈은 java-platform 플러그인을 사용하므로 Java/Kotlin 설정을 건너뜁니다.
     if (name == "bluetape4k-text-bom") return@subprojects
 
+    val isNonPublished = isNonPublishedModule()
+
     apply {
         plugin<JavaLibraryPlugin>()
         plugin("org.jetbrains.kotlin.jvm")
-        plugin("org.jetbrains.kotlinx.atomicfu")
-        plugin("org.jetbrains.kotlinx.kover")
-        plugin("maven-publish")
-        plugin("signing")
-        plugin("io.spring.dependency-management")
-        plugin("org.jetbrains.dokka")
         plugin("com.adarshr.test-logger")
+        if (isRunnableExampleModule()) {
+            plugin("application")
+        }
+        if (!isNonPublished) {
+            plugin("org.jetbrains.kotlinx.atomicfu")
+            plugin("org.jetbrains.kotlinx.kover")
+            plugin("maven-publish")
+            plugin("signing")
+            plugin("io.spring.dependency-management")
+            plugin("org.jetbrains.dokka")
+        }
     }
 
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
@@ -133,10 +150,12 @@ subprojects {
         }
     }
 
-    pluginManager.withPlugin("org.jetbrains.kotlinx.atomicfu") {
-        atomicfu {
-            transformJvm = true
-            jvmVariant = "VH"
+    if (!isNonPublished) {
+        pluginManager.withPlugin("org.jetbrains.kotlinx.atomicfu") {
+            atomicfu {
+                transformJvm = true
+                jvmVariant = "VH"
+            }
         }
     }
 
@@ -175,8 +194,10 @@ subprojects {
             }
         }
 
-        withType<Sign>().configureEach {
-            usesService(signingMutex)
+        if (!isNonPublished) {
+            withType<Sign>().configureEach {
+                usesService(signingMutex)
+            }
         }
 
         testlogger {
@@ -202,12 +223,14 @@ subprojects {
                 "${System.getProperty("java.version")} (${System.getProperty("java.specification.vendor")})"
         }
 
-        dokka {
-            dokkaPublications.html {
-                outputDirectory.set(layout.buildDirectory.asFile.get().resolve("javadoc"))
-            }
-            dokkaSourceSets.configureEach {
-                includes.from(project.files("README.md"))
+        if (!isNonPublished) {
+            dokka {
+                dokkaPublications.html {
+                    outputDirectory.set(layout.buildDirectory.asFile.get().resolve("javadoc"))
+                }
+                dokkaSourceSets.configureEach {
+                    includes.from(project.files("README.md"))
+                }
             }
         }
 
@@ -220,27 +243,37 @@ subprojects {
         }
 
         // atomicfu transform output → kover coverage collection: make ordering explicit
-        matching { it.name == "koverGenerateArtifactJvm" }.configureEach {
-            mustRunAfter(matching { it.name == "transformMainAtomicfu" })
+        if (!isNonPublished) {
+            matching { it.name == "koverGenerateArtifactJvm" }.configureEach {
+                mustRunAfter(matching { it.name == "transformMainAtomicfu" })
+            }
         }
     }
 
-    dependencyManagement {
-        setApplyMavenExclusions(false)
-        imports {
-            mavenBom(rootLibs.bluetape4k.bom.get().toString())
-            mavenBom(rootLibs.kotlinx.coroutines.bom.get().toString())
-            mavenBom(rootLibs.kotlin.bom.get().toString())
-            mavenBom(rootLibs.junit.bom.get().toString())
-            mavenBom(rootLibs.testcontainers.bom.get().toString())
-        }
-    
-        dependencies {
-            dependency("org.slf4j:slf4j-api:${bt4kVersion("slf4j")}")
+    if (!isNonPublished) {
+        dependencyManagement {
+            setApplyMavenExclusions(false)
+            imports {
+                mavenBom(rootLibs.bluetape4k.bom.get().toString())
+                mavenBom(rootLibs.kotlinx.coroutines.bom.get().toString())
+                mavenBom(rootLibs.kotlin.bom.get().toString())
+                mavenBom(rootLibs.junit.bom.get().toString())
+                mavenBom(rootLibs.testcontainers.bom.get().toString())
+            }
+
+            dependencies {
+                dependency("org.slf4j:slf4j-api:${bt4kVersion("slf4j")}")
+            }
         }
     }
 
     dependencies {
+        if (isNonPublished) {
+            add("implementation", platform(rootLibs.kotlin.bom))
+            add("implementation", platform(rootLibs.kotlinx.coroutines.bom))
+            add("testImplementation", platform(rootLibs.junit.bom))
+        }
+
         add("api", rootLibs.jetbrains.annotations)
 
         add("implementation", rootLibs.kotlin.stdlib)
@@ -249,9 +282,15 @@ subprojects {
         add("testImplementation", rootLibs.kotlin.test.junit5)
 
         add("implementation", rootLibs.kotlinx.coroutines.core)
-        add("implementation", rootLibs.kotlinx.atomicfu)
+        if (!isNonPublished) {
+            add("implementation", rootLibs.kotlinx.atomicfu)
+        }
 
-        add("api", rootLibs.slf4j.api)
+        if (isNonPublished) {
+            add("api", "org.slf4j:slf4j-api:${bt4kVersion("slf4j")}")
+        } else {
+            add("api", rootLibs.slf4j.api)
+        }
         add("testImplementation", rootLibs.logback)
         add("testImplementation", rootLibs.jcl.over.slf4j)
         add("testImplementation", rootLibs.jul.to.slf4j)
@@ -264,56 +303,58 @@ subprojects {
         add("testImplementation", rootLibs.mockk)
     }
 
-    publishing {
-        publications {
-            create<MavenPublication>("BluetapeText") {
-                val sourcesJar = tasks.register<Jar>("sourcesJar") {
-                    archiveClassifier.set("sources")
-                    from(sourceSets["main"].allSource)
-                }
-                val javadocJar = tasks.register<Jar>("javadocJar") {
-                    archiveClassifier.set("javadoc")
-                    from(layout.buildDirectory.asFile.get().resolve("javadoc"))
-                }
-                from(components["java"])
-                artifact(sourcesJar)
-                artifact(javadocJar)
+    if (!isNonPublished) {
+        publishing {
+            publications {
+                create<MavenPublication>("BluetapeText") {
+                    val sourcesJar = tasks.register<Jar>("sourcesJar") {
+                        archiveClassifier.set("sources")
+                        from(sourceSets["main"].allSource)
+                    }
+                    val javadocJar = tasks.register<Jar>("javadocJar") {
+                        archiveClassifier.set("javadoc")
+                        from(layout.buildDirectory.asFile.get().resolve("javadoc"))
+                    }
+                    from(components["java"])
+                    artifact(sourcesJar)
+                    artifact(javadocJar)
 
-                pom {
-                    name.set(project.name)
-                    description.set("Kotlin/JVM text processing library — tokenizers, language detection, text search — part of the bluetape4k ecosystem")
-                    url.set("https://github.com/bluetape4k/bluetape4k-text")
-                    licenses {
-                        license {
-                            name.set("The Apache License, Version 2.0")
-                            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
-                        }
-                    }
-                    developers {
-                        developer {
-                            id.set("debop")
-                            name.set("Sunghyouk Bae")
-                            email.set("sunghyouk.bae@gmail.com")
-                        }
-                    }
-                    scm {
-                        connection.set("scm:git:git://github.com/bluetape4k/bluetape4k-text.git")
-                        developerConnection.set("scm:git:ssh://github.com/bluetape4k/bluetape4k-text.git")
+                    pom {
+                        name.set(project.name)
+                        description.set("Kotlin/JVM text processing library — tokenizers, language detection, text search — part of the bluetape4k ecosystem")
                         url.set("https://github.com/bluetape4k/bluetape4k-text")
+                        licenses {
+                            license {
+                                name.set("The Apache License, Version 2.0")
+                                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                            }
+                        }
+                        developers {
+                            developer {
+                                id.set("debop")
+                                name.set("Sunghyouk Bae")
+                                email.set("sunghyouk.bae@gmail.com")
+                            }
+                        }
+                        scm {
+                            connection.set("scm:git:git://github.com/bluetape4k/bluetape4k-text.git")
+                            developerConnection.set("scm:git:ssh://github.com/bluetape4k/bluetape4k-text.git")
+                            url.set("https://github.com/bluetape4k/bluetape4k-text")
+                        }
                     }
                 }
             }
-        }
-        repositories {
-            mavenCentral()
-            maven {
-                name = "central-snapshots"
-                url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+            repositories {
+                mavenCentral()
+                maven {
+                    name = "central-snapshots"
+                    url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+                }
             }
         }
-    }
 
-    configurePublishingSigning("BluetapeText")
+        configurePublishingSigning("BluetapeText")
+    }
 }
 
 extensions.configure<NmcpAggregationExtension>("nmcpAggregation") {
@@ -326,13 +367,17 @@ extensions.configure<NmcpAggregationExtension>("nmcpAggregation") {
 }
 
 dependencies {
-    subprojects.forEach { add("nmcpAggregation", project(it.path)) }
+    subprojects
+        .filterNot { it.isNonPublishedModule() }
+        .forEach { add("nmcpAggregation", project(it.path)) }
 }
 
 dependencies {
-    subprojects.filter { it.name != "bluetape4k-text-bom" }.forEach { sub ->
-        kover(dependencies.project(mapOf("path" to sub.path)))
-    }
+    subprojects
+        .filter { it.name != "bluetape4k-text-bom" && !it.isNonPublishedModule() }
+        .forEach { sub ->
+            kover(dependencies.project(mapOf("path" to sub.path)))
+        }
 }
 
 // atomicfu transforms output before kover collects coverage — make ordering explicit

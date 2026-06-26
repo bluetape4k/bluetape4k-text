@@ -7,6 +7,12 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Added runnable text-search, Lingua, and tokenizer web-safety examples for the 0.2.1 readiness milestone ([#109](https://github.com/bluetape4k/bluetape4k-text/issues/109), [#110](https://github.com/bluetape4k/bluetape4k-text/issues/110), [#111](https://github.com/bluetape4k/bluetape4k-text/issues/111)).
+- Covered Lingua low-accuracy mode, strict threshold behavior, and detector reuse in builder tests ([#98](https://github.com/bluetape4k/bluetape4k-text/issues/98)).
+- Documented tokenizer and blockword web-service input limits and 400/413 mapping in root and module README files ([#99](https://github.com/bluetape4k/bluetape4k-text/issues/99)).
+
 ### Changed
 
 - Opened the `0.3.0` development line after the `0.2.0` stable release.

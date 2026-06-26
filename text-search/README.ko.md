@@ -170,6 +170,12 @@ val result = automaton.parseText("아름다운 나라")
 fun <V> AhoCorasickAutomaton<V>.matchesAsFlow(text: CharSequence): Flow<AhoCorasickMatch<V>>
 ```
 
+## 실행 예제
+
+[`../examples/text-search-examples`](../examples/text-search-examples)에 builder API,
+`ahoCorasick` DSL, replacement, `matchesAsFlow(...).take(1)` 조기 수집을 다루는
+console 예제가 있습니다.
+
 ## 벤치마크
 
 처리량은 저장소의 kotlinx-benchmark Gradle 태스크를 통해 JMH로 측정합니다.
@@ -210,7 +216,7 @@ fun <V> AhoCorasickAutomaton<V>.matchesAsFlow(text: CharSequence): Flow<AhoCoras
 
 ```kotlin
 // build.gradle.kts
-implementation("io.github.bluetape4k.text:text-search:1.7.0-SNAPSHOT")
+implementation("io.github.bluetape4k.text:text-search:<current release or snapshot>")
 
 // 선택사항: 코루틴 Flow 지원
 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
