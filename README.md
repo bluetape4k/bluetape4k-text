@@ -54,7 +54,7 @@ and high-throughput keyword search.
 
 ## Quality Evidence
 
-The 0.2.0 quality gate is source-controlled and reproducible:
+The 0.2.1 quality gate is source-controlled and reproducible:
 
 | Evidence | Link |
 |---|---|
