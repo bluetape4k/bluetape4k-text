@@ -51,4 +51,25 @@ class LanguageDetectorExtensionsTest: AbstractLinguaTest() {
     fun `인식할 수 없는 입력이면 빈 집합을 반환한다`() {
         detector.detectAllLanguagesOf("🔥🎉🧪") shouldBeEqualTo emptySet()
     }
+
+
+    @Test
+    fun latinPhrasesUsePreferredLatinCandidates() {
+        detector.detectAllLanguagesOf("Hola servicio. Bonjour utilisateurs! Grazie mille") shouldBeEqualTo setOf(
+            Language.SPANISH,
+            Language.FRENCH,
+            Language.ITALIAN,
+        )
+    }
+
+    @Test
+    fun singleLetterLatinTokenIsIgnoredInMixedText() {
+        detector.detectAllLanguagesOf("A 안녕하세요") shouldBeEqualTo setOf(Language.KOREAN)
+    }
+
+    @Test
+    fun longNonPreferredLatinTokenIsIgnoredInMixedText() {
+        detector.detectAllLanguagesOf("Xylophonemuseum 안녕하세요") shouldBeEqualTo setOf(Language.KOREAN)
+    }
+
 }

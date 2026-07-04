@@ -133,4 +133,28 @@ class LanguageDetectorBuilderTest: AbstractLinguaTest() {
             Language.JAPANESE,
         )
     }
+
+
+    @Test
+    fun allSpokenLanguageDetectorCanBeCreated() {
+        val detector = allSpokenLanguageDetector {
+            withMinimumRelativeDistance(0.0)
+            withLowAccuracyMode()
+        }
+
+        detector.detectLanguageOf("Bonjour service users") shouldBeEqualTo Language.FRENCH
+    }
+
+    @Test
+    fun convenienceOverloadCanSkipPreloadingAndEnableLowAccuracy() {
+        val detector = languageDetectorOf(
+            languages = setOf(Language.ENGLISH, Language.FRENCH),
+            minimumRelativeDistance = 0.0,
+            isEveryLanguageModelPreloaded = false,
+            isLowAccuracyModeEnabled = true,
+        )
+
+        detector.detectLanguageOf("Hello service users") shouldBeEqualTo Language.ENGLISH
+    }
+
 }
