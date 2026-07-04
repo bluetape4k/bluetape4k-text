@@ -279,4 +279,50 @@ class CharacterUtilsTest {
         val first6 = text.substring(0, 6) // "Hello "
         charUtils.codePointCount(first6) shouldBeEqualTo 6
     }
+
+
+    @Test
+    fun characterBufferCompanionWrapsExistingArray() {
+        val raw = "abcdef".toCharArray()
+        val buffer = CharacterUtils.CharacterBuffer(raw, offset = 2, length = 3)
+
+        buffer.buffer shouldBeEqualTo raw
+        buffer.offset shouldBeEqualTo 2
+        buffer.length shouldBeEqualTo 3
+    }
+
+    @Test
+    fun fillCarriesTrailingHighSurrogateToNextRead() {
+        val buffer = CharacterUtils.newCharacterBuffer(4)
+        val text = "abc😀z"
+        val reader = StringReader(text)
+
+        charUtils.fill(buffer, reader, 4).shouldBeTrue()
+        String(buffer.buffer, buffer.offset, buffer.length) shouldBeEqualTo "abc"
+        buffer.lastTrailingHighSurrogate shouldBeEqualTo text[3]
+
+        charUtils.fill(buffer, reader, 3).shouldBeTrue()
+        String(buffer.buffer, buffer.offset, buffer.length) shouldBeEqualTo "😀z"
+        buffer.lastTrailingHighSurrogate shouldBeEqualTo 0.toChar()
+    }
+
+    @Test
+    fun fillRejectsTooSmallNumChars() {
+        val buffer = CharacterUtils.newCharacterBuffer(4)
+
+        assertFailsWith<IllegalArgumentException> {
+            charUtils.fill(buffer, StringReader("abc"), 1)
+        }
+    }
+
+    @Test
+    fun codePointConversionsRejectNegativeLengths() {
+        assertFailsWith<IllegalArgumentException> {
+            charUtils.toCodePoints("abc".toCharArray(), 0, -1, IntArray(3), 0)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            charUtils.toChars(intArrayOf('a'.code), 0, -1, CharArray(1), 0)
+        }
+    }
+
 }
