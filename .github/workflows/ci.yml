@@ -83,14 +83,24 @@ jobs:
           filters: |
             tokenizer-core:
               - 'tokenizer-core/**'
+              - '.github/workflows/ci.yml'
+              - '.github/scripts/**'
             tokenizer-japanese:
               - 'tokenizer-japanese/**'
+              - '.github/workflows/ci.yml'
+              - '.github/scripts/**'
             tokenizer-korean:
               - 'tokenizer-korean/**'
+              - '.github/workflows/ci.yml'
+              - '.github/scripts/**'
             lingua:
               - 'lingua/**'
+              - '.github/workflows/ci.yml'
+              - '.github/scripts/**'
             text-search:
               - 'text-search/**'
+              - '.github/workflows/ci.yml'
+              - '.github/scripts/**'
             examples:
               - 'examples/**'
               - 'settings.gradle.kts'
