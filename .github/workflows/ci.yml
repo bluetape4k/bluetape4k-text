@@ -154,6 +154,19 @@ jobs:
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+      - name: Generate Kover XML report
+        if: always()
+        run: ./gradlew :tokenizer-core:koverXmlReport --no-daemon
+        continue-on-error: true
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-tokenizer-core
+          path: '**/build/reports/kover/'
+          retention-days: 7
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7
@@ -187,6 +200,19 @@ jobs:
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+      - name: Generate Kover XML report
+        if: always()
+        run: ./gradlew :tokenizer-japanese:koverXmlReport --no-daemon
+        continue-on-error: true
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-tokenizer-japanese
+          path: '**/build/reports/kover/'
+          retention-days: 7
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7
@@ -220,6 +246,19 @@ jobs:
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+      - name: Generate Kover XML report
+        if: always()
+        run: ./gradlew :tokenizer-korean:koverXmlReport --no-daemon
+        continue-on-error: true
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-tokenizer-korean
+          path: '**/build/reports/kover/'
+          retention-days: 7
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7
@@ -253,6 +292,19 @@ jobs:
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+      - name: Generate Kover XML report
+        if: always()
+        run: ./gradlew :lingua:koverXmlReport --no-daemon
+        continue-on-error: true
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-lingua
+          path: '**/build/reports/kover/'
+          retention-days: 7
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7
@@ -286,6 +338,19 @@ jobs:
           done
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+      - name: Generate Kover XML report
+        if: always()
+        run: ./gradlew :text-search:koverXmlReport --no-daemon
+        continue-on-error: true
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-text-search
+          path: '**/build/reports/kover/'
+          retention-days: 7
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7
@@ -327,6 +392,91 @@ jobs:
           path: '**/build/test-results/test/*.xml'
           retention-days: 7
 
+  coverage-report:
+    name: Coverage Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - test-tokenizer-core
+      - test-tokenizer-japanese
+      - test-tokenizer-korean
+      - test-lingua
+      - test-text-search
+    if: always()
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Download all coverage artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: coverage-*
+          path: coverage-artifacts
+          merge-multiple: false
+        continue-on-error: true
+
+      - name: Validate coverage artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          expected_artifacts=(
+            coverage-tokenizer-core
+            coverage-tokenizer-japanese
+            coverage-tokenizer-korean
+            coverage-lingua
+            coverage-text-search
+          )
+
+          missing_artifacts=()
+          empty_artifacts=()
+
+          for artifact in "${expected_artifacts[@]}"; do
+            artifact_dir="coverage-artifacts/${artifact}"
+            if [[ ! -d "${artifact_dir}" ]]; then
+              missing_artifacts+=("${artifact}")
+              continue
+            fi
+
+            if ! find "${artifact_dir}" -type f \( -name 'report.xml' -o -name 'reportJvm.xml' \) -print -quit | grep -q .; then
+              empty_artifacts+=("${artifact}")
+            fi
+          done
+
+          if (( ${#missing_artifacts[@]} > 0 || ${#empty_artifacts[@]} > 0 )); then
+            echo "::error title=Coverage artifacts incomplete::Expected coverage artifacts are missing or empty."
+
+            if (( ${#missing_artifacts[@]} > 0 )); then
+              printf 'Missing artifacts:\n'
+              printf '  - %s\n' "${missing_artifacts[@]}"
+            fi
+
+            if (( ${#empty_artifacts[@]} > 0 )); then
+              printf 'Empty artifacts:\n'
+              printf '  - %s\n' "${empty_artifacts[@]}"
+            fi
+
+            echo "Downloaded artifacts:"
+            find coverage-artifacts -maxdepth 2 -type d -print 2>/dev/null | sort || true
+            exit 1
+          fi
+
+          printf 'Validated %s expected coverage artifacts.\n' "${#expected_artifacts[@]}"
+
+      - name: Aggregate Kover coverage summary
+        run: python3 .github/scripts/aggregate-kover-coverage.py coverage-artifacts
+
+      - name: Upload aggregated coverage
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-all
+          path: coverage-artifacts/
+          retention-days: 30
+
   ci-status:
     name: CI Status
     runs-on: ubuntu-latest
@@ -334,6 +484,7 @@ jobs:
     needs:
       - gitleaks
       - build
+      - coverage-report
       - changes
       - test-tokenizer-core
       - test-tokenizer-japanese
