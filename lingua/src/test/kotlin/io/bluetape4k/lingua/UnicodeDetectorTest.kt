@@ -3,6 +3,7 @@ package io.bluetape4k.lingua
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -48,6 +49,48 @@ class UnicodeDetectorTest: AbstractLinguaTest() {
         fun `모든 문자가 예상되는 문자에 해당하는가`(text: String, language: String, containsAny: Boolean) {
             val locale = Locale.of(language)
             unicodeDetector.containsAny(text, locale) shouldBeEqualTo containsAny
+        }
+    }
+
+    @Nested
+    inner class Filter {
+
+        @Test
+        fun supportedLanguagesAreExposed() {
+            UnicodeDetector.SupportedLanguages shouldBeEqualTo listOf(
+                Locale.KOREAN,
+                Locale.JAPANESE,
+                Locale.ENGLISH,
+                Locale.CHINESE,
+                Locale.of("th"),
+            )
+        }
+
+        @Test
+        fun filterCharKeepsAsciiForEveryLocale() {
+            unicodeDetector.filterChar('A', Locale.of("ar")) shouldBeEqualTo 'A'
+        }
+
+        @Test
+        fun filterCharKeepsOnlyLocaleSpecificCharacters() {
+            unicodeDetector.filterChar('가', Locale.KOREAN) shouldBeEqualTo '가'
+            unicodeDetector.filterChar('あ', Locale.JAPANESE) shouldBeEqualTo 'あ'
+            unicodeDetector.filterChar('中', Locale.CHINESE) shouldBeEqualTo '中'
+            unicodeDetector.filterChar('ก', Locale.of("th")) shouldBeEqualTo 'ก'
+
+            unicodeDetector.filterChar('가', Locale.JAPANESE).shouldBeNull()
+            unicodeDetector.filterChar('あ', Locale.CHINESE).shouldBeNull()
+            unicodeDetector.filterChar('中', Locale.KOREAN).shouldBeNull()
+            unicodeDetector.filterChar('ก', Locale.ENGLISH).shouldBeNull()
+        }
+
+        @Test
+        fun filterStringKeepsOnlyAsciiAndTargetCharacters() {
+            String(unicodeDetector.filterString("A가あ中ก", Locale.KOREAN)) shouldBeEqualTo "A가"
+            String(unicodeDetector.filterString("A가あ中ก", Locale.JAPANESE)) shouldBeEqualTo "Aあ"
+            String(unicodeDetector.filterString("A가あ中ก", Locale.CHINESE)) shouldBeEqualTo "A中"
+            String(unicodeDetector.filterString("A가あ中ก", Locale.of("th"))) shouldBeEqualTo "Aก"
+            String(unicodeDetector.filterString("A가あ中ก", Locale.of("ar"))) shouldBeEqualTo "A"
         }
     }
 
