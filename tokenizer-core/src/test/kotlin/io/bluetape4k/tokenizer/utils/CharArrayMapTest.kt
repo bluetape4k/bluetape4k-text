@@ -1,10 +1,11 @@
 package io.bluetape4k.tokenizer.utils
 
-import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
 
 /**
@@ -16,7 +17,7 @@ class CharArrayMapTest {
     @Test
     fun `create empty CharArrayMap`() {
         val map = CharArrayMap<String>(16)
-        map.size shouldBeEqualTo 0
+        map shouldHaveSize 0
         map.isEmpty().shouldBeTrue()
     }
 
@@ -27,7 +28,7 @@ class CharArrayMapTest {
         map["hello"] = "world"
         map["test"] = "value"
 
-        map.size shouldBeEqualTo 2
+        map shouldHaveSize 2
         map["hello"] shouldBeEqualTo "world"
         map["test"] shouldBeEqualTo "value"
     }
@@ -61,7 +62,7 @@ class CharArrayMapTest {
         map["key"] = "value1"
         map["key"] = "value2"
 
-        map.size shouldBeEqualTo 1
+        map shouldHaveSize 1
         map["key"] shouldBeEqualTo "value2"
     }
 
@@ -99,7 +100,7 @@ class CharArrayMapTest {
     fun `remove entry`() {
         val map = CharArrayMap<String>(16)
         map["test"] = "value"
-        map.size shouldBeEqualTo 1
+        map shouldHaveSize 1
 
         map.remove("test")
 
@@ -113,7 +114,7 @@ class CharArrayMapTest {
 
         map.remove("nonexistent")
 
-        map.size shouldBeEqualTo 0
+        map shouldHaveSize 0
     }
 
     @Test
@@ -124,7 +125,7 @@ class CharArrayMapTest {
 
         map.clear()
 
-        map.size shouldBeEqualTo 0
+        map shouldHaveSize 0
         map.isEmpty().shouldBeTrue()
         map.containsKey("key1").shouldBeFalse()
     }
@@ -145,7 +146,7 @@ class CharArrayMapTest {
             map["key$i"] = "value$i"
         }
 
-        map.size shouldBeEqualTo 100
+        map shouldHaveSize 100
 
         // Verify all entries are still accessible
         repeat(100) { i ->
@@ -161,7 +162,7 @@ class CharArrayMapTest {
 
         val copy = CharArrayMap(original)
 
-        copy.size shouldBeEqualTo original.size
+        copy shouldHaveSize original.size
         copy["key1"] shouldBeEqualTo "value1"
         copy["key2"] shouldBeEqualTo "value2"
     }
@@ -176,7 +177,7 @@ class CharArrayMapTest {
 
         val charArrayMap = CharArrayMap(regularMap)
 
-        charArrayMap.size shouldBeEqualTo 2
+        charArrayMap shouldHaveSize 2
         charArrayMap["key1"] shouldBeEqualTo "value1"
         charArrayMap["key2"] shouldBeEqualTo "value2"
     }
@@ -186,7 +187,7 @@ class CharArrayMapTest {
         val empty1 = CharArrayMap.emptyMap<String>()
 
         empty1.isEmpty().shouldBeTrue()
-        empty1.size shouldBeEqualTo 0
+        empty1 shouldHaveSize 0
     }
 
     @Test
@@ -197,7 +198,7 @@ class CharArrayMapTest {
 
         val keys = map.keys
 
-        keys.size shouldBeEqualTo 2
+        keys shouldHaveSize 2
     }
 
     @Test
@@ -208,7 +209,7 @@ class CharArrayMapTest {
 
         val keys = map.originalKeySet
 
-        keys.size shouldBeEqualTo 2
+        keys shouldHaveSize 2
     }
 
     @Test
@@ -219,7 +220,7 @@ class CharArrayMapTest {
 
         val values = map.values
 
-        values.size shouldBeEqualTo 2
+        values shouldHaveSize 2
     }
 
     @Test
@@ -229,7 +230,7 @@ class CharArrayMapTest {
 
         val entries = map.entries
 
-        entries.size shouldBeEqualTo 1
+        entries shouldHaveSize 1
     }
 
     @Test
@@ -254,7 +255,7 @@ class CharArrayMapTest {
 
         map.putAll(other)
 
-        map.size shouldBeEqualTo 2
+        map shouldHaveSize 2
         map["key1"] shouldBeEqualTo "value1"
         map["key2"] shouldBeEqualTo "value2"
     }

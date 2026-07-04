@@ -1,8 +1,9 @@
 package io.bluetape4k.text.search
 
-import io.bluetape4k.logging.KLogging
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.logging.KLogging
 
 /**
  * Aho-Corasick 테스트 공통 기반 클래스.
@@ -45,7 +46,7 @@ abstract class AbstractAhoCorasickTest {
         actual: List<AhoCorasickMatch<*>>,
         vararg expected: Triple<Int, Int, String>,
     ) {
-        actual.size shouldBeEqualTo expected.size
+        actual shouldHaveSize expected.size
         actual.zip(expected).forEachIndexed { idx, (match, triple) ->
             val (start, end, keyword) = triple
             assertMatch(match, start, end, keyword)

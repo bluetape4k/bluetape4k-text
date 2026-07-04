@@ -1,12 +1,13 @@
 package io.bluetape4k.text.search
 
-import io.bluetape4k.logging.KLogging
-import io.bluetape4k.logging.debug
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -349,7 +350,7 @@ class AhoCorasickMigrationTest {
 
         // Act & Assert
         automaton.containsMatch("ababcbab").shouldBeTrue()
-        automaton.containsMatch("xyz") shouldBeEqualTo false
+        automaton.containsMatch("xyz").shouldBeFalse()
         log.debug { "케이스9 containsMatch 검증 완료" }
     }
 

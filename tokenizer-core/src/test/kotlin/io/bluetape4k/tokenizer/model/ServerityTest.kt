@@ -1,8 +1,9 @@
 package io.bluetape4k.tokenizer.model
 
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.tokenizer.AbstractCoreTest
-import io.bluetape4k.assertions.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 
 class ServerityTest: AbstractCoreTest() {
@@ -24,6 +25,6 @@ class ServerityTest: AbstractCoreTest() {
 
     @Test
     fun `severity entries count`() {
-        Severity.entries.size shouldBeEqualTo 3
+        Severity.entries shouldHaveSize 3
     }
 }

@@ -1,16 +1,16 @@
 package io.bluetape4k.text.search
 
-import io.bluetape4k.logging.KLogging
-import io.bluetape4k.logging.debug
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import io.bluetape4k.assertions.assertFailsWith
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
@@ -133,7 +133,7 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
         val tokens = automaton.tokenize(input)
 
         // Assert: Fragment("prefix "), Match("foo"), Fragment(" middle "), Match("bar"), Fragment(" suffix")
-        tokens.size shouldBeEqualTo 5
+        tokens shouldHaveSize 5
 
         (tokens[0] is SearchToken.Fragment).shouldBeTrue()
         (tokens[0] as SearchToken.Fragment).text shouldBeEqualTo "prefix "

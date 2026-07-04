@@ -1,11 +1,12 @@
 package io.bluetape4k.tokenizer.utils
 
-import io.bluetape4k.logging.KLogging
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldHaveSize
+import io.bluetape4k.logging.KLogging
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.io.StringReader
 
 /**
@@ -153,14 +154,14 @@ class CharacterUtilsTest {
     fun `newCharacterBuffer`() {
         val buffer = CharacterUtils.newCharacterBuffer(10)
 
-        buffer.buffer.size shouldBeEqualTo 10
+        buffer.buffer shouldHaveSize 10
         buffer.offset shouldBeEqualTo 0
         buffer.length shouldBeEqualTo 0
     }
 
     @Test
     fun `newCharacterBuffer minimum size`() {
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             CharacterUtils.newCharacterBuffer(1)
         }
     }
