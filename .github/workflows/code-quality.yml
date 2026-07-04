@@ -22,10 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # TODO(#148): Re-enable java-kotlin after CodeQL supports Kotlin 2.4.x.
-        # Keep actions analysis active while the Kotlin extractor support window
-        # catches up.
-        language: [actions]
+        language: [java-kotlin, actions]
 
     steps:
       - name: Checkout repository
@@ -35,6 +32,12 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
+
+      - name: Pin Kotlin for CodeQL extractor
+        if: matrix.language == 'java-kotlin'
+        run: |
+          perl -0pi -e 's/kotlin = "2\.4\.0"/kotlin = "2.3.21"/' gradle/libs.versions.toml
+          grep -n 'kotlin = "2.3.21"' gradle/libs.versions.toml
 
       - name: Setup JDK
         if: matrix.language == 'java-kotlin'
