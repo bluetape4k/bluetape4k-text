@@ -1,13 +1,14 @@
 package io.bluetape4k.text.search
 
-import io.bluetape4k.logging.KLogging
-import io.bluetape4k.logging.debug
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import io.bluetape4k.assertions.assertFailsWith
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AhoCorasickDslTest {
@@ -32,7 +33,7 @@ class AhoCorasickDslTest {
         // Assert
         matches shouldHaveSize 5
         val keywords = matches.map { it.value }
-        keywords.containsAll(listOf("APPLE", "BANANA", "CHERRY", "DATE", "ELDERBERRY")) shouldBeEqualTo true
+        keywords.containsAll(listOf("APPLE", "BANANA", "CHERRY", "DATE", "ELDERBERRY")).shouldBeTrue()
         log.debug { "DSL 매치 결과: $matches" }
     }
 

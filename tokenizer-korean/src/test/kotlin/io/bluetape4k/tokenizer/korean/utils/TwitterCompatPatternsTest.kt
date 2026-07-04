@@ -1,9 +1,10 @@
 package io.bluetape4k.tokenizer.korean.utils
 
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.tokenizer.korean.TestBase
-import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeTrue
 import org.junit.jupiter.api.Test
 
 class TwitterCompatPatternsTest : TestBase() {
@@ -53,7 +54,7 @@ class TwitterCompatPatternsTest : TestBase() {
     @Test
     fun `VALID_URL does not match plain word`() {
         val m = TwitterCompatPatterns.VALID_URL.matcher("hello world")
-        m.find() shouldBeEqualTo false
+        m.find().shouldBeFalse()
     }
 
     // --- VALID_HASHTAG ---

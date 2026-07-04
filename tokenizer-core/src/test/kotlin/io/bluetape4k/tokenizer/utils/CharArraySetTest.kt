@@ -1,11 +1,12 @@
 package io.bluetape4k.tokenizer.utils
 
-import io.bluetape4k.logging.KLogging
-import io.bluetape4k.logging.debug
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.logging.KLogging
+import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
 
 class CharArraySetTest {
@@ -49,7 +50,7 @@ class CharArraySetTest {
     @Test
     fun `create empty set`() {
         val set = CharArraySet(16)
-        set.size shouldBeEqualTo 0
+        set shouldHaveSize 0
     }
 
     @Test
@@ -59,7 +60,7 @@ class CharArraySetTest {
         set.add("hello").shouldBeTrue()
         set.add("world").shouldBeTrue()
 
-        set.size shouldBeEqualTo 2
+        set shouldHaveSize 2
         set.contains("hello").shouldBeTrue()
         set.contains("world").shouldBeTrue()
         set.contains("notexist").shouldBeFalse()
@@ -72,7 +73,7 @@ class CharArraySetTest {
         set.add("test").shouldBeTrue()
         set.add("test").shouldBeFalse()
 
-        set.size shouldBeEqualTo 1
+        set shouldHaveSize 1
     }
 
     @Test
@@ -114,7 +115,7 @@ class CharArraySetTest {
 
         set.clear()
 
-        set.size shouldBeEqualTo 0
+        set shouldHaveSize 0
         set.contains("key1").shouldBeFalse()
     }
 
@@ -126,7 +127,7 @@ class CharArraySetTest {
 
         val copy = CharArraySet(original)
 
-        copy.size shouldBeEqualTo 2
+        copy shouldHaveSize 2
         copy.contains("key1").shouldBeTrue()
         copy.contains("key2").shouldBeTrue()
     }
@@ -146,7 +147,7 @@ class CharArraySetTest {
             }
         }
 
-        items.size shouldBeEqualTo 3
+        items shouldHaveSize 3
         items.contains("a").shouldBeTrue()
         items.contains("b").shouldBeTrue()
         items.contains("c").shouldBeTrue()
@@ -160,7 +161,7 @@ class CharArraySetTest {
             set.add("key$i").shouldBeTrue()
         }
 
-        set.size shouldBeEqualTo 100
+        set shouldHaveSize 100
 
         repeat(100) { i ->
             set.contains("key$i").shouldBeTrue()
@@ -204,7 +205,7 @@ class CharArraySetTest {
         set.add("Hello")
         set.add("hello")
 
-        set.size shouldBeEqualTo 2
+        set shouldHaveSize 2
         set.contains("Hello").shouldBeTrue()
         set.contains("hello").shouldBeTrue()
     }
@@ -216,23 +217,23 @@ class CharArraySetTest {
         repeat(200) { i ->
             set.add("word$i")
         }
-        set.size shouldBeEqualTo 200
+        set shouldHaveSize 200
 
         // 2개 추가
         set.add("19禁")
         set.add("29禁")
-        set.size shouldBeEqualTo 202
+        set shouldHaveSize 202
         set.contains("19禁").shouldBeTrue()
         set.contains("29禁").shouldBeTrue()
 
         // 개별 삭제
         set.remove("19禁").shouldBeTrue()
         set.contains("19禁").shouldBeFalse()
-        set.size shouldBeEqualTo 201
+        set shouldHaveSize 201
 
         set.remove("29禁").shouldBeTrue()
         set.contains("29禁").shouldBeFalse()
-        set.size shouldBeEqualTo 200
+        set shouldHaveSize 200
     }
 
     @Test
@@ -248,7 +249,7 @@ class CharArraySetTest {
         set.removeAll(listOf("19禁", "29禁"))
         set.contains("19禁").shouldBeFalse()
         set.contains("29禁").shouldBeFalse()
-        set.size shouldBeEqualTo 200
+        set shouldHaveSize 200
     }
 
     @Test
@@ -268,7 +269,7 @@ class CharArraySetTest {
 
         set.addAll(items).shouldBeTrue()
 
-        set.size shouldBeEqualTo 3
+        set shouldHaveSize 3
         set.contains("a").shouldBeTrue()
         set.contains("b").shouldBeTrue()
         set.contains("c").shouldBeTrue()

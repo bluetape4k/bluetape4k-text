@@ -93,7 +93,7 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
      *
      * val tokens = trie.tokenize("Alpha Beta Gamma").toList()
      * log.debug { "tokens=$tokens" }
-     * tokens.size shouldBeEqualTo 5   // 2 space
+     * tokens shouldHaveSize 5   // 2 space
      * ```
      *
      * @param text input text to tokenize
@@ -188,7 +188,7 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
      *
      *  trie.runParseText("ushers", emitHandler)
      *
-     *  emits.size shouldBeEqualTo 3
+     *  emits shouldHaveSize 3
      *  checkEmit(emits[0], 2, 3, "he")
      *  checkEmit(emits[1], 1, 3, "she")
      *  checkEmit(emits[2], 2, 5, "hers")
