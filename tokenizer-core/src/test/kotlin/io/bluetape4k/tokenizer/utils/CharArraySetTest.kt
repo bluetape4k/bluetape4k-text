@@ -5,6 +5,7 @@ import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import org.junit.jupiter.api.Test
@@ -274,4 +275,46 @@ class CharArraySetTest {
         set.contains("b").shouldBeTrue()
         set.contains("c").shouldBeTrue()
     }
+
+
+    @Test
+    fun copyCompanionHandlesRegularAndCharArraySets() {
+        val regularCopy = CharArraySet.copy(setOf("alpha" as Any, "beta" as Any))
+        regularCopy shouldHaveSize 2
+        regularCopy.contains("alpha").shouldBeTrue()
+        regularCopy.contains("beta").shouldBeTrue()
+
+        val original = CharArraySet(4)
+        original.addAll(listOf("one", "two"))
+        val copied = CharArraySet.copy(original)
+        copied shouldHaveSize 2
+        copied.contains("one").shouldBeTrue()
+        copied.contains("two").shouldBeTrue()
+    }
+
+    @Test
+    fun unmodifiableSetBlocksMutationOperations() {
+        val source = CharArraySet(4)
+        source.add("alpha")
+        val readonly = CharArraySet.unmodifiableSet(source)
+
+        readonly.contains("alpha").shouldBeTrue()
+        assertFailsWith<UnsupportedOperationException> { readonly.add("beta") }
+        assertFailsWith<UnsupportedOperationException> { readonly.add("beta" as CharSequence) }
+        assertFailsWith<UnsupportedOperationException> { readonly.add("beta".toCharArray()) }
+        assertFailsWith<UnsupportedOperationException> { readonly.remove("alpha") }
+        assertFailsWith<UnsupportedOperationException> { readonly.clear() }
+    }
+
+    @Test
+    fun setToStringRendersStoredWords() {
+        val set = CharArraySet(4)
+        set.add("alpha")
+        set.add("beta")
+
+        val rendered = set.toString()
+        rendered.contains("alpha").shouldBeTrue()
+        rendered.contains("beta").shouldBeTrue()
+    }
+
 }
