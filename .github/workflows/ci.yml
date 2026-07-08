@@ -407,12 +407,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
+      - changes
       - test-tokenizer-core
       - test-tokenizer-japanese
       - test-tokenizer-korean
       - test-lingua
       - test-text-search
-    if: always()
+    if: >
+      always() && (
+        needs.changes.outputs.tokenizer-core == 'true' ||
+        needs.changes.outputs.tokenizer-japanese == 'true' ||
+        needs.changes.outputs.tokenizer-korean == 'true' ||
+        needs.changes.outputs.lingua == 'true' ||
+        needs.changes.outputs.text-search == 'true'
+      )
     steps:
       - uses: actions/checkout@v7
 
