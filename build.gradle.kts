@@ -318,9 +318,9 @@ subprojects {
             add("api", bt4kLibrary("slf4j-api"))
         }
         add("testImplementation", rootLibs.logback)
-        add("testImplementation", rootLibs.jcl.over.slf4j)
-        add("testImplementation", rootLibs.jul.to.slf4j)
-        add("testImplementation", rootLibs.log4j.over.slf4j)
+        add("testImplementation", bt4kLibrary("jcl-over-slf4j"))
+        add("testImplementation", bt4kLibrary("jul-to-slf4j"))
+        add("testImplementation", bt4kLibrary("log4j-over-slf4j"))
 
         add("testImplementation", rootLibs.junit.jupiter)
         add("testRuntimeOnly", rootLibs.junit.platform.engine)
