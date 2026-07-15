@@ -1,7 +1,7 @@
 plugins {
     kotlin("plugin.allopen")
     alias(libs.plugins.kotlinx.benchmark)
-    alias(libs.plugins.kover)
+    alias(bt4k.plugins.kover)
 }
 
 kover {
@@ -69,12 +69,12 @@ benchmark {
 }
 
 dependencies {
-    api(libs.bluetape4k.core)
-    compileOnly(libs.bluetape4k.coroutines)
+    api(bt4k.bluetape4k.core)
+    compileOnly(bt4k.bluetape4k.coroutines)
     compileOnly(libs.kotlinx.coroutines.core)
 
-    testImplementation(libs.bluetape4k.junit5)
-    testImplementation(libs.bluetape4k.coroutines)
+    testImplementation(bt4k.bluetape4k.junit5)
+    testImplementation(bt4k.bluetape4k.coroutines)
     testImplementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.kotlinx.coroutines.test)
 

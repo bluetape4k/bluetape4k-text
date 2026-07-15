@@ -3,7 +3,7 @@ configurations {
 }
 
 dependencies {
-    api(libs.bluetape4k.core)
+    api(bt4k.bluetape4k.core)
     api(libs.lingua)
-    testImplementation(libs.bluetape4k.junit5)
+    testImplementation(bt4k.bluetape4k.junit5)
 }

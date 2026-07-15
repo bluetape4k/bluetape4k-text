@@ -10,10 +10,10 @@ dependencies {
 
     // bluetape4k
     api(project(":tokenizer-core"))
-    testImplementation(libs.bluetape4k.junit5)
+    testImplementation(bt4k.bluetape4k.junit5)
 
     // Coroutines
-    api(libs.bluetape4k.coroutines)
+    api(bt4k.bluetape4k.coroutines)
     api(libs.kotlinx.coroutines.core)
     testImplementation(libs.kotlinx.coroutines.test)
 }
