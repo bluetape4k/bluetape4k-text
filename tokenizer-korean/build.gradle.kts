@@ -3,10 +3,10 @@ configurations {
 }
 
 dependencies {
-    api(libs.bluetape4k.io)
-    api(libs.bluetape4k.coroutines)
+    api(bt4k.bluetape4k.io)
+    api(bt4k.bluetape4k.coroutines)
     api(project(":tokenizer-core"))
-    testImplementation(libs.bluetape4k.junit5)
+    testImplementation(bt4k.bluetape4k.junit5)
 
     // twitter-text 의존성 제거: VALID_URL/HASHTAG/MENTION/CASHTAG 패턴은 TwitterCompatPatterns.kt 에서 내부 구현
     // Benchmark 비교를 위해

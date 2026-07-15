@@ -7,5 +7,5 @@ dependencies {
     implementation(project(":tokenizer-korean"))
     implementation(project(":tokenizer-japanese"))
 
-    testImplementation(libs.bluetape4k.junit5)
+    testImplementation(bt4k.bluetape4k.junit5)
 }

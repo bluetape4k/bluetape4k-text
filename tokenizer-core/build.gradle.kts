@@ -3,16 +3,16 @@ configurations {
 }
 
 dependencies {
-    api(libs.bluetape4k.io)
-    testImplementation(libs.bluetape4k.junit5)
+    api(bt4k.bluetape4k.io)
+    testImplementation(bt4k.bluetape4k.junit5)
 
     // Jackson
-    testImplementation(libs.bluetape4k.jackson3)
+    testImplementation(bt4k.bluetape4k.jackson3)
     testImplementation(libs.jackson3.module.kotlin)
     testImplementation(libs.jackson3.module.blackbird)
 
     // Coroutines
-    api(libs.bluetape4k.coroutines)
+    api(bt4k.bluetape4k.coroutines)
     api(libs.kotlinx.coroutines.core)
     testImplementation(libs.kotlinx.coroutines.test)
 }

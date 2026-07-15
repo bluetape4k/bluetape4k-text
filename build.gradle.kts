@@ -9,25 +9,26 @@ plugins {
     base
     `maven-publish`
     signing
-    alias(libs.plugins.kotlin.jvm)
+    alias(bt4k.plugins.kotlin.jvm)
 
-    alias(libs.plugins.kotlin.allopen) apply false
+    alias(bt4k.plugins.kotlin.allopen) apply false
     alias(libs.plugins.kotlinx.atomicfu)
     alias(libs.plugins.kotlinx.benchmark) apply false
-    alias(libs.plugins.kover)
+    alias(bt4k.plugins.kover)
 
     alias(libs.plugins.detekt)
-    alias(libs.plugins.dependency.management)
+    alias(bt4k.plugins.dependency.management)
 
-    alias(libs.plugins.dokka)
+    alias(bt4k.plugins.dokka)
     alias(libs.plugins.test.logger)
 
-    alias(libs.plugins.nmcp.aggregation)
-    alias(libs.plugins.nmcp) apply false
+    alias(bt4k.plugins.nmcp.aggregation)
+    alias(bt4k.plugins.nmcp) apply false
 }
 
 val rootLibs = libs
 val bt4kCatalog = extensions.getByType<org.gradle.api.artifacts.VersionCatalogsExtension>().named("bt4k")
+fun bt4kLibrary(alias: String) = bt4kCatalog.findLibrary(alias).get()
 fun bt4kVersion(alias: String): String {
     val version = bt4kCatalog.findVersion(alias).get()
     return version.requiredVersion
@@ -254,14 +255,36 @@ subprojects {
         dependencyManagement {
             setApplyMavenExclusions(false)
             imports {
-                mavenBom(rootLibs.bluetape4k.bom.get().toString())
-                mavenBom(rootLibs.kotlinx.coroutines.bom.get().toString())
-                mavenBom(rootLibs.kotlin.bom.get().toString())
+                mavenBom(bt4kLibrary("bluetape4k-bom").get().toString())
+                mavenBom("org.jetbrains.kotlinx:kotlinx-coroutines-bom:${bt4kVersion("kotlinx-coroutines")}")
+                mavenBom("org.jetbrains.kotlin:kotlin-bom:${bt4kVersion("kotlin")}")
                 mavenBom(rootLibs.junit.bom.get().toString())
-                mavenBom(rootLibs.testcontainers.bom.get().toString())
+                mavenBom("org.testcontainers:testcontainers-bom:${bt4kVersion("testcontainers")}")
             }
 
             dependencies {
+
+                // <central-catalog-local-aliases>
+
+                dependency("com.fasterxml.jackson:jackson-bom:${bt4kVersion("jackson")}")
+
+                dependency("org.awaitility:awaitility-kotlin:${bt4kVersion("awaitility")}")
+
+                dependency("org.jetbrains.kotlin:kotlin-bom:${bt4kVersion("kotlin")}")
+
+                dependency("org.jetbrains.kotlinx:kotlinx-coroutines-bom:${bt4kVersion("kotlinx-coroutines")}")
+
+                dependency("org.slf4j:jcl-over-slf4j:${bt4kVersion("slf4j")}")
+
+                dependency("org.slf4j:jul-to-slf4j:${bt4kVersion("slf4j")}")
+
+                dependency("org.slf4j:log4j-over-slf4j:${bt4kVersion("slf4j")}")
+
+                dependency("org.testcontainers:testcontainers-bom:${bt4kVersion("testcontainers")}")
+
+                dependency("org.testcontainers:testcontainers-junit-jupiter:${bt4kVersion("testcontainers")}")
+
+                // </central-catalog-local-aliases>
                 dependency("org.slf4j:slf4j-api:${bt4kVersion("slf4j")}")
             }
         }
@@ -269,8 +292,11 @@ subprojects {
 
     dependencies {
         if (isNonPublished) {
-            add("implementation", platform(rootLibs.kotlin.bom))
-            add("implementation", platform(rootLibs.kotlinx.coroutines.bom))
+            add("implementation", platform("org.jetbrains.kotlin:kotlin-bom:${bt4kVersion("kotlin")}"))
+            add(
+                "implementation",
+                platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:${bt4kVersion("kotlinx-coroutines")}"),
+            )
             add("testImplementation", platform(rootLibs.junit.bom))
         }
 
@@ -289,12 +315,12 @@ subprojects {
         if (isNonPublished) {
             add("api", "org.slf4j:slf4j-api:${bt4kVersion("slf4j")}")
         } else {
-            add("api", rootLibs.slf4j.api)
+            add("api", bt4kLibrary("slf4j-api"))
         }
         add("testImplementation", rootLibs.logback)
-        add("testImplementation", rootLibs.jcl.over.slf4j)
-        add("testImplementation", rootLibs.jul.to.slf4j)
-        add("testImplementation", rootLibs.log4j.over.slf4j)
+        add("testImplementation", bt4kLibrary("jcl-over-slf4j"))
+        add("testImplementation", bt4kLibrary("jul-to-slf4j"))
+        add("testImplementation", bt4kLibrary("log4j-over-slf4j"))
 
         add("testImplementation", rootLibs.junit.jupiter)
         add("testRuntimeOnly", rootLibs.junit.platform.engine)

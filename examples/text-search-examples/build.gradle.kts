@@ -5,6 +5,6 @@ application {
 dependencies {
     implementation(project(":text-search"))
 
-    testImplementation(libs.bluetape4k.junit5)
+    testImplementation(bt4k.bluetape4k.junit5)
     testImplementation(libs.kotlinx.coroutines.test)
 }
