@@ -4,13 +4,14 @@
 
 ![저장소 학습 지도](../assets/overview/repository-learning-map.png)
 
-## 목적에 따라 선택하기
+## 핵심 기능
 
 | 필요한 일 | 먼저 읽을 문서 | 실행하며 배울 예제 |
 |---|---|---|
 | 한국어를 정규화·토큰화하거나 어간·구문을 추출한다 | [한국어 토크나이저](modules/tokenizer-korean.md) | [토크나이저 안전 예제](examples/tokenizer-safety-examples.md) |
 | 일본어를 토큰화하고 품사를 살펴본다 | [일본어 토크나이저](modules/tokenizer-japanese.md) | [토크나이저 안전 예제](examples/tokenizer-safety-examples.md) |
 | 한 문장에 포함된 언어를 하나 이상 찾는다 | [Lingua](modules/lingua.md) | [Lingua 예제](examples/lingua-examples.md) |
+| 도메인 사전으로 불용어를 걸러 낸다 | [사전과 불용어](guides/dictionaries-and-blockwords.md) | [토크나이저 안전 예제](examples/tokenizer-safety-examples.md) |
 | 여러 키워드를 한 번에 찾는다 | [텍스트 검색](modules/text-search.md) | [텍스트 검색 예제](examples/text-search-examples.md) |
 | 자체 토크나이저나 요청 경계를 만든다 | [Tokenizer Core](modules/tokenizer-core.md) | [입력 안전성](guides/input-safety.md) |
 | Text 모듈의 버전을 한꺼번에 맞춘다 | [Text BOM](modules/bluetape4k-text-bom.md) | [시작하기](getting-started.md) |

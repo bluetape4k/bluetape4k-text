@@ -4,13 +4,14 @@
 
 ![Repository learning map](../assets/overview/repository-learning-map.png)
 
-## Choose by outcome
+## Core capabilities
 
 | I need to… | Start with | Learn by running |
 |---|---|---|
 | normalize, tokenize, stem, or extract phrases from Korean | [Korean tokenizer](modules/tokenizer-korean.md) | [Tokenizer safety example](examples/tokenizer-safety-examples.md) |
 | tokenize Japanese and inspect parts of speech | [Japanese tokenizer](modules/tokenizer-japanese.md) | [Tokenizer safety example](examples/tokenizer-safety-examples.md) |
 | detect one or several languages in a text | [Lingua](modules/lingua.md) | [Lingua example](examples/lingua-examples.md) |
+| remove domain-specific blockwords with managed dictionaries | [Dictionaries and blockwords](guides/dictionaries-and-blockwords.md) | [Tokenizer safety example](examples/tokenizer-safety-examples.md) |
 | find many keywords in one pass | [Text search](modules/text-search.md) | [Text search example](examples/text-search-examples.md) |
 | build a custom tokenizer or request boundary | [Tokenizer core](modules/tokenizer-core.md) | [Input safety](guides/input-safety.md) |
 | align every Text artifact version | [Text BOM](modules/bluetape4k-text-bom.md) | [Getting started](getting-started.md) |
