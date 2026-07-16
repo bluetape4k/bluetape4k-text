@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
+  <title id="title">Aho-Corasick search flow</title>
+  <desc id="desc">Build an immutable automaton once, then scan input in one pass.</desc>
+  <defs>
+  <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+    <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000814" flood-opacity="0.42"/>
+  </filter>
+  <marker id="arrow-cyan-14" markerWidth="14" markerHeight="14" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 10 10">
+  <path d="M 0 0 L 10 5 L 0 10 Z" fill="#55c7e8" stroke="#55c7e8" stroke-width="0.6"/>
+</marker>
+
+<marker id="arrow-teal-14" markerWidth="14" markerHeight="14" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 10 10">
+  <path d="M 0 0 L 10 5 L 0 10 Z" fill="#5ed6bd" stroke="#5ed6bd" stroke-width="0.6"/>
+</marker>
+
+<marker id="arrow-purple-14" markerWidth="14" markerHeight="14" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 10 10">
+  <path d="M 0 0 L 10 5 L 0 10 Z" fill="#b69af5" stroke="#b69af5" stroke-width="0.6"/>
+</marker>
+
+<marker id="arrow-amber-14" markerWidth="14" markerHeight="14" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 10 10">
+  <path d="M 0 0 L 10 5 L 0 10 Z" fill="#e7b85c" stroke="#e7b85c" stroke-width="0.6"/>
+</marker>
+
+<marker id="arrow-rose-14" markerWidth="14" markerHeight="14" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 10 10">
+  <path d="M 0 0 L 10 5 L 0 10 Z" fill="#ef8297" stroke="#ef8297" stroke-width="0.6"/>
+</marker>
+
+<marker id="arrow-olive-14" markerWidth="14" markerHeight="14" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 10 10">
+  <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9fbd72" stroke="#9fbd72" stroke-width="0.6"/>
+</marker>
+
+</defs>
+
+  <rect width="1600" height="1040" fill="#07111f"/>
+  <rect class="frame" x="36" y="32" width="1528" height="976" rx="32" fill="none" stroke="#31506c" stroke-width="2"/>
+  <text class="title" x="76" y="92" text-anchor="start" font-family="Architects Daughter, monospace" font-size="42" font-weight="700" fill="#eef6ff">Aho-Corasick search flow</text>
+  <text class="subtitle" x="78" y="128" text-anchor="start" font-family="Comic Mono, monospace" font-size="18" font-weight="400" fill="#a9bfd2">Build an immutable automaton once, then scan input in one pass.</text>
+  <path class="connector" data-source="keywords" data-target="builder" d="M 360 308 H 420" fill="none" stroke="#55c7e8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cyan-14)"/>
+<path class="connector" data-source="builder" data-target="trie" d="M 700 308 H 760" fill="none" stroke="#5ed6bd" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-teal-14)"/>
+<path class="connector" data-source="trie" data-target="automaton" d="M 1040 308 H 1100" fill="none" stroke="#b69af5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-purple-14)"/>
+<path class="connector" data-source="automaton" data-target="scan" d="M 1240 396 V 530 Q 1240 544 1226 544 H 1120 Q 1106 544 1106 558 V 620" fill="none" stroke="#b69af5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-purple-14)"/>
+<path class="connector" data-source="text" data-target="scan" d="M 1200 708 H 1120" fill="none" stroke="#55c7e8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cyan-14)"/>
+<path class="connector" data-source="scan" data-target="matches" d="M 840 708 H 760" fill="none" stroke="#e7b85c" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-amber-14)"/>
+<path class="connector" data-source="matches" data-target="apis" d="M 480 708 H 400" fill="none" stroke="#9fbd72" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-olive-14)"/>
+<g class="card-group" data-card="Keywords + values">
+  <rect class="card" x="80" y="220" width="280" height="176" rx="20" fill="#11263b" stroke="#55c7e8" stroke-width="2.5"/>
+  <text x="105" y="259" text-anchor="start" font-family="Architects Daughter, monospace" font-size="23" font-weight="700" fill="#eef6ff">Keywords + values</text>
+  <text x="105" y="290" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">patterns</text>
+<text x="105" y="313" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">application payloads</text>
+</g>
+
+<g class="card-group" data-card="Builder / DSL">
+  <rect class="card" x="420" y="220" width="280" height="176" rx="20" fill="#11263b" stroke="#5ed6bd" stroke-width="2.5"/>
+  <text x="445" y="259" text-anchor="start" font-family="Architects Daughter, monospace" font-size="23" font-weight="700" fill="#eef6ff">Builder / DSL</text>
+  <text x="445" y="290" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">case + overlap</text>
+<text x="445" y="313" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">boundary + normalization</text>
+</g>
+
+<g class="card-group" data-card="Trie + failure links">
+  <rect class="card" x="760" y="220" width="280" height="176" rx="20" fill="#11263b" stroke="#b69af5" stroke-width="2.5"/>
+  <text x="785" y="259" text-anchor="start" font-family="Architects Daughter, monospace" font-size="23" font-weight="700" fill="#eef6ff">Trie + failure links</text>
+  <text x="785" y="290" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">prepare once</text>
+<text x="785" y="313" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">reuse transitions</text>
+</g>
+
+<g class="card-group" data-card="Immutable automaton">
+  <rect class="card" x="1100" y="220" width="280" height="176" rx="20" fill="#11263b" stroke="#b69af5" stroke-width="2.5"/>
+  <text x="1125" y="259" text-anchor="start" font-family="Architects Daughter, monospace" font-size="23" font-weight="700" fill="#eef6ff">Immutable automaton</text>
+  <text x="1125" y="290" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">safe concurrent reads</text>
+<text x="1125" y="313" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">options are fixed</text>
+</g>
+
+<g class="card-group" data-card="Input text">
+  <rect class="card" x="1200" y="620" width="280" height="176" rx="20" fill="#11263b" stroke="#55c7e8" stroke-width="2.5"/>
+  <text x="1225" y="659" text-anchor="start" font-family="Architects Daughter, monospace" font-size="23" font-weight="700" fill="#eef6ff">Input text</text>
+  <text x="1225" y="690" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">single bounded scan</text>
+<text x="1225" y="713" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">Unicode normalization option</text>
+</g>
+
+<g class="card-group" data-card="Walk automaton">
+  <rect class="card" x="840" y="620" width="280" height="176" rx="20" fill="#11263b" stroke="#e7b85c" stroke-width="2.5"/>
+  <text x="865" y="659" text-anchor="start" font-family="Architects Daughter, monospace" font-size="23" font-weight="700" fill="#eef6ff">Walk automaton</text>
+  <text x="865" y="690" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">follow transitions</text>
+<text x="865" y="713" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">emit every configured hit</text>
+</g>
+
+<g class="card-group" data-card="Matches">
+  <rect class="card" x="480" y="620" width="280" height="176" rx="20" fill="#11263b" stroke="#9fbd72" stroke-width="2.5"/>
+  <text x="505" y="659" text-anchor="start" font-family="Architects Daughter, monospace" font-size="23" font-weight="700" fill="#eef6ff">Matches</text>
+  <text x="505" y="690" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">range + keyword</text>
+<text x="505" y="713" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">associated value</text>
+</g>
+
+<g class="card-group" data-card="Consumer APIs">
+  <rect class="card" x="120" y="620" width="280" height="176" rx="20" fill="#11263b" stroke="#ef8297" stroke-width="2.5"/>
+  <text x="145" y="659" text-anchor="start" font-family="Architects Daughter, monospace" font-size="22" font-weight="700" fill="#eef6ff">Consumer APIs</text>
+  <text x="145" y="690" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">parse / first / contains</text>
+<text x="145" y="713" text-anchor="start" font-family="Comic Mono, monospace" font-size="16" font-weight="400" fill="#a9bfd2">tokenize / replace / Flow</text>
+</g>
+
+<g class="label-pill">
+  <rect x="80" y="884" width="132" height="34" rx="17" fill="#07111f" stroke="#b69af5" stroke-width="2"/>
+  <text x="146.0" y="907" text-anchor="middle" font-family="Comic Mono, monospace" font-size="14" font-weight="700" fill="#b69af5">Build once</text>
+</g>
+
+<g class="label-pill">
+  <rect x="226" y="884" width="166" height="34" rx="17" fill="#07111f" stroke="#9fbd72" stroke-width="2"/>
+  <text x="309.0" y="907" text-anchor="middle" font-family="Comic Mono, monospace" font-size="14" font-weight="700" fill="#9fbd72">Scan many times</text>
+</g>
+
+  
+  <text x="1520" y="980" text-anchor="end" font-family="Comic Mono, monospace" font-size="15" font-weight="400" fill="#7892aa">bluetape4k-text 0.2.1</text>
+</svg>
