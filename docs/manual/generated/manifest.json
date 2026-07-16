@@ -1,0 +1,216 @@
+{
+  "evidence": [
+    {
+      "id": "aho-corasick-baselines",
+      "kind": "benchmark",
+      "path": "docs/benchmark/2026-06-04-issue-97-ahocorasick-baselines.json"
+    },
+    {
+      "id": "text-quality-report",
+      "kind": "quality-report",
+      "path": "docs/superpowers/research/2026-05-27-issue-86-quality-report.md"
+    }
+  ],
+  "modules": [
+    {
+      "artifact": "io.github.bluetape4k.text:bluetape4k-text-bom",
+      "en": "en/modules/bluetape4k-text-bom.md",
+      "gradlePath": ":bluetape4k-text-bom",
+      "group": "foundation",
+      "id": "bluetape4k-text-bom",
+      "kind": "bom",
+      "ko": "ko/modules/bluetape4k-text-bom.md",
+      "projectName": "bluetape4k-text-bom",
+      "sourceDir": "bom",
+      "sourcePaths": [
+        "bom"
+      ],
+      "status": "stable",
+      "title": {
+        "en": "Text BOM",
+        "ko": "Text BOM"
+      }
+    },
+    {
+      "artifact": "io.github.bluetape4k.text:lingua",
+      "en": "en/modules/lingua.md",
+      "gradlePath": ":lingua",
+      "group": "language",
+      "id": "lingua",
+      "kind": "library",
+      "ko": "ko/modules/lingua.md",
+      "projectName": "lingua",
+      "sourceDir": "lingua",
+      "sourcePaths": [
+        "lingua"
+      ],
+      "status": "stable",
+      "title": {
+        "en": "Language detection library",
+        "ko": "언어 감지 라이브러리"
+      }
+    },
+    {
+      "artifact": "io.github.bluetape4k.text:text-search",
+      "en": "en/modules/text-search.md",
+      "gradlePath": ":text-search",
+      "group": "search",
+      "id": "text-search",
+      "kind": "library",
+      "ko": "ko/modules/text-search.md",
+      "projectName": "text-search",
+      "sourceDir": "text-search",
+      "sourcePaths": [
+        "text-search"
+      ],
+      "status": "stable",
+      "title": {
+        "en": "Multi-pattern text search library",
+        "ko": "다중 패턴 텍스트 검색 라이브러리"
+      }
+    },
+    {
+      "artifact": "io.github.bluetape4k.text:tokenizer-core",
+      "en": "en/modules/tokenizer-core.md",
+      "gradlePath": ":tokenizer-core",
+      "group": "foundation",
+      "id": "tokenizer-core",
+      "kind": "library",
+      "ko": "ko/modules/tokenizer-core.md",
+      "projectName": "tokenizer-core",
+      "sourceDir": "tokenizer-core",
+      "sourcePaths": [
+        "tokenizer-core"
+      ],
+      "status": "stable",
+      "title": {
+        "en": "Tokenizer core library",
+        "ko": "토크나이저 핵심 라이브러리"
+      }
+    },
+    {
+      "artifact": "io.github.bluetape4k.text:tokenizer-japanese",
+      "en": "en/modules/tokenizer-japanese.md",
+      "gradlePath": ":tokenizer-japanese",
+      "group": "language",
+      "id": "tokenizer-japanese",
+      "kind": "library",
+      "ko": "ko/modules/tokenizer-japanese.md",
+      "projectName": "tokenizer-japanese",
+      "sourceDir": "tokenizer-japanese",
+      "sourcePaths": [
+        "tokenizer-japanese"
+      ],
+      "status": "stable",
+      "title": {
+        "en": "Japanese tokenizer library",
+        "ko": "일본어 토크나이저 라이브러리"
+      }
+    },
+    {
+      "artifact": "io.github.bluetape4k.text:tokenizer-korean",
+      "en": "en/modules/tokenizer-korean.md",
+      "gradlePath": ":tokenizer-korean",
+      "group": "language",
+      "id": "tokenizer-korean",
+      "kind": "library",
+      "ko": "ko/modules/tokenizer-korean.md",
+      "projectName": "tokenizer-korean",
+      "sourceDir": "tokenizer-korean",
+      "sourcePaths": [
+        "tokenizer-korean"
+      ],
+      "status": "stable",
+      "title": {
+        "en": "Korean tokenizer library",
+        "ko": "한국어 토크나이저 라이브러리"
+      }
+    }
+  ],
+  "overview": {
+    "assets": [
+      "assets/overview/repository-learning-map.svg",
+      "assets/overview/repository-learning-map.png",
+      "assets/architecture/capability-map.svg",
+      "assets/architecture/capability-map.png",
+      "assets/architecture/text-processing-pipeline.svg",
+      "assets/architecture/text-processing-pipeline.png",
+      "assets/guides/language-detection-selection.svg",
+      "assets/guides/language-detection-selection.png",
+      "assets/text-search/search-flow.svg",
+      "assets/text-search/search-flow.png",
+      "assets/operations/request-safety-boundary.svg",
+      "assets/operations/request-safety-boundary.png"
+    ],
+    "documents": {
+      "en": [
+        "en/index.md",
+        "en/getting-started.md",
+        "en/architecture/repository-map.md",
+        "en/architecture/processing-model.md",
+        "en/architecture/runtime-boundaries.md",
+        "en/modules/bluetape4k-text-bom.md",
+        "en/modules/tokenizer-core.md",
+        "en/modules/tokenizer-korean.md",
+        "en/modules/tokenizer-japanese.md",
+        "en/modules/lingua.md",
+        "en/modules/text-search.md",
+        "en/guides/learning-path.md",
+        "en/guides/capability-selection.md",
+        "en/guides/dictionaries-and-blockwords.md",
+        "en/guides/mixed-language-processing.md",
+        "en/guides/input-safety.md",
+        "en/guides/testing.md",
+        "en/examples/text-search-examples.md",
+        "en/examples/lingua-examples.md",
+        "en/examples/tokenizer-safety-examples.md",
+        "en/quality/quality-gates.md",
+        "en/quality/aho-corasick-benchmarks.md",
+        "en/operations/startup-and-memory.md",
+        "en/operations/failure-contracts.md"
+      ],
+      "ko": [
+        "ko/index.md",
+        "ko/getting-started.md",
+        "ko/architecture/repository-map.md",
+        "ko/architecture/processing-model.md",
+        "ko/architecture/runtime-boundaries.md",
+        "ko/modules/bluetape4k-text-bom.md",
+        "ko/modules/tokenizer-core.md",
+        "ko/modules/tokenizer-korean.md",
+        "ko/modules/tokenizer-japanese.md",
+        "ko/modules/lingua.md",
+        "ko/modules/text-search.md",
+        "ko/guides/learning-path.md",
+        "ko/guides/capability-selection.md",
+        "ko/guides/dictionaries-and-blockwords.md",
+        "ko/guides/mixed-language-processing.md",
+        "ko/guides/input-safety.md",
+        "ko/guides/testing.md",
+        "ko/examples/text-search-examples.md",
+        "ko/examples/lingua-examples.md",
+        "ko/examples/tokenizer-safety-examples.md",
+        "ko/quality/quality-gates.md",
+        "ko/quality/aho-corasick-benchmarks.md",
+        "ko/operations/startup-and-memory.md",
+        "ko/operations/failure-contracts.md"
+      ]
+    }
+  },
+  "publication": {
+    "contentStatus": "in-progress",
+    "locales": [
+      "en",
+      "ko"
+    ],
+    "manualVersion": "0.2",
+    "sourceRoot": "docs/manual"
+  },
+  "releaseCommit": "2db7671afad20045afdcb5793c0113b8b23b972b",
+  "releaseRef": "0.2.1",
+  "releaseTag": "0.2.1",
+  "repository": "bluetape4k-text",
+  "schemaVersion": 2,
+  "stableMinor": "0.2",
+  "stableVersion": "0.2.1"
+}

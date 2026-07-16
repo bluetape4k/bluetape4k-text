@@ -1,0 +1,178 @@
+---
+schemaVersion: 2
+repository: bluetape4k-text
+stableVersion: 0.2.1
+stableMinor: '0.2'
+releaseTag: 0.2.1
+releaseRef: 0.2.1
+releaseCommit: 2db7671afad20045afdcb5793c0113b8b23b972b
+publication:
+  manualVersion: '0.2'
+  sourceRoot: docs/manual
+  locales:
+  - en
+  - ko
+  contentStatus: in-progress
+overview:
+  documents:
+    en:
+    - en/index.md
+    - en/getting-started.md
+    - en/architecture/repository-map.md
+    - en/architecture/processing-model.md
+    - en/architecture/runtime-boundaries.md
+    - en/modules/bluetape4k-text-bom.md
+    - en/modules/tokenizer-core.md
+    - en/modules/tokenizer-korean.md
+    - en/modules/tokenizer-japanese.md
+    - en/modules/lingua.md
+    - en/modules/text-search.md
+    - en/guides/learning-path.md
+    - en/guides/capability-selection.md
+    - en/guides/dictionaries-and-blockwords.md
+    - en/guides/mixed-language-processing.md
+    - en/guides/input-safety.md
+    - en/guides/testing.md
+    - en/examples/text-search-examples.md
+    - en/examples/lingua-examples.md
+    - en/examples/tokenizer-safety-examples.md
+    - en/quality/quality-gates.md
+    - en/quality/aho-corasick-benchmarks.md
+    - en/operations/startup-and-memory.md
+    - en/operations/failure-contracts.md
+    ko:
+    - ko/index.md
+    - ko/getting-started.md
+    - ko/architecture/repository-map.md
+    - ko/architecture/processing-model.md
+    - ko/architecture/runtime-boundaries.md
+    - ko/modules/bluetape4k-text-bom.md
+    - ko/modules/tokenizer-core.md
+    - ko/modules/tokenizer-korean.md
+    - ko/modules/tokenizer-japanese.md
+    - ko/modules/lingua.md
+    - ko/modules/text-search.md
+    - ko/guides/learning-path.md
+    - ko/guides/capability-selection.md
+    - ko/guides/dictionaries-and-blockwords.md
+    - ko/guides/mixed-language-processing.md
+    - ko/guides/input-safety.md
+    - ko/guides/testing.md
+    - ko/examples/text-search-examples.md
+    - ko/examples/lingua-examples.md
+    - ko/examples/tokenizer-safety-examples.md
+    - ko/quality/quality-gates.md
+    - ko/quality/aho-corasick-benchmarks.md
+    - ko/operations/startup-and-memory.md
+    - ko/operations/failure-contracts.md
+  assets:
+  - assets/overview/repository-learning-map.svg
+  - assets/overview/repository-learning-map.png
+  - assets/architecture/capability-map.svg
+  - assets/architecture/capability-map.png
+  - assets/architecture/text-processing-pipeline.svg
+  - assets/architecture/text-processing-pipeline.png
+  - assets/guides/language-detection-selection.svg
+  - assets/guides/language-detection-selection.png
+  - assets/text-search/search-flow.svg
+  - assets/text-search/search-flow.png
+  - assets/operations/request-safety-boundary.svg
+  - assets/operations/request-safety-boundary.png
+evidence:
+- id: text-quality-report
+  kind: quality-report
+  path: docs/superpowers/research/2026-05-27-issue-86-quality-report.md
+- id: aho-corasick-baselines
+  kind: benchmark
+  path: docs/benchmark/2026-06-04-issue-97-ahocorasick-baselines.json
+modules:
+- id: bluetape4k-text-bom
+  title:
+    en: Text BOM
+    ko: Text BOM
+  gradlePath: ":bluetape4k-text-bom"
+  projectName: bluetape4k-text-bom
+  sourceDir: bom
+  kind: bom
+  group: foundation
+  artifact: io.github.bluetape4k.text:bluetape4k-text-bom
+  status: stable
+  en: en/modules/bluetape4k-text-bom.md
+  ko: ko/modules/bluetape4k-text-bom.md
+  sourcePaths:
+  - bom
+- id: tokenizer-core
+  title:
+    en: Tokenizer core library
+    ko: 토크나이저 핵심 라이브러리
+  gradlePath: ":tokenizer-core"
+  projectName: tokenizer-core
+  sourceDir: tokenizer-core
+  kind: library
+  group: foundation
+  artifact: io.github.bluetape4k.text:tokenizer-core
+  status: stable
+  en: en/modules/tokenizer-core.md
+  ko: ko/modules/tokenizer-core.md
+  sourcePaths:
+  - tokenizer-core
+- id: tokenizer-korean
+  title:
+    en: Korean tokenizer library
+    ko: 한국어 토크나이저 라이브러리
+  gradlePath: ":tokenizer-korean"
+  projectName: tokenizer-korean
+  sourceDir: tokenizer-korean
+  kind: library
+  group: language
+  artifact: io.github.bluetape4k.text:tokenizer-korean
+  status: stable
+  en: en/modules/tokenizer-korean.md
+  ko: ko/modules/tokenizer-korean.md
+  sourcePaths:
+  - tokenizer-korean
+- id: tokenizer-japanese
+  title:
+    en: Japanese tokenizer library
+    ko: 일본어 토크나이저 라이브러리
+  gradlePath: ":tokenizer-japanese"
+  projectName: tokenizer-japanese
+  sourceDir: tokenizer-japanese
+  kind: library
+  group: language
+  artifact: io.github.bluetape4k.text:tokenizer-japanese
+  status: stable
+  en: en/modules/tokenizer-japanese.md
+  ko: ko/modules/tokenizer-japanese.md
+  sourcePaths:
+  - tokenizer-japanese
+- id: lingua
+  title:
+    en: Language detection library
+    ko: 언어 감지 라이브러리
+  gradlePath: ":lingua"
+  projectName: lingua
+  sourceDir: lingua
+  kind: library
+  group: language
+  artifact: io.github.bluetape4k.text:lingua
+  status: stable
+  en: en/modules/lingua.md
+  ko: ko/modules/lingua.md
+  sourcePaths:
+  - lingua
+- id: text-search
+  title:
+    en: Multi-pattern text search library
+    ko: 다중 패턴 텍스트 검색 라이브러리
+  gradlePath: ":text-search"
+  projectName: text-search
+  sourceDir: text-search
+  kind: library
+  group: search
+  artifact: io.github.bluetape4k.text:text-search
+  status: stable
+  en: en/modules/text-search.md
+  ko: ko/modules/text-search.md
+  sourcePaths:
+  - text-search
