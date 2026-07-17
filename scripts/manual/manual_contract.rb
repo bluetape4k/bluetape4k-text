@@ -188,14 +188,7 @@ class ManualContract
   end
 
   def expected_asset_count
-    inventory_path = @manual_root.join("release-diagrams.yaml")
-    return EXPECTED_ASSET_COUNT unless inventory_path.file?
-
-    inventory = YAML.safe_load(inventory_path.read)
-    diagrams = inventory.is_a?(Hash) ? inventory["diagrams"] : nil
-    return EXPECTED_ASSET_COUNT unless diagrams.is_a?(Array)
-
-    EXPECTED_ASSET_COUNT + diagrams.length * 2
+    EXPECTED_ASSET_COUNT
   end
 
   def validate_evidence(manifest, errors)
