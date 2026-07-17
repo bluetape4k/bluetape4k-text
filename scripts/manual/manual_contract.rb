@@ -175,7 +175,8 @@ class ManualContract
       return
     end
     errors << "overview assets contain duplicates" unless assets.uniq.length == assets.length
-    errors << "asset count must be #{EXPECTED_ASSET_COUNT}" if complete?(manifest) && assets.length != EXPECTED_ASSET_COUNT
+    expected_count = expected_asset_count
+    errors << "asset count must be #{expected_count}" if complete?(manifest) && assets.length != expected_count
     assets.each do |path|
       unless safe_relative?(path) && path.start_with?("assets/")
         errors << "unsafe asset path #{path}"
@@ -184,6 +185,17 @@ class ManualContract
       absolute = @manual_root.join(path).cleanpath
       errors << "missing asset #{path}" unless absolute.file? && within_realpath?(absolute, @manual_root)
     end
+  end
+
+  def expected_asset_count
+    inventory_path = @manual_root.join("release-diagrams.yaml")
+    return EXPECTED_ASSET_COUNT unless inventory_path.file?
+
+    inventory = YAML.safe_load(inventory_path.read)
+    diagrams = inventory.is_a?(Hash) ? inventory["diagrams"] : nil
+    return EXPECTED_ASSET_COUNT unless diagrams.is_a?(Array)
+
+    EXPECTED_ASSET_COUNT + diagrams.length * 2
   end
 
   def validate_evidence(manifest, errors)

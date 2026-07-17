@@ -79,3 +79,16 @@ println(response.blockwordExists) // true
 - [JapaneseProcessor](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-japanese/src/main/kotlin/io/bluetape4k/tokenizer/japanese/JapaneseProcessor.kt)
 - [일본어 모듈 README](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-japanese/README.md)
 - [일본어 프로세서 테스트](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-japanese/src/test/kotlin/io/bluetape4k/tokenizer/japanese/JapaneseProcessorTest.kt)
+
+<!-- release-readme-diagrams:start -->
+## 배포본 다이어그램 {#release-diagrams}
+
+아래 그림은 현재 개발 브랜치가 아니라 `0.2.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+
+### tokenizer japanese 클래스 구조도
+
+[![tokenizer japanese 클래스 구조도](../../assets/readme-diagrams/tokenizer-japanese-class-01.png)](../../assets/readme-diagrams/tokenizer-japanese-class-01.svg)
+
+_배포본 README: [`tokenizer-japanese/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/tokenizer-japanese/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->

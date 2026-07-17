@@ -69,3 +69,16 @@ Blank text and text longer than `100_000` characters are rejected before process
 - [TokenizeRequest](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/TokenizeRequest.kt)
 - [BlockwordRequest](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/BlockwordRequest.kt)
 - [DictionaryProvider](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/utils/DictionaryProvider.kt)
+
+<!-- release-readme-diagrams:start -->
+## Release diagrams {#release-diagrams}
+
+These diagrams are copied byte-for-byte from README assets in the `0.2.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+
+### tokenizer core Class Structure diagram
+
+[![tokenizer core Class Structure diagram](../../assets/readme-diagrams/tokenizer-core-class-01.png)](../../assets/readme-diagrams/tokenizer-core-class-01.svg)
+
+_Release README: [`tokenizer-core/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/tokenizer-core/README.md)_
+
+<!-- release-readme-diagrams:end -->

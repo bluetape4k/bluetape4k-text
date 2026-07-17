@@ -84,3 +84,16 @@ The facade rejects oversized inputs using the core limits. It is safe for concur
 - [KoreanProcessor](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-korean/src/main/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessor.kt)
 - [Korean module README](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-korean/README.md)
 - [Korean processor tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-korean/src/test/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessorTest.kt)
+
+<!-- release-readme-diagrams:start -->
+## Release diagrams {#release-diagrams}
+
+These diagrams are copied byte-for-byte from README assets in the `0.2.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+
+### tokenizer korean Class Structure diagram
+
+[![tokenizer korean Class Structure diagram](../../assets/readme-diagrams/tokenizer-korean-class-01.png)](../../assets/readme-diagrams/tokenizer-korean-class-01.svg)
+
+_Release README: [`tokenizer-korean/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/tokenizer-korean/README.md)_
+
+<!-- release-readme-diagrams:end -->

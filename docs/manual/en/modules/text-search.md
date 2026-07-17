@@ -87,3 +87,28 @@ Define the keyword snapshot and option policy before publication. Rebuilding on 
 - [AhoCorasickAutomaton](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/AhoCorasickAutomaton.kt)
 - [SearchOptions](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/SearchOptions.kt)
 - [Flow extension](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/flow/AhoCorasickFlowExtensions.kt)
+
+<!-- release-readme-diagrams:start -->
+## Release diagrams {#release-diagrams}
+
+These diagrams are copied byte-for-byte from README assets in the `0.2.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+
+### Processing Flow diagram
+
+[![Processing Flow diagram](../../assets/readme-diagrams/text-search-architecture-03.png)](../../assets/readme-diagrams/text-search-architecture-03.svg)
+
+_Release README: [`text-search/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.md)_
+
+### text search Class Structure diagram
+
+[![text search Class Structure diagram](../../assets/readme-diagrams/text-search-class-01.png)](../../assets/readme-diagrams/text-search-class-01.svg)
+
+_Release README: [`text-search/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.md)_
+
+### Search Pipeline diagram
+
+[![Search Pipeline diagram](../../assets/readme-diagrams/text-search-sequence-02.png)](../../assets/readme-diagrams/text-search-sequence-02.svg)
+
+_Release README: [`text-search/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.md)_
+
+<!-- release-readme-diagrams:end -->

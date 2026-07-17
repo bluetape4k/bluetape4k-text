@@ -71,3 +71,22 @@ Unicode 필터는 문자 범위를 결정적으로 판정하지만 자연어를 
 - [감지기 factory](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/lingua/src/main/kotlin/io/bluetape4k/lingua/LanguageDetector.kt)
 - [UnicodeDetector](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/lingua/src/main/kotlin/io/bluetape4k/lingua/UnicodeDetector.kt)
 - [Lingua 예제](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/lingua-examples/src/main/kotlin/io/bluetape4k/text/examples/lingua/LinguaExamples.kt)
+
+<!-- release-readme-diagrams:start -->
+## 배포본 다이어그램 {#release-diagrams}
+
+아래 그림은 현재 개발 브랜치가 아니라 `0.2.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+
+### lingua 아키텍처
+
+[![lingua 아키텍처](../../assets/readme-diagrams/lingua-architecture-01.png)](../../assets/readme-diagrams/lingua-architecture-01.svg)
+
+_배포본 README: [`lingua/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/lingua/README.ko.md)_
+
+### lingua 클래스 구조도
+
+[![lingua 클래스 구조도](../../assets/readme-diagrams/lingua-class-02.png)](../../assets/readme-diagrams/lingua-class-02.svg)
+
+_배포본 README: [`lingua/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/lingua/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->
