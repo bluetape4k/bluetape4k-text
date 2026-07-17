@@ -82,3 +82,28 @@ Flow 확장은 `channelFlow`와 `Dispatchers.Default`를 사용한다. 제한 �
 - [AhoCorasickAutomaton](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/AhoCorasickAutomaton.kt)
 - [SearchOptions](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/SearchOptions.kt)
 - [Flow 확장](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/flow/AhoCorasickFlowExtensions.kt)
+
+<!-- release-readme-diagrams:start -->
+## 배포본 다이어그램 {#release-diagrams}
+
+아래 그림은 현재 개발 브랜치가 아니라 `0.2.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+
+### 처리 흐름
+
+[![처리 흐름](../../assets/readme-diagrams/text-search-architecture-03.png)](../../assets/readme-diagrams/text-search-architecture-03.svg)
+
+_배포본 README: [`text-search/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.ko.md)_
+
+### 텍스트 검색 클래스 구조도
+
+[![텍스트 검색 클래스 구조도](../../assets/readme-diagrams/text-search-class-01.png)](../../assets/readme-diagrams/text-search-class-01.svg)
+
+_배포본 README: [`text-search/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.ko.md)_
+
+### 검색 파이프라인
+
+[![검색 파이프라인](../../assets/readme-diagrams/text-search-sequence-02.png)](../../assets/readme-diagrams/text-search-sequence-02.svg)
+
+_배포본 README: [`text-search/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->

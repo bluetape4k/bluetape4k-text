@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="1080" viewBox="0 0 1760 1080" role="img" aria-labelledby="title desc">
+<title id="title">tokenizer-core class contract map</title>
+<desc id="desc">Class map for tokenizer-core message models, options, dictionary utilities, optimized char-array collections, and exception hierarchy.</desc>
+<defs>
+  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%">
+    <feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#94a3b8" flood-opacity="0.16"/>
+  </filter>
+  <marker id="depBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb" stroke-dasharray="none"/>
+  </marker>
+  <marker id="depOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M 0 0 L 10 5 L 0 10 Z" fill="#d97706" stroke-dasharray="none"/>
+  </marker>
+  <marker id="depGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669" stroke-dasharray="none"/>
+  </marker>
+  <marker id="depGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M 0 0 L 10 5 L 0 10 Z" fill="#64748b" stroke-dasharray="none"/>
+  </marker>
+  <marker id="inheritArrow" viewBox="0 0 12 10" refX="11" refY="5" markerWidth="11" markerHeight="10" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M 1 1 L 11 5 L 1 9 Z" fill="#ffffff" stroke="#64748b" stroke-width="1.5" stroke-dasharray="none"/>
+  </marker>
+  <style>
+    .canvas{fill:#f8fafc}
+    .frame{fill:#fff;stroke:#cbd5e1;stroke-width:1.4}
+    .group{fill:#f8fafc;stroke:#c6d3e1;stroke-width:1.1}
+    .title{font-family:"Architects Daughter","Comic Sans MS",cursive;font-size:50px;fill:#172033}
+    .subtitle,.body,.footer,.tag{font-family:"Comic Mono","Comic Sans MS",sans-serif;fill:#475569}
+    .subtitle{font-size:17px}
+    .footer{font-size:14px}
+    .tag{font-size:14px;font-weight:700}
+    .name{font-family:"Architects Daughter","Comic Sans MS",cursive;font-size:28px;fill:#172033}
+    .small-name{font-family:"Architects Daughter","Comic Sans MS",cursive;font-size:24px;fill:#172033}
+    .body{font-size:15px}
+    .card{filter:url(#shadow);stroke-width:1.3}
+    .sep{stroke-width:1.0}
+    .dep{fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:7 6}
+    .solid{fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  </style>
+</defs>
+
+<rect class="canvas" width="1760" height="1080" rx="30"/>
+<rect class="frame" x="24" y="24" width="1712" height="1032" rx="26"/>
+<text class="title" x="60" y="82">tokenizer-core Class Contract Map</text>
+<text class="subtitle" x="62" y="116">Core provides serializable request/response models, options, dictionary loaders, char-array collections, and tokenizer exceptions.</text>
+
+<rect class="group" x="58" y="152" width="1050" height="760" rx="18"/>
+<text class="tag" x="86" y="184">MESSAGE MODELS AND OPTIONS</text>
+
+<rect class="group" x="1140" y="152" width="560" height="510" rx="18"/>
+<text class="tag" x="1168" y="184">DICTIONARY UTILITIES</text>
+
+<rect class="group" x="1140" y="700" width="560" height="256" rx="18"/>
+<text class="tag" x="1168" y="732">EXCEPTION HIERARCHY</text>
+
+<rect class="card" x="280" y="214" width="300" height="118" rx="6" fill="#fef3c7" stroke="#d97706"/>
+<text class="name" x="430" y="252" text-anchor="middle">AbstractMessage</text>
+<line class="sep" x1="280" y1="274" x2="580" y2="274" stroke="#fcd34d"/>
+<text class="body" x="310" y="306">+ timestamp: Long</text>
+
+<rect class="card" x="110" y="410" width="290" height="154" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text class="name" x="255" y="448" text-anchor="middle">TokenizeRequest</text>
+<line class="sep" x1="110" y1="470" x2="400" y2="470" stroke="#93c5fd"/>
+<text class="body" x="138" y="500">+ text: String</text>
+<text class="body" x="138" y="524">+ options: TokenizeOptions</text>
+<text class="body" x="138" y="548">validates blank + 100k max</text>
+
+<rect class="card" x="450" y="410" width="290" height="154" rx="6" fill="#dcfce7" stroke="#059669"/>
+<text class="name" x="595" y="448" text-anchor="middle">TokenizeResponse</text>
+<line class="sep" x1="450" y1="470" x2="740" y2="470" stroke="#bbf7d0"/>
+<text class="body" x="478" y="500">+ text: String</text>
+<text class="body" x="478" y="524">+ tokens: List&lt;String&gt;</text>
+<text class="body" x="478" y="548">defaults to empty tokens</text>
+
+<rect class="card" x="110" y="640" width="290" height="166" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+<text class="name" x="255" y="678" text-anchor="middle">BlockwordRequest</text>
+<line class="sep" x1="110" y1="700" x2="400" y2="700" stroke="#93c5fd"/>
+<text class="body" x="138" y="730">+ text: String</text>
+<text class="body" x="138" y="754">+ options: BlockwordOptions</text>
+<text class="body" x="138" y="778">validates blank + 100k max</text>
+
+<rect class="card" x="450" y="640" width="290" height="166" rx="6" fill="#ecfdf5" stroke="#059669"/>
+<text class="name" x="595" y="678" text-anchor="middle">BlockwordResponse</text>
+<line class="sep" x1="450" y1="700" x2="740" y2="700" stroke="#bbf7d0"/>
+<text class="body" x="478" y="730">+ request: BlockwordRequest</text>
+<text class="body" x="478" y="754">+ maskedText: String</text>
+<text class="body" x="478" y="778">+ blockWords: List&lt;String&gt;</text>
+
+<rect class="card" x="790" y="410" width="260" height="132" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+<text class="name" x="920" y="448" text-anchor="middle">TokenizeOptions</text>
+<line class="sep" x1="790" y1="470" x2="1050" y2="470" stroke="#cbd5e1"/>
+<text class="body" x="818" y="500">+ locale: Locale</text>
+<text class="body" x="818" y="524">DEFAULT = KOREAN</text>
+
+<rect class="card" x="790" y="640" width="260" height="166" rx="6" fill="#fff7ed" stroke="#d97706"/>
+<text class="name" x="920" y="678" text-anchor="middle">BlockwordOptions</text>
+<line class="sep" x1="790" y1="700" x2="1050" y2="700" stroke="#fed7aa"/>
+<text class="body" x="818" y="730">+ mask: String</text>
+<text class="body" x="818" y="754">+ locale: Locale</text>
+<text class="body" x="818" y="778">+ severity: Severity</text>
+
+<rect class="card" x="790" y="832" width="260" height="66" rx="6" fill="#ede9fe" stroke="#7c3aed"/>
+<text class="tag" x="920" y="856" text-anchor="middle">enum</text>
+<text class="small-name" x="920" y="884" text-anchor="middle">LOW / MIDDLE / HIGH</text>
+
+<rect class="card" x="1190" y="230" width="460" height="220" rx="6" fill="#e0f2fe" stroke="#0284c7"/>
+<text class="tag" x="1420" y="260" text-anchor="middle">object</text>
+<text class="name" x="1420" y="294" text-anchor="middle">DictionaryProvider</text>
+<line class="sep" x1="1190" y1="316" x2="1650" y2="316" stroke="#7dd3fc"/>
+<text class="body" x="1224" y="346">+ readWordsAsSequence(path)</text>
+<text class="body" x="1224" y="370">+ readWordFreqs(path)</text>
+<text class="body" x="1224" y="394">+ readWordsAsSet(paths)</text>
+<text class="body" x="1224" y="418">+ readWords(paths): CharArraySet</text>
+
+<rect class="card" x="1190" y="522" width="220" height="110" rx="6" fill="#ecfdf5" stroke="#059669"/>
+<text class="small-name" x="1300" y="560" text-anchor="middle">CharArraySet</text>
+<line class="sep" x1="1190" y1="582" x2="1410" y2="582" stroke="#bbf7d0"/>
+<text class="body" x="1218" y="610">set semantics</text>
+
+<rect class="card" x="1430" y="522" width="220" height="110" rx="6" fill="#ecfdf5" stroke="#059669"/>
+<text class="small-name" x="1540" y="560" text-anchor="middle">CharArrayMap</text>
+<line class="sep" x1="1430" y1="582" x2="1650" y2="582" stroke="#bbf7d0"/>
+<text class="body" x="1458" y="610">char-array keys</text>
+
+<rect class="card" x="1188" y="772" width="220" height="82" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+<text class="small-name" x="1298" y="822" text-anchor="middle">BluetapeException</text>
+
+<rect class="card" x="1430" y="762" width="220" height="82" rx="6" fill="#ede9fe" stroke="#7c3aed"/>
+<text class="small-name" x="1540" y="812" text-anchor="middle">TokenizerException</text>
+
+<rect class="card" x="1430" y="862" width="220" height="82" rx="6" fill="#f5f3ff" stroke="#7c3aed"/>
+<text class="small-name" x="1540" y="895" text-anchor="middle">InvalidTokenize</text>
+<text class="small-name" x="1540" y="922" text-anchor="middle">RequestException</text>
+
+<path class="solid" d="M 430 380 L 430 332" stroke="#64748b" marker-end="url(#inheritArrow)"/>
+<path class="solid" d="M 255 410 L 255 380 L 430 380" stroke="#64748b"/>
+<path class="solid" d="M 595 410 L 595 380 L 430 380" stroke="#64748b"/>
+<path class="solid" d="M 255 640 L 255 606 L 430 606 L 430 380" stroke="#64748b"/>
+<path class="solid" d="M 595 640 L 595 606 L 430 606" stroke="#64748b"/>
+
+<path class="dep" d="M 400 524 L 430 524 L 430 590 L 920 590 L 920 542" stroke="#2563eb" marker-end="url(#depBlue)"/>
+<path class="dep" d="M 400 754 L 430 754 L 430 826 L 770 826 L 770 778 L 790 778" stroke="#2563eb" marker-end="url(#depBlue)"/>
+<path class="dep" d="M 450 730 L 400 730" stroke="#059669" marker-end="url(#depGreen)"/>
+<path class="dep" d="M 920 806 L 920 832" stroke="#d97706" marker-end="url(#depOrange)"/>
+
+<path class="dep" d="M 1420 450 L 1420 486 L 1300 486 L 1300 522" stroke="#059669" marker-end="url(#depGreen)"/>
+<path class="dep" d="M 1410 577 L 1430 577" stroke="#059669" marker-end="url(#depGreen)"/>
+
+<path class="solid" d="M 1430 803 L 1408 803" stroke="#64748b" marker-end="url(#inheritArrow)"/>
+<path class="solid" d="M 1540 862 L 1540 844" stroke="#64748b" marker-end="url(#inheritArrow)"/>
+
+<rect x="100" y="964" width="1560" height="54" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.1"/>
+<text class="footer" x="880" y="998" text-anchor="middle">The core module owns contracts and loading primitives; language-specific tokenizer modules supply concrete analyzers.</text>
+</svg>

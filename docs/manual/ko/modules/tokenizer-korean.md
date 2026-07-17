@@ -84,3 +84,16 @@ facade는 core의 최대 입력 길이를 검사하며 동시 호출에 안전�
 - [KoreanProcessor](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-korean/src/main/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessor.kt)
 - [한국어 모듈 README](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-korean/README.md)
 - [한국어 프로세서 테스트](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-korean/src/test/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessorTest.kt)
+
+<!-- release-readme-diagrams:start -->
+## 배포본 다이어그램 {#release-diagrams}
+
+아래 그림은 현재 개발 브랜치가 아니라 `0.2.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+
+### tokenizer korean 클래스 구조도
+
+[![tokenizer korean 클래스 구조도](../../assets/readme-diagrams/tokenizer-korean-class-01.png)](../../assets/readme-diagrams/tokenizer-korean-class-01.svg)
+
+_배포본 README: [`tokenizer-korean/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/tokenizer-korean/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->

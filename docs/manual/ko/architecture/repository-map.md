@@ -52,3 +52,28 @@ BOM에는 실행 코드가 없다. `tokenizer-core`는 프로세서와 안전한
 - [배포본 프로젝트 등록](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/settings.gradle.kts)
 - [배포본 모듈 소개](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/README.md)
 - [예제 소개](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/README.md)
+
+<!-- release-readme-diagrams:start -->
+## 배포본 다이어그램 {#release-diagrams}
+
+아래 그림은 현재 개발 브랜치가 아니라 `0.2.1` 배포 태그의 README 자산을 바이트 단위로 그대로 옮긴 것입니다. 따라서 이후 SNAPSHOT 변경이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 SVG 원본이 열립니다.
+
+### Bluetape4k Text 아키텍처
+
+[![Bluetape4k Text 아키텍처](../../assets/readme-diagrams/bluetape4k-text-architecture-01.png)](../../assets/readme-diagrams/bluetape4k-text-architecture-01.svg)
+
+_배포본 README: [`README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/README.ko.md)_
+
+### Bluetape4k Text 모듈 구성도
+
+[![Bluetape4k Text 모듈 구성도](../../assets/readme-diagrams/root-readme-module-chart-01.png)](../../assets/readme-diagrams/root-readme-module-chart-01.svg)
+
+_배포본 README: [`README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/README.ko.md)_
+
+### Bluetape4k Text 개요
+
+[![Bluetape4k Text 개요](../../assets/readme-diagrams/root-readme-overview-01.png)](../../assets/readme-diagrams/root-readme-overview-01.svg)
+
+_배포본 README: [`README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/README.ko.md)_
+
+<!-- release-readme-diagrams:end -->

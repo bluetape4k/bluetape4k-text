@@ -136,6 +136,21 @@ class ManualContractTest < Minitest::Test
     end
   end
 
+  def test_counts_release_diagram_svg_png_pairs_in_the_asset_contract
+    with_fixture do |root, manifest_path|
+      inventory = {
+        "schemaVersion" => 1,
+        "sourcePolicy" => "release-readme",
+        "diagrams" => [{ "id" => "one" }, { "id" => "two" }],
+      }
+      File.write(File.join(root, "docs/manual/release-diagrams.yaml"), YAML.dump(inventory))
+
+      contract = ManualContract.new(root: root, manifest: manifest_path)
+
+      assert_equal 16, contract.send(:expected_asset_count)
+    end
+  end
+
   private
 
   def with_fixture

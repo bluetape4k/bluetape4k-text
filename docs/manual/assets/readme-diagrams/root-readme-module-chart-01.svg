@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1120" viewBox="0 0 1500 1120" role="img" aria-labelledby="title desc">
+<title id="title">bluetape4k-text module composition</title>
+<desc id="desc">Artifact-level module composition for bluetape4k-text, showing BOM version alignment and independently selected runtime modules.</desc>
+<defs>
+  <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#94a3b8" flood-opacity="0.20"/></filter>
+  <marker id="blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/></marker>
+  <marker id="green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/></marker>
+  <marker id="amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#d97706"/></marker>
+  <marker id="rose" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#e11d48"/></marker>
+  <marker id="violet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/></marker>
+  <marker id="cyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#0891b2"/></marker>
+  <style>
+    .title{font-family:"Architects Daughter","Comic Sans MS",cursive;font-size:52px;fill:#172033}
+    .subtitle,.body,.footer{font-family:"Comic Mono","Comic Sans MS",sans-serif;fill:#475569}
+    .subtitle{font-size:18px}.body{font-size:18px}.footer{font-size:15px}
+    .lane{font-family:"Architects Daughter","Comic Sans MS",cursive;font-size:30px;fill:#172033}
+    .label{font-family:"Architects Daughter","Comic Sans MS",cursive;font-size:32px;fill:#172033}
+    .artifact{font-family:"Comic Mono","Comic Sans MS",sans-serif;font-size:16px;fill:#64748b}
+    .line{fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+  </style>
+</defs>
+
+<rect width="1500" height="1120" rx="30" fill="#f8fafc"/>
+<rect x="24" y="24" width="1452" height="1072" rx="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+<text class="title" x="60" y="82">bluetape4k-text Module Composition</text>
+<text class="subtitle" x="62" y="116">The BOM aligns versions. Runtime artifacts are installed only when the application uses that capability.</text>
+
+<rect x="78" y="155" width="1344" height="160" rx="18" fill="#f8fafc" stroke="#b6c7dc" stroke-width="1.2" stroke-dasharray="8 7"/>
+<text class="lane" x="108" y="198">Version alignment</text>
+<rect x="424" y="225" width="652" height="84" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" filter="url(#shadow)"/>
+<text class="label" x="750" y="260" text-anchor="middle">bluetape4k-text-bom</text>
+<text class="artifact" x="750" y="287" text-anchor="middle">io.github.bluetape4k.text:bluetape4k-text-bom</text>
+
+<rect x="78" y="345" width="1344" height="630" rx="18" fill="#f8fafc" stroke="#b6c7dc" stroke-width="1.2" stroke-dasharray="8 7"/>
+<text class="lane" x="108" y="388">Runtime artifacts</text>
+
+<rect x="195" y="492" width="370" height="172" rx="10" fill="#ecfeff" stroke="#0891b2" stroke-width="1.2" filter="url(#shadow)"/>
+<text class="label" x="380" y="540" text-anchor="middle">tokenizer-core</text>
+<text class="body" x="229" y="574">models, options</text>
+<text class="body" x="229" y="598">DictionaryProvider</text>
+<text class="body" x="229" y="622">CharArraySet / CharArrayMap</text>
+
+<rect x="685" y="420" width="620" height="112" rx="10" fill="#dcfce7" stroke="#059669" stroke-width="1.2" filter="url(#shadow)"/>
+<text class="label" x="995" y="462" text-anchor="middle">tokenizer-korean</text>
+<text class="body" x="730" y="494">KoreanProcessor facade</text>
+<text class="body" x="730" y="518">normalize, tokenize, phrase, stem, mask</text>
+
+<rect x="685" y="560" width="620" height="112" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.2" filter="url(#shadow)"/>
+<text class="label" x="995" y="602" text-anchor="middle">tokenizer-japanese</text>
+<text class="body" x="730" y="634">JapaneseProcessor facade</text>
+<text class="body" x="730" y="658">Kuromoji IPAdic, nouns, blockwords, mask</text>
+
+<rect x="685" y="700" width="620" height="112" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2" filter="url(#shadow)"/>
+<text class="label" x="995" y="742" text-anchor="middle">lingua</text>
+<text class="body" x="730" y="774">LanguageDetector DSL</text>
+<text class="body" x="730" y="798">UnicodeDetector filters</text>
+
+<rect x="685" y="840" width="620" height="112" rx="10" fill="#fff1f2" stroke="#e11d48" stroke-width="1.2" filter="url(#shadow)"/>
+<text class="label" x="995" y="882" text-anchor="middle">text-search</text>
+<text class="body" x="730" y="914">AhoCorasickAutomaton</text>
+<text class="body" x="730" y="938">replaceAll, tokenize, Flow matches</text>
+
+<path class="line" d="M 750 309 L 750 345" stroke="#2563eb" stroke-dasharray="7 6" marker-end="url(#blue)"/>
+<path class="line" d="M 565 548 L 625 548 L 625 476 L 685 476" stroke="#059669" marker-end="url(#green)"/>
+<path class="line" d="M 565 612 L 625 612 L 625 616 L 685 616" stroke="#d97706" marker-end="url(#amber)"/>
+
+<text class="footer" x="750" y="1030" text-anchor="middle">`tokenizer-core` is the shared tokenizer foundation. `lingua` and `text-search` do not require tokenizer modules at runtime.</text>
+<text class="footer" x="750" y="1058" text-anchor="middle">The BOM aligns dependency versions only; it does not expose executable text-processing APIs.</text>
+</svg>
