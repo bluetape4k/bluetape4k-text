@@ -58,23 +58,23 @@ Use `text-search` when you already know the exact patterns and need to find many
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are copied byte-for-byte from README assets in the `0.2.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+These diagrams are loaded directly from README assets published with the `0.2.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### text Architecture diagram
 
-[![text Architecture diagram](../../assets/readme-diagrams/bluetape4k-text-architecture-01.png)](../../assets/readme-diagrams/bluetape4k-text-architecture-01.svg)
+[![text Architecture diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/bluetape4k-text-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/bluetape4k-text-architecture-01.svg)
 
 _Release README: [`README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/README.md)_
 
 ### Bluetape4k Text module composition chart
 
-[![Bluetape4k Text module composition chart](../../assets/readme-diagrams/root-readme-module-chart-01.png)](../../assets/readme-diagrams/root-readme-module-chart-01.svg)
+[![Bluetape4k Text module composition chart](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/root-readme-module-chart-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/root-readme-module-chart-01.svg)
 
 _Release README: [`README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/README.md)_
 
 ### Bluetape4k Text overview diagram
 
-[![Bluetape4k Text overview diagram](../../assets/readme-diagrams/root-readme-overview-01.png)](../../assets/readme-diagrams/root-readme-overview-01.svg)
+[![Bluetape4k Text overview diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/root-readme-overview-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/root-readme-overview-01.svg)
 
 _Release README: [`README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/README.md)_
 

@@ -91,23 +91,23 @@ Define the keyword snapshot and option policy before publication. Rebuilding on 
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are copied byte-for-byte from README assets in the `0.2.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+These diagrams are loaded directly from README assets published with the `0.2.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### Processing Flow diagram
 
-[![Processing Flow diagram](../../assets/readme-diagrams/text-search-architecture-03.png)](../../assets/readme-diagrams/text-search-architecture-03.svg)
+[![Processing Flow diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-architecture-03.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-architecture-03.svg)
 
 _Release README: [`text-search/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.md)_
 
 ### text search Class Structure diagram
 
-[![text search Class Structure diagram](../../assets/readme-diagrams/text-search-class-01.png)](../../assets/readme-diagrams/text-search-class-01.svg)
+[![text search Class Structure diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-class-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-class-01.svg)
 
 _Release README: [`text-search/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.md)_
 
 ### Search Pipeline diagram
 
-[![Search Pipeline diagram](../../assets/readme-diagrams/text-search-sequence-02.png)](../../assets/readme-diagrams/text-search-sequence-02.svg)
+[![Search Pipeline diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-sequence-02.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-sequence-02.svg)
 
 _Release README: [`text-search/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.md)_
 

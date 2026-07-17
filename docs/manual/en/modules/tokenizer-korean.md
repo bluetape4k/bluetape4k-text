@@ -88,11 +88,11 @@ The facade rejects oversized inputs using the core limits. It is safe for concur
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are copied byte-for-byte from README assets in the `0.2.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+These diagrams are loaded directly from README assets published with the `0.2.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### tokenizer korean Class Structure diagram
 
-[![tokenizer korean Class Structure diagram](../../assets/readme-diagrams/tokenizer-korean-class-01.png)](../../assets/readme-diagrams/tokenizer-korean-class-01.svg)
+[![tokenizer korean Class Structure diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/tokenizer-korean-class-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/tokenizer-korean-class-01.svg)
 
 _Release README: [`tokenizer-korean/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/tokenizer-korean/README.md)_
 

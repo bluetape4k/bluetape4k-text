@@ -136,7 +136,7 @@ class ManualContractTest < Minitest::Test
     end
   end
 
-  def test_counts_release_diagram_svg_png_pairs_in_the_asset_contract
+  def test_release_diagram_links_do_not_increase_the_published_asset_count
     with_fixture do |root, manifest_path|
       inventory = {
         "schemaVersion" => 1,
@@ -147,7 +147,7 @@ class ManualContractTest < Minitest::Test
 
       contract = ManualContract.new(root: root, manifest: manifest_path)
 
-      assert_equal 16, contract.send(:expected_asset_count)
+      assert_equal 12, contract.send(:expected_asset_count)
     end
   end
 

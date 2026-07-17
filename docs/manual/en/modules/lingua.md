@@ -76,17 +76,17 @@ Detection is evidence, not certainty. Short input and shared vocabulary can be a
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are copied byte-for-byte from README assets in the `0.2.1` release tag. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG source.
+These diagrams are loaded directly from README assets published with the `0.2.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### lingua Architecture diagram
 
-[![lingua Architecture diagram](../../assets/readme-diagrams/lingua-architecture-01.png)](../../assets/readme-diagrams/lingua-architecture-01.svg)
+[![lingua Architecture diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/lingua-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/lingua-architecture-01.svg)
 
 _Release README: [`lingua/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/lingua/README.md)_
 
 ### lingua Class Structure 2 diagram
 
-[![lingua Class Structure 2 diagram](../../assets/readme-diagrams/lingua-class-02.png)](../../assets/readme-diagrams/lingua-class-02.svg)
+[![lingua Class Structure 2 diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/lingua-class-02.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/lingua-class-02.svg)
 
 _Release README: [`lingua/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/lingua/README.md)_
 
