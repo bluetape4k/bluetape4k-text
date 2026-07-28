@@ -10,10 +10,10 @@ import io.bluetape4k.tokenizer.model.BlockwordResponse
 import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
 
 /**
- * Facade for Japanese morphological tokenization and blockword detection/masking.
+ * 일본어 형태소 분석과 금칙어 탐지/마스킹을 제공하는 facade입니다.
  *
- * Delegates tokenization to [JapaneseTokenizer] and blockword operations to
- * [JapaneseBlockwordProcessor] and [JapaneseDictionaryProvider].
+ * 토큰화는 [JapaneseTokenizer]에 위임하고, 금칙어 작업은 [JapaneseBlockwordProcessor]와
+ * [JapaneseDictionaryProvider]에 위임합니다.
  *
  * ```kotlin
  * val nouns = JapaneseProcessor
@@ -26,10 +26,9 @@ import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
 object JapaneseProcessor: KLogging() {
 
     /**
-     * Tokenizes the input sentence into a list of morphological tokens.
+     * 입력 문장을 형태소 토큰 목록으로 분석합니다.
      *
-     * Rejects inputs longer than `MAX_TOKENIZE_TEXT_LENGTH` before invoking
-     * Kuromoji.
+     * Kuromoji 호출 전에 `MAX_TOKENIZE_TEXT_LENGTH`를 초과하는 입력을 거부합니다.
      *
      * ```kotlin
      * val tokens = JapaneseProcessor.tokenize("お寿司が食べたい。")
@@ -37,6 +36,9 @@ object JapaneseProcessor: KLogging() {
      *
      * // result == ["お", "寿司", "が", "食べ", "たい", "。"]
      * ```
+     *
+     * @param text 형태소 분석할 일본어 입력 문장입니다.
+     * @return Kuromoji IPADic 규칙으로 분석한 토큰 목록입니다.
      */
     fun tokenize(text: String): List<Token> {
         requireTokenizeTextLength(text)
@@ -44,7 +46,7 @@ object JapaneseProcessor: KLogging() {
     }
 
     /**
-     * Filters the token list to those matching the given predicate.
+     * 토큰 목록에서 [predicate]를 만족하는 토큰만 반환합니다.
      *
      * ```kotlin
      * val tokens = JapaneseProcessor.tokenize("お寿司が食べたい。")
@@ -52,13 +54,17 @@ object JapaneseProcessor: KLogging() {
      *
      * // result == ["寿司"]
      * ```
+     *
+     * @param tokens 필터링할 Kuromoji 토큰 목록입니다.
+     * @param predicate 유지할 토큰을 판정하는 조건 함수입니다.
+     * @return 조건을 만족하는 토큰 목록입니다.
      */
     fun filter(tokens: List<Token>, predicate: (Token) -> Boolean): List<Token> {
         return JapaneseTokenizer.filter(tokens, predicate)
     }
 
     /**
-     * Filters the token list to nouns (`名詞`) only.
+     * 토큰 목록에서 명사(`名詞`) 토큰만 반환합니다.
      *
      * ```kotlin
      * val tokens = JapaneseProcessor.tokenize("私は、日本語の勉強をしています。")
@@ -66,29 +72,34 @@ object JapaneseProcessor: KLogging() {
      *
      * // result == ["私", "日本語", "勉強"]
      * ```
+     *
+     * @param tokens 필터링할 Kuromoji 토큰 목록입니다.
+     * @return 기본 품사가 명사(`名詞`)인 토큰 목록입니다.
      */
     fun filterNoun(tokens: List<Token>): List<Token> {
         return JapaneseTokenizer.filterNoun(tokens)
     }
 
     /**
-     * Finds tokens in the sentence that match entries in the blockword dictionary.
+     * 문장에서 금칙어 사전에 등록된 토큰을 찾습니다.
      *
-     * Falls back to compound-word matching (noun+noun/verb combinations) when
-     * direct token matching fails.
+     * 단일 토큰 매치가 없으면 명사+명사/동사 조합의 복합어 매칭으로 보정합니다.
      *
      * ```kotlin
      * val blockwords = JapaneseProcessor.findBlockwords("ホモの男性を理解できない").map { it.surface }
      *
      * // result == ["ホモ"]
      * ```
+     *
+     * @param text 금칙어를 찾을 일본어 입력 문장입니다.
+     * @return 금칙어 사전에 매치된 Kuromoji 토큰 목록입니다.
      */
     fun findBlockwords(text: String): List<Token> {
         return JapaneseBlockwordProcessor.findBlockwords(text)
     }
 
     /**
-     * Replaces blockword tokens in the sentence with a mask string.
+     * 문장의 금칙어 토큰을 요청 옵션의 마스크 문자열로 치환합니다.
      *
      * ```kotlin
      * val request = io.bluetape4k.tokenizer.model.blockwordRequestOf("ホモの男性を理解できない")
@@ -96,13 +107,16 @@ object JapaneseProcessor: KLogging() {
      *
      * // response.maskedText == "**の男性を理解できない"
      * ```
+     *
+     * @param request 원문과 마스킹 옵션을 담은 금칙어 요청입니다.
+     * @return 마스킹된 텍스트와 매치된 금칙어 목록을 담은 응답입니다.
      */
     fun maskBlockwords(request: BlockwordRequest): BlockwordResponse {
         return JapaneseBlockwordProcessor.maskBlockwords(request)
     }
 
     /**
-     * Adds words to the in-memory blockword dictionary.
+     * 인메모리 금칙어 사전에 단어를 추가합니다.
      *
      * ```kotlin
      * JapaneseProcessor.addBlockwords(listOf("東京"))
@@ -110,13 +124,15 @@ object JapaneseProcessor: KLogging() {
      *
      * // result == ["東京"]
      * ```
+     *
+     * @param words 추가할 금칙어 단어 목록입니다.
      */
     fun addBlockwords(words: List<String>) {
         JapaneseDictionaryProvider.addBlockwords(words)
     }
 
     /**
-     * Removes words from the in-memory blockword dictionary. Unknown words are silently ignored.
+     * 인메모리 금칙어 사전에서 단어를 제거합니다. 등록되지 않은 단어는 무시합니다.
      *
      * ```kotlin
      * JapaneseProcessor.addBlockwords(listOf("東京"))
@@ -125,13 +141,15 @@ object JapaneseProcessor: KLogging() {
      *
      * // result == []
      * ```
+     *
+     * @param words 제거할 금칙어 단어 목록입니다.
      */
     fun removeBlockwords(words: List<String>) {
         JapaneseDictionaryProvider.removeBlockwords(words)
     }
 
     /**
-     * Clears the in-memory blockword dictionary. Does not delete the underlying resource files.
+     * 인메모리 금칙어 사전을 비웁니다. 원본 리소스 파일은 삭제하지 않습니다.
      *
      * ```kotlin
      * JapaneseProcessor.clearBlockwords()

@@ -1,33 +1,31 @@
 # Text 0.2.1 Release Prep
 
-## Context
+## 배경
 
-The 0.2.1 milestone has no open issues after PR #150 closed the runnable
-examples, web-service safety documentation, and Lingua coverage work.
+PR #150이 실행 가능한 example, web-service 안전 문서, Lingua coverage 작업을
+닫은 뒤 0.2.1 milestone에는 open issue가 없다.
 
-## Decision
+## 결정
 
-Prepare `bluetape4k-text` 0.2.1 as a patch stable release from `develop`.
-Keep the release-prep diff limited to version metadata, release notes, the
-stable catalog default, and this lesson.
+`develop`에서 `bluetape4k-text` 0.2.1 patch stable release를 준비한다. Release-prep diff는
+version metadata, release note, stable catalog default, 이 lesson으로 제한한다.
 
-## Outcome
+## 결과
 
-Release metadata now uses `baseVersion=0.2.1`, `snapshotVersion=` remains empty,
-the release workflow's checked-in catalog default points to
-`catalog/2026-06-01-01`, and the local `bluetape4k-bom` reference uses the
-Maven Central visible `1.10.0` line. The BOM constraints also exclude runnable
-example projects so `bluetape4k-text-bom` publishes only stable library modules.
+Release metadata는 이제 `baseVersion=0.2.1`을 사용하고, `snapshotVersion=`은 비워 둔다.
+Release workflow의 check-in된 catalog default는 `catalog/2026-06-01-01`을 가리키며,
+local `bluetape4k-bom` reference는 Maven Central에서 보이는 `1.10.0` line을 사용한다. BOM
+constraint는 실행 가능한 example project도 제외하므로 `bluetape4k-text-bom`은 stable library
+module만 publish한다.
 
-## Verification
+## 검증
 
-Before tagging or dispatching release, verify local Gradle metadata,
-publication POM generation, stale/SNAPSHOT POM absence, local Maven
-publication, current PR CI, and a fresh Nightly plus snapshot validation run for
-the release-prep commit.
+Release를 tag하거나 dispatch하기 전에 local Gradle metadata, publication POM generation,
+stale/SNAPSHOT POM 부재, local Maven publication, 현재 PR CI, 릴리스 준비 commit에 대한
+fresh Nightly와 snapshot validation run을 검증한다.
 
-## Future Notes
+## 향후 지침
 
-Do not tag or dispatch the stable release while the checked-in release catalog,
-local version catalog, generated POMs, or release workflow inputs can resolve a
-`-SNAPSHOT` dependency.
+Check-in된 release catalog, local version catalog, generated POM, release workflow input이
+`-SNAPSHOT` dependency를 resolve할 수 있는 동안에는 stable release를 tag하거나 dispatch하지
+않는다.

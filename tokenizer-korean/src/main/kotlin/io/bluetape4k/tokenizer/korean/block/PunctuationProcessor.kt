@@ -9,15 +9,14 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos
 
 
 /**
- * Identifies and removes mid-word evasion patterns that insert punctuation to bypass blockword filters.
+ * 금칙어 필터를 우회하려고 단어 중간에 구두점을 끼워 넣는 패턴을 찾아 제거합니다.
  *
- * ## Behavior / Contract
- * - Uses a sliding window of 3 tokens: removes the middle token when it is classified as an
- *   evasion character ([Punctuation], [KoreanPos.Email], [KoreanPos.Hashtag], or [KoreanPos.CashTag])
- *   and both neighbours are normal content tokens ([normalPos]).
- * - Removal proceeds in reverse order to preserve original character offsets.
- * - [KoreanPos.URL] tokens are intentionally excluded from the evasion set so that URLs
- *   adjacent to Korean text are not silently deleted.
+ * ## 동작/계약
+ * - 길이 3 token sliding window를 사용한다. 가운데 token이 우회 문자([Punctuation], [KoreanPos.Email],
+ *   [KoreanPos.Hashtag], [KoreanPos.CashTag])이고 양쪽 이웃 token이 일반 본문 token([normalPos])이면 가운데
+ *   token을 제거 대상으로 표시한다.
+ * - 원본 문자 offset을 보존하기 위해 제거는 뒤쪽 token부터 수행한다.
+ * - 한국어 문자열 옆 URL이 조용히 삭제되지 않도록 [KoreanPos.URL] token은 우회 문자 집합에서 의도적으로 제외한다.
  *
  * ```kotlin
  * val cleaned = PunctuationProcessor().removePunctuation("섹.스")
@@ -54,6 +53,9 @@ class PunctuationProcessor {
      * val out = PunctuationProcessor().removePunctuation("찌~~~찌~뽕")
      * // out == "찌찌뽕"
      * ```
+     *
+     * @param text 구두점 우회 패턴을 제거할 입력 문자열입니다.
+     * @return 제거 대상 구두점 token을 삭제한 문자열입니다.
      */
     fun removePunctuation(text: String): String {
         val tokens = findPunctuation(text)
@@ -81,12 +83,15 @@ class PunctuationProcessor {
      * val pairs = PunctuationProcessor().findPunctuation("섹.스")
      * // pairs.any { it.first.text == "." && it.second } == true
      * ```
+     *
+     * @param text 구두점 제거 후보를 검사할 입력 문자열입니다.
+     * @return 각 가운데 token과 제거 가능 여부를 묶은 list입니다.
      */
     fun findPunctuation(text: String): List<Pair<KoreanToken, Boolean>> {
         val chunks = KoreanChunker.chunk(text)
 
         return chunks
-            // .filter { it.pos != KoreanPos.Space }
+            // 공백 token까지 보존해야 원본 offset 기준 제거 위치가 유지된다.
             .sliding(3, false)
             .onEach { tokens -> log.trace { "sliding token window. size=${tokens.size}" } }
             .mapIndexed { index, tokens -> (index + 1) to canRemovePunctuation(tokens) }
@@ -103,7 +108,7 @@ class PunctuationProcessor {
         val current = tokens[1]
         val next = tokens[2]
 
-        // 중간에 있는 token이 Punctuation이고, 앞뒤로 있는 token이 일반 token이면 Puctuation을 제거할 수 있다고 판단합니다.
+        // 중간 token이 우회 구두점이고 앞뒤 token이 일반 본문 token이면 구두점을 제거할 수 있다고 판단한다.
         return current.pos in punctuationPos &&
                 prev.pos in normalPos &&
                 next.pos in normalPos

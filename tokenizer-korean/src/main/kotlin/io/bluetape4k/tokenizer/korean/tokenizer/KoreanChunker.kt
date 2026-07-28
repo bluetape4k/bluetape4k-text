@@ -194,7 +194,7 @@ object KoreanChunker: KLogging() {
         return if (text.isNotEmpty() && text[0].isSpaceChar) {
             listOf(ChunkMatch(0, text.length, text, Space))
         } else {
-            // TreeMap keyed by start offset: O(log n) disjoint check instead of O(n) scan.
+            // 시작 offset을 키로 둔 TreeMap을 사용해 O(n) 순회 대신 O(log n)으로 겹침을 확인합니다.
             val chunksMap = java.util.TreeMap<Int, ChunkMatch>()
             var matchedLen = 0
             CHUNKING_ORDER.forEach { pos ->
@@ -214,18 +214,18 @@ object KoreanChunker: KLogging() {
                 }
             }
 
-            // TreeMap.values() is already ordered by start offset — no extra sort needed.
+            // 값 컬렉션은 이미 시작 offset 순서이므로 추가 정렬이 필요하지 않습니다.
             fillInUnmatched(text, chunksMap.values.toList(), Foreign)
         }
     }
 
     /**
-     * Fill in unmatched segments with given pos
+     * 패턴으로 매치되지 않은 구간을 [pos] 품사 청크로 채웁니다.
      *
-     * @param text input text
-     * @param chunks matched chunks
-     * @param pos KoreanPos to attach to the unmatched chunk
-     * @return list of ChunkMatches
+     * @param text 원본 세그먼트 문자열입니다.
+     * @param chunks 이미 매치된 겹치지 않는 청크 목록입니다.
+     * @param pos 미매치 구간에 부여할 품사입니다.
+     * @return 매치 청크와 미매치 보정 청크를 원문 순서로 정렬한 목록입니다.
      */
     private fun fillInUnmatched(
         text: String,

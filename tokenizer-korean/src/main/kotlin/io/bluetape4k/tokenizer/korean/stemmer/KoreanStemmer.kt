@@ -82,6 +82,9 @@ object KoreanStemmer: KLogging() {
      * val result = KoreanStemmer.stem(tokens)
      * // result.first().stem == "갈다"
      * ```
+     *
+     * @param tokens 토크나이저가 만든 입력 토큰 열입니다.
+     * @return 어미 병합과 용언 원형 조회를 반영한 새 토큰 목록입니다.
      */
     fun stem(tokens: List<KoreanToken>): List<KoreanToken> {
         if (tokens.isEmpty()) {
@@ -111,7 +114,7 @@ object KoreanStemmer: KLogging() {
                     stemmed.add(0, token.copy(stem = stem))
                 } else {
                     log.trace {
-                        "not found stem. offset=${token.offset}, length=${token.length}, pos=${token.pos}"
+                        "원형을 찾지 못했습니다. offset=${token.offset}, length=${token.length}, pos=${token.pos}"
                     }
                     stemmed.add(0, token)
                 }

@@ -4,17 +4,19 @@ import io.bluetape4k.AbstractValueObject
 import io.bluetape4k.support.hashOf
 
 /**
- * Basic interval implementation identified by inclusive [start] and [end] indices.
+ * Inclusive [start]와 [end] index로 표현하는 기본 구간 구현입니다.
  *
- * ## Behavior / Contract
- * - When [start] > [end], the interval is considered empty ([isEmpty] returns `true`).
- * - [compareTo] sorts by `start` then `end`.
- * - Value equality compares only [start] and [end].
+ * ## 동작 계약
+ * - [start] > [end]이면 빈 구간으로 간주합니다. 이때 [isEmpty]는 `true`입니다.
+ * - [compareTo]는 `start`, 그다음 `end` 순서로 정렬합니다.
+ * - 값 동등성은 [start]와 [end]만 비교합니다.
  *
  * ```kotlin
  * val interval = Interval(2, 5)
  * // interval.size == 4
  * ```
+ * @property start inclusive 시작 index입니다.
+ * @property end inclusive 종료 index입니다.
  */
 internal open class Interval(
     override val start: Int,
@@ -26,15 +28,15 @@ internal open class Interval(
         val EMPTY = Interval(1, 0)
     }
 
-    /** Returns `true` if this interval is empty ([start] > [end]). */
+    /** 이 구간이 비어 있으면, 즉 [start] > [end]이면 `true`입니다. */
     val isEmpty: Boolean get() = start > end
 
-    /** Returns `true` if this interval overlaps with [other]. */
+    /** 이 구간이 [other]와 겹치면 `true`를 반환합니다. */
     fun overlapsWith(other: Interval): Boolean {
         return start < other.end && end >= other.start
     }
 
-    /** Returns `true` if [point] falls within this interval (inclusive). */
+    /** [point]가 이 inclusive 구간 안에 있으면 `true`를 반환합니다. */
     fun overlapsWith(point: Int): Boolean {
         return point in start..end
     }

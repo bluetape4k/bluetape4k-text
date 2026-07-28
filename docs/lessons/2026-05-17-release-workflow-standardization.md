@@ -1,15 +1,25 @@
-# Release Workflow Standardization
+# Release workflow 표준화
 
-Context: The Central Portal release campaign uses `bluetape4k-projects` as the
-canonical release workflow shape.
+## 배경
 
-Decision: Rename release-prep workflow files to `nightly-tests.yml` and
-`publish-snapshot.yml` while keeping workflow display names unchanged.
+Central Portal release campaign은 `bluetape4k-projects`를 canonical release workflow
+형태로 사용한다.
 
-Outcome: Release preparation scripts can rely on the same workflow file names
-across bluetape4k repositories.
+## 결정
 
-Verification: `actionlint .github/workflows/nightly-tests.yml .github/workflows/publish-snapshot.yml .github/workflows/release.yml`.
+Release-prep workflow 파일 이름을 `nightly-tests.yml`과 `publish-snapshot.yml`로 바꾸되,
+workflow display name은 유지한다.
 
-Future guard: Keep release workflow file names aligned with `bluetape4k-projects`
-unless a repo-specific exception is documented in `AGENTS.md`.
+## 결과
+
+Release preparation script는 bluetape4k 저장소 전반에서 같은 workflow 파일 이름에
+의존할 수 있다.
+
+## 검증
+
+- `actionlint .github/workflows/nightly-tests.yml .github/workflows/publish-snapshot.yml .github/workflows/release.yml`
+
+## 향후 guard
+
+Repo-specific exception이 `AGENTS.md`에 문서화되어 있지 않다면 release workflow 파일
+이름을 `bluetape4k-projects`와 맞춘 상태로 유지한다.

@@ -48,7 +48,7 @@ class CharacterUtilsTest {
     fun `codePointAt with surrogate pair`() {
         // 이모지 (😀)는 surrogate pair로 표현됨
         val emoji = "😀"
-        charUtils.codePointAt(emoji, 0) shouldBeEqualTo 0x1F600 // grinning face emoji
+        charUtils.codePointAt(emoji, 0) shouldBeEqualTo 0x1F600 // 활짝 웃는 얼굴 이모지
     }
 
     @Test
@@ -119,7 +119,7 @@ class CharacterUtilsTest {
 
     @Test
     fun `toCodePoints with surrogate pair`() {
-        val src = "😀".toCharArray() // 2 chars (surrogate pair)
+        val src = "😀".toCharArray() // 2개 char로 표현되는 surrogate pair
         val dest = IntArray(2)
 
         val count = charUtils.toCodePoints(src, 0, src.size, dest, 0)
@@ -141,12 +141,12 @@ class CharacterUtilsTest {
 
     @Test
     fun `toChars with code point`() {
-        val src = intArrayOf(0x1F600) // grinning face emoji
+        val src = intArrayOf(0x1F600) // 활짝 웃는 얼굴 이모지
         val dest = CharArray(2)
 
         val count = charUtils.toChars(src, 0, src.size, dest, 0)
 
-        count shouldBeEqualTo 2 // surrogate pair
+        count shouldBeEqualTo 2 // surrogate pair의 UTF-16 char 수
         String(dest, 0, count) shouldBeEqualTo "😀"
     }
 
@@ -236,12 +236,12 @@ class CharacterUtilsTest {
 
     @Test
     fun `offsetByCodePoints with surrogate pair`() {
-        val text = "A😀B".toCharArray() // A(1) + emoji(2) + B(1)
+        val text = "A😀B".toCharArray() // A(1) + 이모지(2) + B(1)
 
-        // emoji는 code point 1개이지만 char 2개
+        // 이모지는 code point 1개이지만 char 2개이다.
         val result = charUtils.offsetByCodePoints(text, 0, text.size, 0, 2)
 
-        // A(1) + emoji(2) = index 3
+        // A(1) + 이모지(2) = index 3
         result shouldBeEqualTo 3
     }
 
@@ -275,7 +275,7 @@ class CharacterUtilsTest {
         // H(1), e(2), l(3), l(4), o(5), (6), 세(7), 상(8), (9), 😀(10), 🌍(11)
         charUtils.codePointCount(text) shouldBeEqualTo 11
 
-        // 첫 6개 code points (Hello + space)
+        // 첫 6개 code point(Hello + space)
         val first6 = text.substring(0, 6) // "Hello "
         charUtils.codePointCount(first6) shouldBeEqualTo 6
     }
