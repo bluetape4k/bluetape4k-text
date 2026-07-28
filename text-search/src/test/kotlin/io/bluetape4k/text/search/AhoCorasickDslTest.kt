@@ -17,7 +17,7 @@ class AhoCorasickDslTest {
 
     @Test
     fun `DSL로 옵션과 키워드 5개 등록 후 parseText 결과 검증`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasick<String> {
             ignoreCase = true
             keyword("apple", "APPLE")
@@ -27,10 +27,10 @@ class AhoCorasickDslTest {
             keyword("elderberry", "ELDERBERRY")
         }
 
-        // Act
+        // 실행
         val matches = automaton.parseText("I have Apple, Banana, Cherry, Date and Elderberry")
 
-        // Assert
+        // 검증
         matches shouldHaveSize 5
         val keywords = matches.map { it.value }
         keywords.containsAll(listOf("APPLE", "BANANA", "CHERRY", "DATE", "ELDERBERRY")).shouldBeTrue()
@@ -39,13 +39,13 @@ class AhoCorasickDslTest {
 
     @Test
     fun `ahoCorasickOf vararg 헬퍼에서 keyword==value 검증`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasickOf("foo", "bar", "baz")
 
-        // Act
+        // 실행
         val matches = automaton.parseText("foo and bar and baz")
 
-        // Assert
+        // 검증
         matches shouldHaveSize 3
         matches.forEach { match ->
             // keyword와 value가 동일해야 함
@@ -56,7 +56,7 @@ class AhoCorasickDslTest {
 
     @Test
     fun `Map으로 keyword 등록 후 모든 키워드 매치 검증`() {
-        // Arrange
+        // 준비
         val keywordMap = mapOf(
             "NYC" to "New York City",
             "LA" to "Los Angeles",
@@ -66,10 +66,10 @@ class AhoCorasickDslTest {
             keywords(keywordMap)
         }
 
-        // Act
+        // 실행
         val matches = automaton.parseText("Visiting NYC, LA and SF this summer")
 
-        // Assert
+        // 검증
         matches shouldHaveSize 3
         val valueMap = matches.associate { it.keyword to it.value }
         valueMap["NYC"] shouldBeEqualTo "New York City"
@@ -80,7 +80,7 @@ class AhoCorasickDslTest {
 
     @Test
     fun `4가지 옵션 동시 적용 - ignoreCase + wordBoundary + allowOverlaps + stopOnFirstMatch`() {
-        // Arrange
+        // 준비
         // ignoreCase=true, wordBoundary=WHITESPACE_SEPARATED, allowOverlaps=true, stopOnFirstMatch=true
         // "He" substring이 포함된 "ushers"는 WHITESPACE_SEPARATED 경계로 인해 매치 안 됨
         // 단독 단어인 "he"만 매치되어야 함
@@ -93,12 +93,12 @@ class AhoCorasickDslTest {
             keyword("she", "SHE")
         }
 
-        // Act
+        // 실행
         // "ushers"에 포함된 "she"/"he"는 단어 경계가 없어서 매치 안 됨
         // 단독 단어 "He"는 ignoreCase로 매치
         val matches = automaton.parseText("He likes ushers she said")
 
-        // Assert: stopOnFirstMatch=true이므로 정확히 1개만 반환
+        // 검증: stopOnFirstMatch=true이므로 정확히 1개만 반환
         matches shouldHaveSize 1
         val first = matches.first()
         first.shouldNotBeNull()
@@ -108,7 +108,7 @@ class AhoCorasickDslTest {
 
     @Test
     fun `blank keyword 등록 시 IllegalArgumentException 발생`() {
-        // Act & Assert
+        // 실행 및 검증
         assertFailsWith<IllegalArgumentException> {
             ahoCorasick<String> {
                 keyword("  ", "value")

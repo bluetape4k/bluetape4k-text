@@ -52,6 +52,9 @@ object KoreanProcessor: KLogging() {
      * val normalized = KoreanProcessor.normalize("안됔ㅋㅋㅋㅋ")
      * // normalized == "안돼ㅋㅋㅋ"
      * ```
+     *
+     * @param text 정규화할 입력 문자열입니다.
+     * @return 구어체 반복, 오타, 받침 변형을 보정한 문자열입니다.
      */
     fun normalize(text: CharSequence): CharSequence {
         requireTokenizeTextLength(text)
@@ -70,6 +73,10 @@ object KoreanProcessor: KLogging() {
      * val tokens = KoreanProcessor.tokenize("주말특가")
      * // tokens.map { it.text } == ["주말", "특가"]
      * ```
+     *
+     * @param text 분석할 입력 문자열입니다.
+     * @param profile 토큰화 비용과 후보 탐색 폭을 제어하는 [TokenizerProfile]입니다.
+     * @return 1-best 형태소 [KoreanToken] list입니다.
      */
     fun tokenize(
         text: CharSequence,
@@ -91,6 +98,10 @@ object KoreanProcessor: KLogging() {
      * val tokens = KoreanProcessor.tokenizeForNoun("떡 만두국")
      * // tokens.isNotEmpty() == true
      * ```
+     *
+     * @param text 명사 중심으로 분석할 입력 문자열입니다.
+     * @param profile 토큰화 비용과 후보 탐색 폭을 제어하는 [TokenizerProfile]입니다.
+     * @return 명사 구 추출 전처리에 쓰는 [KoreanToken] list입니다.
      */
     fun tokenizeForNoun(
         text: CharSequence,
@@ -111,6 +122,11 @@ object KoreanProcessor: KLogging() {
      * val top = KoreanProcessor.tokenizeTopN("가느다란", n = 1)
      * // top.isNotEmpty() == true
      * ```
+     *
+     * @param text 후보를 추출할 입력 문자열입니다.
+     * @param n 각 청크에서 유지할 상위 후보 수입니다.
+     * @param profile 후보 탐색 폭과 점수 계산 방식을 제어하는 [TokenizerProfile]입니다.
+     * @return 청크별 상위 후보 token path list입니다.
      */
     fun tokenizeTopN(
         text: CharSequence,
@@ -131,6 +147,8 @@ object KoreanProcessor: KLogging() {
      * KoreanProcessor.addNounsToDictionary(listOf("후랴오교"))
      * // KoreanDictionaryProvider.koreanDictionary[KoreanPos.Noun]!!.contains("후랴오교") == true
      * ```
+     *
+     * @param words 런타임 명사 사전에 추가할 단어 목록입니다.
      */
     fun addNounsToDictionary(words: List<String>) {
         KoreanDictionaryProvider.addWordsToDictionary(KoreanPos.Noun, words)
@@ -146,6 +164,8 @@ object KoreanProcessor: KLogging() {
      * KoreanProcessor.addNounsToDictionary("주말특가")
      * // KoreanDictionaryProvider.koreanDictionary[KoreanPos.Noun]!!.contains("주말특가") == true
      * ```
+     *
+     * @param words 런타임 명사 사전에 추가할 단어들입니다.
      */
     fun addNounsToDictionary(vararg words: String) {
         KoreanDictionaryProvider.addWordsToDictionary(KoreanPos.Noun, *words)
@@ -163,6 +183,9 @@ object KoreanProcessor: KLogging() {
      * KoreanProcessor.addBlockwords(listOf("분수쑈"), Severity.HIGH)
      * // KoreanDictionaryProvider.blockWords[Severity.HIGH]!!.contains("분수쑈") == true
      * ```
+     *
+     * @param words 금칙어 사전에 추가할 단어 목록입니다.
+     * @param severity 추가할 금칙어 심각도입니다.
      */
     fun addBlockwords(
         words: List<String>,
@@ -186,6 +209,9 @@ object KoreanProcessor: KLogging() {
      * KoreanProcessor.removeBlockword(listOf("금칙어"), Severity.HIGH)
      * // deprecated
      * ```
+     *
+     * @param words 제거할 금칙어 목록입니다.
+     * @param severity 제거할 금칙어 심각도입니다.
      */
     @Deprecated("Use removeBlockwords instead", replaceWith = ReplaceWith("removeBlockwords(words, severity)"))
     fun removeBlockword(
@@ -198,17 +224,20 @@ object KoreanProcessor: KLogging() {
     }
 
     /**
-     * Removes words from all dictionaries that [addBlockwords] writes to.
+     * [addBlockwords]가 기록하는 모든 사전에서 단어를 제거합니다.
      *
-     * ## Behavior / Contract
-     * - Removes from the blockWords dictionary for the given [severity].
-     * - Also removes from [KoreanDictionaryProvider.koreanDictionary] `Noun` entry and
-     *   [KoreanDictionaryProvider.properNouns], mirroring [addBlockwords].
+     * ## 동작/계약
+     * - 지정한 [severity]의 `blockWords` 사전에서 제거한다.
+     * - [addBlockwords]와 대칭이 되도록 [KoreanDictionaryProvider.koreanDictionary]의 `Noun` 항목과
+     *   [KoreanDictionaryProvider.properNouns]에서도 제거한다.
      *
      * ```kotlin
      * KoreanProcessor.removeBlockwords(listOf("금칙어"), Severity.HIGH)
-     * // removed from blockWords, Noun dictionary, and properNouns
+     * // blockWords, Noun dictionary, properNouns에서 제거됨
      * ```
+     *
+     * @param words 제거할 금칙어 목록입니다.
+     * @param severity 제거할 금칙어 심각도입니다.
      */
     fun removeBlockwords(
         words: List<String>,
@@ -231,6 +260,8 @@ object KoreanProcessor: KLogging() {
      * KoreanProcessor.clearBlockwords(Severity.HIGH)
      * // high dictionary cleared
      * ```
+     *
+     * @param severity 비울 금칙어 심각도입니다. 낮은 심각도는 그보다 높은 심각도 사전까지 함께 비웁니다.
      */
     fun clearBlockwords(severity: Severity = Severity.DEFAULT) {
         withBlockwordDictionary(severity) {
@@ -268,6 +299,9 @@ object KoreanProcessor: KLogging() {
      * val words = KoreanProcessor.tokensToStrings(listOf(KoreanToken("안녕", KoreanPos.Noun, 0, 2)))
      * // words == ["안녕"]
      * ```
+     *
+     * @param tokens 문자열로 바꿀 [KoreanToken] list입니다.
+     * @return 공백 token을 제외한 token text list입니다.
      */
     fun tokensToStrings(tokens: List<KoreanToken>): List<String> =
         tokens.filterNot { it.pos == KoreanPos.Space }.map { it.text }
@@ -283,6 +317,9 @@ object KoreanProcessor: KLogging() {
      * val sentences = KoreanProcessor.splitSentences("안녕? 세상아?").toList()
      * // sentences.size == 2
      * ```
+     *
+     * @param text 문장 단위로 분리할 입력 문자열입니다.
+     * @return 입력 문자열에서 추출한 [Sentence] sequence입니다.
      */
     fun splitSentences(text: CharSequence): Sequence<Sentence> {
         requireTokenizeTextLength(text)
@@ -299,6 +336,11 @@ object KoreanProcessor: KLogging() {
      * val phrases = KoreanProcessor.extractPhrases(KoreanProcessor.tokenize("성탄절 쇼핑"), filterSpam = false)
      * // phrases.isNotEmpty() == true
      * ```
+     *
+     * @param tokens phrase 추출에 사용할 형태소 token list입니다.
+     * @param filterSpam `true`이면 spam으로 판단되는 phrase를 결과에서 제외합니다.
+     * @param enableHashtags `true`이면 hashtag token을 phrase 후보에 포함합니다.
+     * @return 추출한 [KoreanPhrase] list입니다.
      */
     fun extractPhrases(
         tokens: List<KoreanToken>,
@@ -319,6 +361,9 @@ object KoreanProcessor: KLogging() {
      * val phrases = KoreanProcessor.extractPhrasesForNoun(KoreanProcessor.tokenizeForNoun("떡 만두국"))
      * // phrases.map { it.text }.contains("만두국") == true
      * ```
+     *
+     * @param tokens 명사 중심 토큰화로 얻은 [KoreanToken] list입니다.
+     * @return 명사 phrase [KoreanPhrase] list입니다.
      */
     fun extractPhrasesForNoun(tokens: List<KoreanToken>): List<KoreanPhrase> {
         return NounPhraseExtractor.extractPhrases(tokens)
@@ -334,6 +379,9 @@ object KoreanProcessor: KLogging() {
      * val stemmed = KoreanProcessor.stem(KoreanProcessor.tokenize("가느다란"))
      * // stemmed.first().stem == "갈다"
      * ```
+     *
+     * @param tokens stemming 대상 [KoreanToken] list입니다.
+     * @return 어미 병합과 용언 원형 복원을 적용한 [KoreanToken] list입니다.
      */
     fun stem(tokens: List<KoreanToken>): List<KoreanToken> {
         return KoreanStemmer.stem(tokens)
@@ -351,6 +399,9 @@ object KoreanProcessor: KLogging() {
      * val text = KoreanProcessor.detokenize(listOf("뭐", "완벽", "하진", "않", "지만"))
      * // text == "뭐 완벽하진 않지만"
      * ```
+     *
+     * @param tokens 문장 문자열로 병합할 token 문자열 collection입니다.
+     * @return 한국어 띄어쓰기 규칙을 적용해 복원한 문장 문자열입니다.
      */
     fun detokenize(tokens: Collection<String>): String {
         requireTokenizeTextLength(tokens.sumOf { it.length })
@@ -367,6 +418,9 @@ object KoreanProcessor: KLogging() {
      * val response = KoreanProcessor.maskBlockwords(BlockwordRequest("미니미와 니미"))
      * // response.text.contains("**")
      * ```
+     *
+     * @param request 금칙어 마스킹 입력 문자열과 옵션입니다.
+     * @return 금칙어 마스킹 결과 [BlockwordResponse]입니다.
      */
     fun maskBlockwords(request: BlockwordRequest): BlockwordResponse {
         return KoreanBlockwordProcessor.maskBlockwords(request)
