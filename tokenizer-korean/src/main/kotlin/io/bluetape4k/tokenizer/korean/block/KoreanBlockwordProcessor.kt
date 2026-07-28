@@ -61,6 +61,10 @@ object KoreanBlockwordProcessor: KLogging() {
      * val tokens = KoreanBlockwordProcessor.findBlockwords("미니미와 니미")
      * // tokens.map { it.text } == ["니미"]
      * ```
+     *
+     * @param text 금칙어를 찾을 입력 문자열입니다.
+     * @return 금칙어 사전에 걸린 [KoreanToken] list입니다. 입력이 blank이면 빈 list입니다.
+     * @throws TokenizerException 처리 중 예외가 발생하면 원인을 감싸 던집니다.
      */
     fun findBlockwords(text: String): List<KoreanToken> {
         requireBlockwordTextLength(text)
@@ -111,6 +115,11 @@ object KoreanBlockwordProcessor: KLogging() {
      * val response = KoreanBlockwordProcessor.maskBlockwords(BlockwordRequest("미니미와 니미"))
      * // response.text.contains("**") == true
      * ```
+     *
+     * @param request 입력 문자열, locale, mask 문자열, severity를 담은 금칙어 처리 요청입니다.
+     * @return 마스킹된 문자열과 발견된 금칙어를 담은 [BlockwordResponse]입니다.
+     * @throws InvalidTokenizeRequestException 요청 locale이 한국어가 아니면 던집니다.
+     * @throws TokenizerException 처리 중 예외가 발생하면 원인을 감싸 던집니다.
      */
     fun maskBlockwords(request: BlockwordRequest): BlockwordResponse {
         requireBlockwordTextLength(request.text)
@@ -160,9 +169,13 @@ object KoreanBlockwordProcessor: KLogging() {
     }
 
     /**
-     * [token]이 금칙어로서 mask 되어야 할 것인지 판단합니다.
+     * [token]이 금칙어로서 마스킹되어야 하는지 판단합니다.
      *
-     * 단어 또는 동사의 기본형이 금칙어에 포함되어 있는지 검사한다
+     * 단어 자체 또는 동사의 기본형이 금칙어에 포함되어 있는지 검사합니다.
+     *
+     * @param token 검사할 한국어 token입니다.
+     * @param severity 적용할 금칙어 심각도입니다.
+     * @return [token]이 지정 심각도에서 마스킹 대상이면 `true`입니다.
      */
     private fun canMask(
         token: KoreanToken,

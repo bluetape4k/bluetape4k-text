@@ -1,24 +1,22 @@
-# Text 0.2.0 Quality Gates
+# Text 0.2.0 품질 Gate
 
-## Context
+## 배경
 
-Milestone 0.2.0 needed a concrete quality gate for tokenizer accuracy,
-dictionary update process, README-linked quality evidence, and request validation
-regression coverage.
+Milestone 0.2.0에는 tokenizer 정확도, dictionary update 절차, README에서 연결되는 품질
+근거, request validation 회귀 coverage를 확인할 구체적인 품질 gate가 필요했다.
 
-## Decision
+## 결정
 
-Use deterministic source-controlled tests and internal docs rather than making a
-large external NLP benchmark claim. Keep dictionary runtime reload out of 0.2.0
-and leave it to the 0.3.0 issue.
+큰 외부 NLP benchmark 주장을 내세우기보다 source control에 들어간 deterministic test와 내부
+문서를 사용한다. Dictionary runtime reload는 0.2.0 범위에서 제외하고 0.3.0 issue로
+남긴다.
 
-## Outcome
+## 결과
 
-Added mixed Korean/Japanese tokenizer fixture tests, sanitized oversized request
-tests, a quality gate spec, a dictionary update plan, and a quality report linked
-from the README locale set.
+Korean/Japanese 혼합 tokenizer fixture test, sanitized oversized request test, 품질 gate
+spec, dictionary update plan, README locale set에서 연결되는 quality report를 추가했다.
 
-## Future Guard
+## 향후 guard
 
-Do not claim broad NLP accuracy from the 0.2.0 report. Treat it as a release
-quality gate until a larger scored corpus exists.
+0.2.0 report를 근거로 넓은 NLP 정확도를 주장하지 않는다. 더 큰 점수화된 corpus가 생기기
+전까지는 release 품질 gate로 취급한다.

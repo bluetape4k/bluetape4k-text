@@ -1,21 +1,21 @@
 # Projects 1.9.2 BOM handoff
 
-## Context
+## 배경
 
-`bluetape4k-projects` 1.9.2 was released and `bluetape4k-bom:1.9.2` is visible
-from Maven Central.
+`bluetape4k-projects` 1.9.2가 릴리스됐고, `bluetape4k-bom:1.9.2`는 Maven Central에서
+확인된다.
 
-## Decision
+## 결정
 
-Use the stable `bluetape4k-bom` 1.9.2 line for this release-prep branch instead
-of the matching projects snapshot.
+이 release-prep branch에서는 matching projects snapshot 대신 stable `bluetape4k-bom`
+1.9.2 line을 사용한다.
 
-## Outcome
+## 결과
 
-The version catalog now resolves `io.github.bluetape4k:bluetape4k-bom` from the
-stable 1.9.2 release while leaving this repository's own release line unchanged.
+Version catalog는 이제 이 저장소의 자체 release line은 바꾸지 않은 채,
+`io.github.bluetape4k:bluetape4k-bom`을 stable 1.9.2 release에서 해석한다.
 
-## Verification
+## 검증
 
-- Maven Central HTTP 200 for `bluetape4k-bom:1.9.2`
+- `bluetape4k-bom:1.9.2`에 대한 Maven Central HTTP 200
 - `./gradlew help --refresh-dependencies --no-daemon --no-configuration-cache --no-build-cache`

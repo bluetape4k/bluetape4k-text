@@ -11,12 +11,12 @@ import java.io.InputStreamReader
 import java.util.zip.GZIPInputStream
 
 /**
- * Utility that reads classpath resource dictionary files and converts them into tokenizer input structures.
+ * Classpath resource dictionary file을 읽어 tokenizer input structure로 변환하는 utility입니다.
  *
- * ## Behavior / Contract
- * - Lines are read as UTF-8 and trimmed before being returned.
- * - Files with a `.gz` extension are decompressed automatically via `GZIPInputStream`.
- * - A Flow-based async loading API allows multiple dictionary paths to be collected in parallel.
+ * ## 동작 계약
+ * - Line은 UTF-8로 읽고 trim한 뒤 반환합니다.
+ * - `.gz` extension file은 `GZIPInputStream`으로 자동 decompress합니다.
+ * - Flow 기반 async loading API로 여러 dictionary path를 병렬로 collect할 수 있습니다.
  *
  * ```kotlin
  * val words = DictionaryProvider.readWordsAsSequence("dict/custom.txt").take(2).toList()
@@ -29,12 +29,15 @@ object DictionaryProvider: KLogging() {
     private const val TAB = "\t"
 
     /**
-     * Reads an [InputStream] line by line and returns trimmed strings as a [Sequence].
+     * [InputStream]을 line 단위로 읽고 trim한 string을 [Sequence]로 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Decodes as UTF-8 and eagerly loads all lines into memory.
-     * - Closes the [Reader] safely via `use {}` to prevent stream leaks.
-     * - Each line is transformed with `trim()`.
+     * ## 동작 계약
+     * - UTF-8로 decode하고 모든 line을 memory에 eager load합니다.
+     * - Stream leak을 막기 위해 [Reader]를 `use {}`로 안전하게 닫습니다.
+     * - 각 line은 `trim()`으로 변환합니다.
+     *
+     * @param stream 읽을 source [InputStream]입니다.
+     * @return trim된 line sequence입니다.
      *
      * ```kotlin
      * val bytes = "a\n b ".byteInputStream()
@@ -48,12 +51,16 @@ object DictionaryProvider: KLogging() {
         }.asSequence()
 
     /**
-     * Opens a classpath resource and returns its lines as a [Sequence].
+     * Classpath resource를 열고 line을 [Sequence]로 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Throws [IllegalStateException] when `classLoader.getResourceAsStream(path)` returns `null`.
-     * - `.gz` files are decompressed before reading.
-     * - Plain text files are read directly from the raw stream.
+     * ## 동작 계약
+     * - `classLoader.getResourceAsStream(path)`가 `null`을 반환하면 [IllegalStateException]을 던집니다.
+     * - `.gz` file은 읽기 전에 decompress합니다.
+     * - Plain text file은 raw stream에서 직접 읽습니다.
+     *
+     * @param path classpath resource path입니다.
+     * @param classLoader resource stream을 찾을 [ClassLoader]입니다.
+     * @return resource file의 trim된 line sequence입니다.
      *
      * ```kotlin
      * val lines = DictionaryProvider.readFileByLineFromResources("dict/words.txt")
@@ -77,12 +84,16 @@ object DictionaryProvider: KLogging() {
     }
 
     /**
-     * Reads a word-frequency dictionary file and loads it into a `word -> frequency (Float)` map.
+     * Word-frequency dictionary file을 읽어 `word -> frequency (Float)` map으로 적재합니다.
      *
-     * ## Behavior / Contract
-     * - Only lines containing a tab (`\t`) are processed.
-     * - The first 6 characters after the tab are parsed as a [Float] frequency value.
-     * - Results are accumulated in [destination]; duplicate keys are overwritten with the last value.
+     * ## 동작 계약
+     * - Tab(`\t`)을 포함한 line만 처리합니다.
+     * - Tab 뒤 첫 6글자를 [Float] frequency value로 parse합니다.
+     * - 결과는 [destination]에 누적하며, duplicate key는 마지막 value로 overwrite합니다.
+     *
+     * @param path 읽을 word-frequency dictionary resource path입니다.
+     * @param destination 결과를 누적할 mutable map입니다.
+     * @return 누적된 `word -> frequency` map입니다. 반환 instance는 [destination]과 같습니다.
      *
      * ```kotlin
      * val map = DictionaryProvider.readWordFreqs("dict/freqs.txt", mutableMapOf())
@@ -110,11 +121,14 @@ object DictionaryProvider: KLogging() {
     }
 
     /**
-     * Reads a two-column space-delimited dictionary file and returns word-mapping pairs as a [Sequence].
+     * Space-delimited two-column dictionary file을 읽고 word-mapping pair를 [Sequence]로 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Only lines containing a space are processed.
-     * - Each line is split at the first space into exactly two strings.
+     * ## 동작 계약
+     * - Space를 포함한 line만 처리합니다.
+     * - 각 line은 첫 space에서 정확히 두 string으로 split합니다.
+     *
+     * @param filename 읽을 dictionary resource filename입니다.
+     * @return `(sourceWord, mappedWord)` pair sequence입니다.
      *
      * ```kotlin
      * val pairs = DictionaryProvider.readWordMap("dict/map.txt").take(1).toList()
@@ -131,11 +145,14 @@ object DictionaryProvider: KLogging() {
     }
 
     /**
-     * Returns the lines of a resource file as a word [Sequence].
+     * Resource file의 line을 word [Sequence]로 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Delegates directly to [readFileByLineFromResources].
-     * - The sequence wraps an in-memory list, so there is no file-handle leak.
+     * ## 동작 계약
+     * - [readFileByLineFromResources]에 직접 위임합니다.
+     * - Sequence는 in-memory list를 감싸므로 file-handle leak이 없습니다.
+     *
+     * @param filename 읽을 word dictionary resource filename입니다.
+     * @return trim된 word sequence입니다.
      *
      * ```kotlin
      * val first = DictionaryProvider.readWordsAsSequence("dict/words.txt").first()
@@ -147,13 +164,17 @@ object DictionaryProvider: KLogging() {
     }
 
     /**
-     * Asynchronously reads words from multiple resource files and accumulates them into a [MutableSet].
+     * 여러 resource file에서 word를 비동기로 읽고 [MutableSet]에 누적합니다.
      *
-     * ## Behavior / Contract
-     * - Iterates [paths] as a Flow and transforms each path asynchronously via the `async` extension.
-     * - Collected lines are merged into [destination] via `addAll`.
-     * - Returns the same [destination] instance with all accumulated results.
-     * - Blocking I/O is performed on [Dispatchers.IO].
+     * ## 동작 계약
+     * - [paths]를 Flow로 순회하고 `async` extension으로 각 path를 비동기 변환합니다.
+     * - Collect한 line은 `addAll`로 [destination]에 merge합니다.
+     * - 누적 결과를 담은 같은 [destination] instance를 반환합니다.
+     * - Blocking I/O는 [Dispatchers.IO]에서 수행합니다.
+     *
+     * @param paths 읽을 dictionary resource path 목록입니다.
+     * @param destination word를 누적할 mutable set입니다.
+     * @return 모든 path에서 읽은 word를 누적한 [destination] instance입니다.
      *
      * ```kotlin
      * val words = DictionaryProvider.readWordsAsSet("dict/a.txt", "dict/b.txt")
@@ -176,13 +197,17 @@ object DictionaryProvider: KLogging() {
     }
 
     /**
-     * Reads words from multiple resource files and accumulates them into a [CharArraySet].
+     * 여러 resource file에서 word를 읽고 [CharArraySet]에 누적합니다.
      *
-     * ## Behavior / Contract
-     * - Collects each path's line sequence via an async Flow.
-     * - Results are merged into [destination] via `addAll`; duplicate words are deduplicated by set semantics.
-     * - Returns the same [destination] instance.
-     * - Blocking I/O is performed on [Dispatchers.IO].
+     * ## 동작 계약
+     * - 각 path의 line sequence를 async Flow로 collect합니다.
+     * - 결과는 `addAll`로 [destination]에 merge하며, duplicate word는 set semantic에 따라 deduplicate됩니다.
+     * - 같은 [destination] instance를 반환합니다.
+     * - Blocking I/O는 [Dispatchers.IO]에서 수행합니다.
+     *
+     * @param paths 읽을 dictionary resource path 목록입니다.
+     * @param destination word를 누적할 [CharArraySet]입니다.
+     * @return 모든 path에서 읽은 word를 누적한 [destination] instance입니다.
      *
      * ```kotlin
      * val set = DictionaryProvider.readWords("dict/stopwords.txt")
@@ -205,10 +230,12 @@ object DictionaryProvider: KLogging() {
     }
 
     /**
-     * Creates a default [CharArraySet] sized for dictionary loading.
+     * Dictionary loading에 맞는 size의 기본 [CharArraySet]을 만듭니다.
      *
-     * ## Behavior / Contract
-     * - Initial capacity is 5,000 to reduce rehash frequency during dictionary loading.
+     * ## 동작 계약
+     * - Initial capacity는 5,000이며 dictionary loading 중 rehash 빈도를 줄입니다.
+     *
+     * @return dictionary word 적재에 사용할 비어 있는 [CharArraySet]입니다.
      *
      * ```kotlin
      * val set = DictionaryProvider.newCharArraySet()

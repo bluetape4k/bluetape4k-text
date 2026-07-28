@@ -5,12 +5,15 @@ import io.bluetape4k.support.requireNotNull
 import java.io.Serializable
 
 /**
- * Open-addressing hash map optimized for `CharArray` keys.
+ * `CharArray` key에 맞춰 최적화한 open-addressing hash map입니다.
  *
- * ## Behavior / Contract
- * - Accepts `Any` as a key but normalizes it internally to a `CharArray` or string representation.
- * - Collision resolution uses an increment-based (`inc`) probe strategy rather than linear probing.
- * - On removal, remaining entries are reinserted to preserve the probe chain.
+ * ## 동작 계약
+ * - Key type은 `Any`를 받지만 내부에서는 `CharArray` 또는 string representation으로 normalize합니다.
+ * - Collision resolution은 linear probing 대신 increment 기반(`inc`) probe strategy를 사용합니다.
+ * - Remove 시 probe chain을 보존하기 위해 남은 entry를 다시 insert합니다.
+ *
+ * @param V map에 저장할 value type입니다.
+ * @param startSize 예상 entry 수에 맞춘 initial capacity hint입니다.
  *
  * ```kotlin
  * val map = CharArrayMap<Int>(4)
@@ -28,19 +31,20 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
 
         @JvmStatic
         /**
-         * Returns a read-only view of the given map that blocks all mutation operations.
+         * Mutation operation을 모두 막는 read-only view를 반환합니다.
          *
-         * ## Behavior / Contract
-         * - Empty maps return the shared [emptyMap] singleton.
-         * - A map that is already an [UnmodifiableCharArrayMap] is returned as-is.
-         * - Otherwise, wraps the map in [UnmodifiableCharArrayMap].
+         * ## 동작 계약
+         * - Empty map은 공유 [emptyMap] singleton을 반환합니다.
+         * - 이미 [UnmodifiableCharArrayMap]인 map은 그대로 반환합니다.
+         * - 그 외 map은 [UnmodifiableCharArrayMap]으로 감쌉니다.
          *
-         * ## Aliasing Warning
-         * Like [java.util.Collections.unmodifiableMap], the returned view shares the backing
-         * arrays of the original map. If the caller retains a reference to the original mutable
-         * map and continues to write to it, those changes will be visible through the
-         * unmodifiable view. To prevent this, discard the original reference after calling
-         * `unmodifiableMap`:
+         * ## Aliasing 경고
+         * 반환된 view는 [java.util.Collections.unmodifiableMap]처럼 원본 map의 backing array를 공유합니다.
+         * Caller가 원본 mutable map reference를 보관한 채 계속 write하면 그 변경이 unmodifiable view에도
+         * 보입니다. 이를 막으려면 `unmodifiableMap` 호출 뒤 원본 reference를 버리세요.
+         *
+         * @param map read-only view로 감쌀 source map입니다.
+         * @return mutation을 허용하지 않는 [CharArrayMap] view입니다.
          *
          * ```kotlin
          * var source: CharArrayMap<Int> = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -62,11 +66,14 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
 
         @JvmStatic
         /**
-         * Copies a standard [Map] into a new [CharArrayMap].
+         * Standard [Map]을 새 [CharArrayMap]으로 복사합니다.
          *
-         * ## Behavior / Contract
-         * - All entries from the source map are loaded via `putAll`.
-         * - The source map and the result are independent instances.
+         * ## 동작 계약
+         * - Source map의 모든 entry를 `putAll`로 load합니다.
+         * - Source map과 result는 서로 독립된 instance입니다.
+         *
+         * @param map 복사할 source map입니다.
+         * @return source entry를 담은 새 [CharArrayMap]입니다.
          *
          * ```kotlin
          * val copied = CharArrayMap.copy(mapOf<Any, Int>("x" to 10))
@@ -77,11 +84,13 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
 
         @JvmStatic
         /**
-         * Returns the shared immutable empty-map singleton.
+         * 공유 immutable empty-map singleton을 반환합니다.
          *
-         * ## Behavior / Contract
-         * - Always returns the same internal `EMPTY_MAP` instance cast to the requested type.
-         * - Insert and remove operations are not supported.
+         * ## 동작 계약
+         * - 같은 internal `EMPTY_MAP` instance를 요청 type으로 cast해 반환합니다.
+         * - Insert와 remove operation은 지원하지 않습니다.
+         *
+         * @return 요청한 value type으로 cast된 empty [CharArrayMap] singleton입니다.
          *
          * ```kotlin
          * val empty = CharArrayMap.emptyMap<Int>()
@@ -93,11 +102,13 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
 
     @Suppress("LeakingThis")
     /**
-     * Creates a map by copying all entries from [c].
+     * [c]의 모든 entry를 복사해 map을 만듭니다.
      *
-     * ## Behavior / Contract
-     * - Initial capacity is derived from `c.size`.
-     * - All entries are loaded via `putAll(c)` at construction time.
+     * ## 동작 계약
+     * - Initial capacity는 `c.size`에서 계산합니다.
+     * - 모든 entry는 construction time에 `putAll(c)`로 load합니다.
+     *
+     * @param c 새 map에 복사할 source map입니다.
      *
      * ```kotlin
      * val map = CharArrayMap(mapOf<Any, Int>("a" to 1))
@@ -109,11 +120,13 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * Creates a shallow copy sharing the backing arrays of [src].
+     * [src]의 backing array를 공유하는 shallow copy를 만듭니다.
      *
-     * ## Behavior / Contract
-     * - The `_keys` and `_values` array references are shared directly.
-     * - Mutations through either map will be visible in the other if both remain mutable.
+     * ## 동작 계약
+     * - `_keys`와 `_values` array reference를 직접 공유합니다.
+     * - 두 map이 모두 mutable 상태라면 한쪽 mutation이 다른 쪽에도 보입니다.
+     *
+     * @param src backing array를 공유할 source [CharArrayMap]입니다.
      *
      * ```kotlin
      * val source = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -143,11 +156,11 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * Removes all entries from the map.
+     * Map의 모든 entry를 제거합니다.
      *
-     * ## Behavior / Contract
-     * - Sets all slots in the key and value arrays to `null`.
-     * - Resets `_count` to 0.
+     * ## 동작 계약
+     * - Key array와 value array의 모든 slot을 `null`로 설정합니다.
+     * - `_count`를 0으로 reset합니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -162,10 +175,15 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * Returns whether the char-array slice `text[off, off+len)` exists as a key.
+     * Char-array slice `text[off, off+len)`이 key로 존재하는지 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Computes the hash slot for the given range and checks for a non-null entry.
+     * ## 동작 계약
+     * - 주어진 range의 hash slot을 계산하고 non-null entry가 있는지 확인합니다.
+     *
+     * @param text 검색할 source char array입니다.
+     * @param off 검색을 시작할 offset입니다.
+     * @param len 검색할 char 개수입니다.
+     * @return 같은 slice key가 있으면 `true`, 없으면 `false`입니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2).apply { put("ab", 1) }
@@ -178,10 +196,13 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * Returns whether [cs] exists as a key.
+     * [cs]가 key로 존재하는지 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Computes the slot based on the character content of [cs].
+     * ## 동작 계약
+     * - [cs]의 character content를 기준으로 slot을 계산합니다.
+     *
+     * @param cs 검색할 character sequence key입니다.
+     * @return 같은 문자 content의 key가 있으면 `true`, 없으면 `false`입니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2).apply { put("key", 1) }
@@ -191,11 +212,14 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     open fun containsKey(cs: CharSequence): Boolean = _keys[getSlot(cs)] != null
 
     /**
-     * Returns whether [key] exists in the map.
+     * [key]가 map에 존재하는지 반환합니다.
      *
-     * ## Behavior / Contract
-     * - `CharArray` keys use the array lookup path.
-     * - All other types use `toString()` for the lookup.
+     * ## 동작 계약
+     * - `CharArray` key는 array lookup path를 사용합니다.
+     * - 다른 type은 lookup에 `toString()`을 사용합니다.
+     *
+     * @param key 검색할 key입니다.
+     * @return key가 있으면 `true`, 없으면 `false`입니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -208,10 +232,15 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * Returns the value associated with the char-array slice `text[off, off+len)`, or `null` if absent.
+     * Char-array slice `text[off, off+len)`에 연결된 value를 반환하며, 없으면 `null`을 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Key comparison is performed character by character.
+     * ## 동작 계약
+     * - Key comparison은 character 단위로 수행합니다.
+     *
+     * @param text 검색할 source char array입니다.
+     * @param off 검색을 시작할 offset입니다.
+     * @param len 검색할 char 개수입니다.
+     * @return 연결된 value입니다. Key가 없으면 `null`입니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2).apply { put("x", 3) }
@@ -223,10 +252,13 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * Returns the value associated with [cs], or `null` if absent.
+     * [cs]에 연결된 value를 반환하며, 없으면 `null`을 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Slot lookup is performed using the string content of [cs].
+     * ## 동작 계약
+     * - Slot lookup은 [cs]의 string content를 사용해 수행합니다.
+     *
+     * @param cs 검색할 character sequence key입니다.
+     * @return 연결된 value입니다. Key가 없으면 `null`입니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2).apply { put("y", 7) }
@@ -236,10 +268,13 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     open fun get(cs: CharSequence): V? = _values[getSlot(cs)]
 
     /**
-     * Returns the value associated with [key], or `null` if absent.
+     * [key]에 연결된 value를 반환하며, 없으면 `null`을 반환합니다.
      *
-     * ## Behavior / Contract
-     * - `CharArray` keys use the array path; all other types use `toString()`.
+     * ## 동작 계약
+     * - `CharArray` key는 array path를 사용하고, 다른 type은 `toString()`을 사용합니다.
+     *
+     * @param key 검색할 key입니다.
+     * @return 연결된 value입니다. Key가 없으면 `null`입니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2).apply { put("b", 2) }
@@ -273,11 +308,15 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * Stores a [CharSequence] key and its associated value.
+     * [CharSequence] key와 연결 value를 저장합니다.
      *
-     * ## Behavior / Contract
-     * - Converts the key to a String and delegates to the String put path.
-     * - Returns the previous value if the key already existed.
+     * ## 동작 계약
+     * - Key를 String으로 변환하고 String put path에 위임합니다.
+     * - Key가 이미 있으면 previous value를 반환합니다.
+     *
+     * @param text 저장할 character sequence key입니다.
+     * @param value key와 연결할 value입니다.
+     * @return 이전 value입니다. 새 key이면 `null`입니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2)
@@ -288,10 +327,14 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     open fun put(text: CharSequence, value: V): V? = put(text.toString(), value)
 
     /**
-     * Stores an arbitrary key and its associated value.
+     * 임의의 key와 연결 value를 저장합니다.
      *
-     * ## Behavior / Contract
-     * - `CharArray` keys use the array insert path; all other types use `toString()`.
+     * ## 동작 계약
+     * - `CharArray` key는 array insert path를 사용하고, 다른 type은 `toString()`을 사용합니다.
+     *
+     * @param key 저장할 key입니다.
+     * @param value key와 연결할 value입니다.
+     * @return 이전 value입니다. 새 key이면 `null`입니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2)
@@ -305,11 +348,15 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * Stores a String key and its associated value.
+     * String key와 연결 value를 저장합니다.
      *
-     * ## Behavior / Contract
-     * - Converts the key to a `CharArray` and delegates to the array put path.
-     * - Returns the previous value if the key already existed.
+     * ## 동작 계약
+     * - Key를 `CharArray`로 변환하고 array put path에 위임합니다.
+     * - Key가 이미 있으면 previous value를 반환합니다.
+     *
+     * @param text 저장할 string key입니다.
+     * @param value key와 연결할 value입니다.
+     * @return 이전 value입니다. 새 key이면 `null`입니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2)
@@ -319,12 +366,16 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     open fun put(text: String, value: V): V? = put(text.toCharArray(), value)
 
     /**
-     * Stores a char-array key and its associated value.
+     * Char-array key와 연결 value를 저장합니다.
      *
-     * ## Behavior / Contract
-     * - Replaces the existing value and returns the old one if the key is already present.
-     * - For a new key, increments `_count` and triggers `rehash` when the load factor (~0.8) is exceeded.
-     * - The key array is stored by reference; external mutations after insertion will affect map behaviour.
+     * ## 동작 계약
+     * - Key가 이미 있으면 existing value를 교체하고 old value를 반환합니다.
+     * - 새 key이면 `_count`를 증가시키고 load factor(~0.8)를 넘을 때 `rehash`를 실행합니다.
+     * - Key array는 reference로 저장하므로 insert 후 external mutation이 map behavior에 영향을 줍니다.
+     *
+     * @param text 저장할 char-array key입니다.
+     * @param value key와 연결할 value입니다.
+     * @return 이전 value입니다. 새 key이면 `null`입니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2)
@@ -366,8 +417,8 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
 
         oldKeys.forEachIndexed { i, text ->
             text?.let {
-                // Rehash: keys are unique, but getSlot still probes for an empty slot via char comparison.
-                // A collision-free probe (compare only nulls) would be faster here; left as a future optimization.
+                // Rehash 중이다. Key는 unique하지만 getSlot은 여전히 char comparison으로 empty slot을 probe한다.
+                // Collision 없는 probe(null만 비교)가 더 빠르겠지만 향후 최적화로 남긴다.
                 val slot = getSlot(text, 0, text.size)
                 _keys[slot] = text
                 _values[slot] = oldValues[i]
@@ -421,11 +472,14 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * Removes [key] from the map and returns its previous value, or `null` if absent.
+     * [key]를 map에서 제거하고 previous value를 반환합니다. Key가 없으면 `null`을 반환합니다.
      *
-     * ## Behavior / Contract
-     * - When the key exists, all remaining entries are reinserted to rebuild the probe chain.
-     * - Returns the removed value on success.
+     * ## 동작 계약
+     * - Key가 있으면 probe chain을 rebuild하기 위해 남은 모든 entry를 다시 insert합니다.
+     * - 제거에 성공하면 removed value를 반환합니다.
+     *
+     * @param key 제거할 key입니다.
+     * @return 제거한 value입니다. Key가 없으면 `null`입니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -465,11 +519,11 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
 
     @Suppress("PROPERTY_HIDES_JAVA_FIELD")
     /**
-     * The number of entries currently stored in the map.
+     * 현재 map에 저장된 entry 수입니다.
      *
-     * ## Behavior / Contract
-     * - Incremented on insert; decremented or recomputed on `clear` / `remove`.
-     * - Directly reflects the internal `_count` counter.
+     * ## 동작 계약
+     * - Insert 시 증가하고 `clear` / `remove` 시 감소하거나 다시 계산됩니다.
+     * - Internal `_count` counter를 직접 반영합니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2)
@@ -491,11 +545,13 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     private val _entrySet: EntrySet by lazy { createEntrySet() }
 
     /**
-     * Extension point responsible for creating the entry set view.
+     * Entry set view 생성을 담당하는 확장 지점입니다.
      *
-     * ## Behavior / Contract
-     * - The default implementation returns a mutable `EntrySet(true)`.
-     * - Read-only subclasses should override this to return an unmodifiable set.
+     * ## 동작 계약
+     * - 기본 implementation은 mutable `EntrySet(true)`를 반환합니다.
+     * - Read-only subclass는 unmodifiable set을 반환하도록 이 함수를 override해야 합니다.
+     *
+     * @return 이 map의 entry view입니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2)
@@ -505,11 +561,11 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     protected open fun createEntrySet(): EntrySet = EntrySet(true)
 
     /**
-     * Returns the entry set view of this map.
+     * 이 map의 entry set view를 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Reuses the lazily initialized `_entrySet` instance.
-     * - Mutability of the returned view depends on the [createEntrySet] implementation.
+     * ## 동작 계약
+     * - Lazy initialized `_entrySet` instance를 재사용합니다.
+     * - 반환된 view의 mutability는 [createEntrySet] implementation에 따라 달라집니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -528,11 +584,11 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * A read-only key set that exposes the raw `CharArray` key references without copying.
+     * Raw `CharArray` key reference를 copy 없이 노출하는 read-only key set입니다.
      *
-     * ## Behavior / Contract
-     * - Iteration returns direct references to the internal `_keys` array slots.
-     * - Add and remove operations are not supported.
+     * ## 동작 계약
+     * - Iteration은 internal `_keys` array slot에 대한 direct reference를 반환합니다.
+     * - Add와 remove operation은 지원하지 않습니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2).apply { put("x", 1) }
@@ -576,11 +632,11 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * Returns the standard `Map.keys` view.
+     * Standard `Map.keys` view를 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Key additions are not permitted; use for lookups only.
-     * - Backed internally by a `CharArraySet` wrapper.
+     * ## 동작 계약
+     * - Key addition은 허용하지 않으며 lookup 용도로만 사용합니다.
+     * - 내부적으로 `CharArraySet` wrapper가 backing합니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2).apply { put("k", 3) }
@@ -590,12 +646,14 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     override val keys: MutableSet<Any> get() = _keySet
 
     /**
-     * Iterator that traverses internal slots and produces map entries.
+     * Internal slot을 순회하며 map entry를 만드는 iterator입니다.
      *
-     * ## Behavior / Contract
-     * - When `allowModify` is `false`, [setValue] throws [UnsupportedOperationException].
-     * - [nextKey] returns the raw internal `CharArray` reference.
-     * - [remove] is not supported.
+     * ## 동작 계약
+     * - `allowModify`가 `false`이면 [setValue]는 [UnsupportedOperationException]을 던집니다.
+     * - [nextKey]는 raw internal `CharArray` reference를 반환합니다.
+     * - [remove]는 지원하지 않습니다.
+     *
+     * @param allowModify `true`이면 iterator entry value 변경을 허용합니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -620,11 +678,11 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
         }
 
         /**
-         * Returns `true` if there are more entries to iterate.
+         * 순회할 entry가 더 있으면 `true`를 반환합니다.
          *
-         * ## Behavior / Contract
-         * - Returns `true` while the internal pointer points to a valid slot within the array bounds.
-         * - Does not mutate state.
+         * ## 동작 계약
+         * - Internal pointer가 array bounds 안의 valid slot을 가리키는 동안 `true`를 반환합니다.
+         * - State를 mutate하지 않습니다.
          *
          * ```kotlin
          * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -636,10 +694,12 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
         }
 
         /**
-         * Returns the raw `CharArray` reference for the next key.
+         * 다음 key의 raw `CharArray` reference를 반환합니다.
          *
-         * ## Behavior / Contract
-         * - Returns the internal array reference directly; external modification may affect map behaviour.
+         * ## 동작 계약
+         * - Internal array reference를 직접 반환하므로 external modification이 map behavior에 영향을 줄 수 있습니다.
+         *
+         * @return 다음 key의 internal `CharArray` reference입니다.
          *
          * ```kotlin
          * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -653,11 +713,13 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
         }
 
         /**
-         * Returns the next key as a new [String] copy.
+         * 다음 key를 새 [String] copy로 반환합니다.
          *
-         * ## Behavior / Contract
-         * - Converts the result of [nextKey] into a new String instance.
-         * - Safe to use when the caller must not hold a reference to the internal key array.
+         * ## 동작 계약
+         * - [nextKey] 결과를 새 String instance로 변환합니다.
+         * - Caller가 internal key array reference를 보관하면 안 되는 경우 안전하게 사용할 수 있습니다.
+         *
+         * @return 다음 key의 string copy입니다.
          *
          * ```kotlin
          * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -670,11 +732,13 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
         }
 
         /**
-         * Returns the value associated with the most recently returned key.
+         * 가장 최근 반환한 key에 연결된 value를 반환합니다.
          *
-         * ## Behavior / Contract
-         * - Based on the position set by the last [nextKey] or [next] call.
-         * - May return `null` if the slot has no value.
+         * ## 동작 계약
+         * - 마지막 [nextKey] 또는 [next] call이 설정한 position을 기준으로 합니다.
+         * - Slot에 value가 없으면 `null`을 반환할 수 있습니다.
+         *
+         * @return 현재 iterator position의 value입니다.
          *
          * ```kotlin
          * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -688,11 +752,14 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
         }
 
         /**
-         * Replaces the value at the most recently returned key position.
+         * 가장 최근 반환한 key position의 value를 교체합니다.
          *
-         * ## Behavior / Contract
-         * - Throws [UnsupportedOperationException] when `allowModify` is `false`.
-         * - Returns the previous value on success.
+         * ## 동작 계약
+         * - `allowModify`가 `false`이면 [UnsupportedOperationException]을 던집니다.
+         * - 성공하면 previous value를 반환합니다.
+         *
+         * @param value 새로 저장할 value입니다.
+         * @return 교체 전 value입니다.
          *
          * ```kotlin
          * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -710,11 +777,13 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
         }
 
         /**
-         * Returns the current entry as a [MutableMap.MutableEntry] and advances the iterator.
+         * Current entry를 [MutableMap.MutableEntry]로 반환하고 iterator를 전진시킵니다.
          *
-         * ## Behavior / Contract
-         * - Moves the internal pointer to the next valid slot.
-         * - Whether the returned entry supports [MutableMap.MutableEntry.setValue] depends on `allowModify`.
+         * ## 동작 계약
+         * - Internal pointer를 다음 valid slot으로 이동합니다.
+         * - 반환된 entry가 [MutableMap.MutableEntry.setValue]를 지원하는지는 `allowModify`에 따라 달라집니다.
+         *
+         * @return 현재 slot의 mutable map entry view입니다.
          *
          * ```kotlin
          * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -728,11 +797,11 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
         }
 
         /**
-         * Iterator-based removal is not supported.
+         * Iterator 기반 제거는 지원하지 않습니다.
          *
-         * ## Behavior / Contract
-         * - Always throws [UnsupportedOperationException].
-         * - Use the map-level `remove(key)` API instead.
+         * ## 동작 계약
+         * - 항상 [UnsupportedOperationException]을 던집니다.
+         * - 대신 map-level `remove(key)` API를 사용합니다.
          *
          * ```kotlin
          * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -770,12 +839,14 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * Entry set view implementation for this map.
+     * 이 map의 entry set view implementation입니다.
      *
-     * ## Behavior / Contract
-     * - Iteration is performed via [EntryIterator].
-     * - When `allowModify` is `false`, mutating operations including [clear] throw [UnsupportedOperationException].
-     * - [size] reflects the enclosing map's `_count` directly.
+     * ## 동작 계약
+     * - Iteration은 [EntryIterator]로 수행합니다.
+     * - `allowModify`가 `false`이면 [clear]를 포함한 mutating operation이 [UnsupportedOperationException]을 던집니다.
+     * - [size]는 enclosing map의 `_count`를 직접 반영합니다.
+     *
+     * @param allowModify `true`이면 view를 통한 clear와 entry value 변경을 허용합니다.
      *
      * ```kotlin
      * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -785,11 +856,13 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     inner class EntrySet(private val allowModify: Boolean): AbstractMutableSet<MutableMap.MutableEntry<Any, V>>() {
 
         /**
-         * Returns an iterator over the entries in this set.
+         * 이 set의 entry를 순회하는 iterator를 반환합니다.
          *
-         * ## Behavior / Contract
-         * - Creates an [EntryIterator] that shares the `allowModify` setting.
-         * - Iterator-level `remove` is not supported.
+         * ## 동작 계약
+         * - `allowModify` setting을 공유하는 [EntryIterator]를 만듭니다.
+         * - Iterator-level `remove`는 지원하지 않습니다.
+         *
+         * @return entry를 순회하는 [EntryIterator]입니다.
          *
          * ```kotlin
          * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -801,11 +874,14 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
         }
 
         /**
-         * Returns `true` if [element] is present in the map with an equal value.
+         * [element]와 같은 key/value entry가 map에 있으면 `true`를 반환합니다.
          *
-         * ## Behavior / Contract
-         * - Looks up the current value by key and compares it with the entry's value.
-         * - Returns `false` when the key is absent.
+         * ## 동작 계약
+         * - Key로 current value를 lookup한 뒤 entry value와 비교합니다.
+         * - Key가 없으면 `false`를 반환합니다.
+         *
+         * @param element 존재 여부를 확인할 mutable map entry입니다.
+         * @return 같은 key/value entry가 있으면 `true`, 없으면 `false`입니다.
          *
          * ```kotlin
          * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -821,11 +897,13 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
         }
 
         /**
-         * Direct entry addition is not supported.
+         * 직접 entry 추가는 지원하지 않습니다.
          *
-         * ## Behavior / Contract
-         * - Always throws [UnsupportedOperationException].
-         * - Use the map-level `put` API to add entries.
+         * ## 동작 계약
+         * - 항상 [UnsupportedOperationException]을 던집니다.
+         * - Entry를 추가하려면 map-level `put` API를 사용합니다.
+         *
+         * @param element 추가하려 한 entry입니다. 이 API에서는 항상 거부됩니다.
          *
          * ```kotlin
          * val map = CharArrayMap<Int>(2)
@@ -837,11 +915,13 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
         }
 
         /**
-         * Direct entry removal is not supported.
+         * 직접 entry 제거는 지원하지 않습니다.
          *
-         * ## Behavior / Contract
-         * - Always throws [UnsupportedOperationException].
-         * - Use the map-level `remove(key)` API instead.
+         * ## 동작 계약
+         * - 항상 [UnsupportedOperationException]을 던집니다.
+         * - 대신 map-level `remove(key)` API를 사용합니다.
+         *
+         * @param element 제거하려 한 entry입니다. 이 API에서는 항상 거부됩니다.
          *
          * ```kotlin
          * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -853,11 +933,11 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
         }
 
         /**
-         * Returns the number of entries in this set.
+         * 이 set의 entry 수를 반환합니다.
          *
-         * ## Behavior / Contract
-         * - Directly reflects the enclosing map's `_count`.
-         * - Read-only; does not mutate state.
+         * ## 동작 계약
+         * - Enclosing map의 `_count`를 직접 반영합니다.
+         * - Read-only이며 state를 mutate하지 않습니다.
          *
          * ```kotlin
          * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -868,11 +948,11 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
             get() = _count
 
         /**
-         * Clears all entries from this set.
+         * 이 set의 모든 entry를 clear합니다.
          *
-         * ## Behavior / Contract
-         * - Throws [UnsupportedOperationException] when `allowModify` is `false`.
-         * - Delegates to the enclosing map's [clear] when permitted.
+         * ## 동작 계약
+         * - `allowModify`가 `false`이면 [UnsupportedOperationException]을 던집니다.
+         * - 허용되는 경우 enclosing map의 [clear]에 위임합니다.
          *
          * ```kotlin
          * val map = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -887,17 +967,18 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * Read-only [CharArrayMap] wrapper that blocks all mutation operations.
+     * 모든 mutation operation을 막는 read-only [CharArrayMap] wrapper입니다.
      *
-     * ## Behavior / Contract
-     * - [put], [remove], and [clear] throw [UnsupportedOperationException].
-     * - Read operations ([get], [containsKey]) reflect the underlying backing arrays.
+     * ## 동작 계약
+     * - [put], [remove], [clear]는 [UnsupportedOperationException]을 던집니다.
+     * - Read operation([get], [containsKey])은 underlying backing array를 반영합니다.
      *
      * ## Aliasing
-     * This class shares backing arrays with the source map (shallow copy), following the same
-     * contract as [java.util.Collections.unmodifiableMap]. Callers must not retain a mutable
-     * reference to the original after wrapping. Use [unmodifiableMap] rather than constructing
-     * this class directly.
+     * 이 class는 [java.util.Collections.unmodifiableMap]과 같은 계약으로 source map과 backing array를
+     * 공유합니다(shallow copy). Caller는 wrapping 후 원본 mutable reference를 보관하지 않아야 합니다.
+     * 이 class를 직접 만들기보다 [unmodifiableMap]을 사용하세요.
+     *
+     * @param map read-only wrapper가 backing array를 공유할 source map입니다.
      *
      * ```kotlin
      * val readonly = CharArrayMap.unmodifiableMap(CharArrayMap<Int>(2).apply { put("a", 1) })
