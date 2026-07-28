@@ -4,7 +4,11 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.plugins.signing.SigningExtension
 
 /**
- * Project property 또는 환경 변수에서 값을 조회합니다.
+ * 빌드 설정의 project property 또는 환경 변수에서 값을 조회합니다.
+ *
+ * @param propertyKey 먼저 조회할 Gradle project property 키입니다.
+ * @param envKey property가 비어 있을 때 조회할 환경 변수 키입니다.
+ * @return property 또는 환경 변수 값입니다. 둘 다 없으면 빈 문자열입니다.
  */
 fun Project.getEnvOrProperty(propertyKey: String, envKey: String): String =
     findProperty(propertyKey) as? String ?: System.getenv(envKey).orEmpty()
@@ -15,10 +19,12 @@ data class CentralPublishingConfig(
 )
 
 /**
- * Central Portal 자격증명을 project property / 환경 변수에서 로딩합니다.
+ * 중앙 포털 자격증명을 Gradle project property 또는 환경 변수에서 로드합니다.
  *
- * Property keys: `central.user`, `central.password`
- * Env var keys:  `CENTRAL_USERNAME`, `CENTRAL_PASSWORD`
+ * property 키: `central.user`, `central.password`
+ * 환경 변수 키: `CENTRAL_USERNAME`, `CENTRAL_PASSWORD`
+ *
+ * @return Central Portal 사용자 이름과 비밀번호를 담은 설정입니다.
  */
 fun Project.resolveCentralPublishingConfig(): CentralPublishingConfig = CentralPublishingConfig(
     username = getEnvOrProperty("central.user", "CENTRAL_USERNAME")
@@ -37,9 +43,11 @@ data class SigningConfig(
 )
 
 /**
- * Signing 설정을 project property / 환경 변수에서 로딩합니다.
+ * 서명 설정을 Gradle project property 또는 환경 변수에서 로드합니다.
  *
- * Env var keys: `SIGNING_KEY_ID`, `SIGNING_KEY`, `SIGNING_PASSWORD`
+ * 환경 변수 키: `SIGNING_KEY_ID`, `SIGNING_KEY`, `SIGNING_PASSWORD`
+ *
+ * @return PGP 또는 GPG 서명 설정입니다.
  */
 fun Project.resolveSigningConfig(): SigningConfig {
     val keyId = getEnvOrProperty("signingKeyId", "SIGNING_KEY_ID")
@@ -52,10 +60,12 @@ fun Project.resolveSigningConfig(): SigningConfig {
     return SigningConfig(keyId, key, password, useGpgCmd, gpgExecutable, gpgKeyName)
 }
 
-/**
- * Maven publication 서명을 설정합니다.
- * - CI: `SIGNING_KEY` + `SIGNING_PASSWORD` 환경 변수로 in-memory PGP 서명
+ /**
+ * 배포 publication의 Maven 서명을 설정합니다.
+ * - CI: `SIGNING_KEY` + `SIGNING_PASSWORD` 환경 변수로 인메모리 PGP 서명
  * - 로컬: `signingUseGpgCmd=true` 또는 gpg-cmd 설정으로 서명
+ *
+ * @param publicationName 서명할 Maven publication 이름입니다.
  */
 fun Project.configurePublishingSigning(publicationName: String) {
     val config = resolveSigningConfig()
