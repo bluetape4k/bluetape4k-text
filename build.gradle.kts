@@ -101,7 +101,7 @@ subprojects {
 }
 
 subprojects {
-    // BOM 모듈은 java-platform 플러그인을 사용하므로 Java/Kotlin 설정을 건너뜁니다.
+    // 플랫폼 BOM 모듈은 java-platform 플러그인을 사용하므로 Java/Kotlin 설정을 건너뜁니다.
     if (name == "bluetape4k-text-bom") return@subprojects
 
     val isNonPublished = isNonPublishedModule()
@@ -243,7 +243,7 @@ subprojects {
             }
         }
 
-        // atomicfu transform output → kover coverage collection: make ordering explicit
+        // atomicfu 변환 산출물 생성 뒤 kover coverage 수집이 실행되도록 순서를 명시합니다.
         if (!isNonPublished) {
             matching { it.name == "koverGenerateArtifactJvm" }.configureEach {
                 mustRunAfter(matching { it.name == "transformMainAtomicfu" })
@@ -406,7 +406,7 @@ dependencies {
         }
 }
 
-// atomicfu transforms output before kover collects coverage — make ordering explicit
+// atomicfu 변환 산출물 생성 뒤 kover coverage 수집이 실행되도록 순서를 명시합니다.
 tasks.matching { it.name == "koverGenerateArtifactJvm" }.configureEach {
     mustRunAfter(tasks.matching { it.name == "transformMainAtomicfu" })
 }

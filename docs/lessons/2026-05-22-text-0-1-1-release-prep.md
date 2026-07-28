@@ -1,27 +1,24 @@
-# Text 0.1.1 Release Prep
+# Text 0.1.1 릴리스 준비
 
-## Context
+## 배경
 
-The 0.1.1 milestone has no open issues after the `matchesAsFlow()` streaming
-fix. The repository is still on the 0.1.1 snapshot line and references
-`bluetape4k-bom:1.8.0`.
+`matchesAsFlow()` streaming 수정 후 0.1.1 마일스톤에는 open issue가 없었다.
+저장소는 아직 0.1.1 스냅숏 라인에 있었고 `bluetape4k-bom:1.8.0`을 참조했다.
 
-## Decision
+## 결정
 
-Prepare `bluetape4k-text` 0.1.1 as a release and align it with
-`bluetape4k-bom:1.9.0`.
+`bluetape4k-text` 0.1.1을 릴리스로 준비하고 `bluetape4k-bom:1.9.0`에 맞춘다.
 
-## Outcome
+## 결과
 
-Release metadata, dependency catalog, CHANGELOG, and WIP were updated for the
-0.1.1 release gate.
+Release metadata, dependency catalog, CHANGELOG, WIP를 0.1.1 release gate에 맞춰
+업데이트했다.
 
-## Verification
+## 검증
 
-Verified the release version, GitHub Actions workflow syntax, publication POM
-generation, stale/snapshot POM absence, and local Maven publication before
-opening the release PR.
+Release PR을 열기 전에 release version, GitHub Actions workflow syntax, publication POM
+생성, stale/snapshot POM 부재, local Maven publication을 확인했다.
 
-## Future Notes
+## 향후 메모
 
-Do not add backlog feature work to the 0.1.1 patch release after #67 has closed.
+#67이 닫힌 뒤에는 0.1.1 patch release에 backlog feature work를 추가하지 않는다.

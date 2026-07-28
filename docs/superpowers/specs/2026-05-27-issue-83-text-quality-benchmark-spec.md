@@ -1,42 +1,42 @@
-# Text Quality Gate And Fixture Corpus
+# 텍스트 품질 게이트와 Fixture 코퍼스
 
-Date: 2026-05-27
-Issue: #83
-Milestone: 0.2.0
+날짜: 2026-05-27
+이슈: #83
+마일스톤: 0.2.0
 
-## Context
+## 배경
 
-`bluetape4k-text` 0.2.0 needs a small, repeatable quality gate before adding
-larger tokenizer and language-detection features. The gate should assert
-deterministic tokenizer fixtures and report the commands used to verify language
-detection behavior. This is a release-readiness gate, not a runtime benchmark or
-statistical NLP benchmark claim.
+`bluetape4k-text` 0.2.0은 더 큰 토크나이저와 언어 감지 기능을 추가하기 전에
+작고 반복 가능한 품질 게이트가 필요하다. 이 게이트는 결정적인 토크나이저
+fixture를 검증하고, 언어 감지 동작을 확인하는 데 사용한 명령을 보고해야 한다.
+이는 릴리스 준비성 게이트이며 런타임 benchmark나 통계적 NLP benchmark 주장이
+아니다.
 
-## Corpus Scope
+## 코퍼스 범위
 
-The 0.2.0 corpus is intentionally compact and source-controlled:
+0.2.0 코퍼스는 의도적으로 작고 source-controlled 상태로 둔다.
 
-| Area | Fixture shape | Evidence |
+| 영역 | Fixture 형태 | 증거 |
 |---|---|---|
-| Korean tokenizer | Mixed Korean/Japanese service text with stable Korean token surfaces | `KoreanTextProcessorTest.should keep Korean tokens stable in mixed Korean Japanese text` |
-| Japanese tokenizer | Mixed Korean/Japanese service text with stable Japanese token surfaces | `JapaneseProcessorTest.tokenize - mixed Korean Japanese text preserves Japanese surfaces` |
-| Language detection | English/Korean/Japanese mixed strings and emoji-only unknown input | `LanguageDetectorExtensionsTest` |
-| Input safety | Oversized tokenize/blockword requests and sanitized messages | `TokenizeMessageTest`, `BlockMessageTest`, processor facade tests |
+| 한국어 토크나이저 | 안정적인 한국어 표면 토큰을 가진 한국어/일본어 혼합 서비스 텍스트 | `KoreanTextProcessorTest.should keep Korean tokens stable in mixed Korean Japanese text` |
+| 일본어 토크나이저 | 안정적인 일본어 표면 토큰을 가진 한국어/일본어 혼합 서비스 텍스트 | `JapaneseProcessorTest.tokenize - mixed Korean Japanese text preserves Japanese surfaces` |
+| 언어 감지 | 영어/한국어/일본어 혼합 문자열과 emoji-only unknown 입력 | `LanguageDetectorExtensionsTest` |
+| 입력 안전성 | 과도하게 큰 tokenize/blockword 요청과 정제된 메시지 | `TokenizeMessageTest`, `BlockMessageTest`, processor facade 테스트 |
 
-## Metrics
+## 지표
 
-The release gate uses deterministic pass/fail metrics:
+릴리스 게이트는 결정적인 pass/fail 지표를 사용한다.
 
-| Metric | Target |
+| 지표 | 목표 |
 |---|---|
-| Korean mixed-text token coverage | Expected Korean surfaces are present for every fixture row |
-| Japanese mixed-text token coverage | Expected Japanese surfaces are present for every fixture row |
-| Language detection coverage | Expected language set matches for representative mixed input |
-| Sanitized failure coverage | Oversized request messages include length/max values and exclude raw user text |
+| 한국어 혼합 텍스트 토큰 coverage | 모든 fixture 행에 예상 한국어 표면 토큰이 존재 |
+| 일본어 혼합 텍스트 토큰 coverage | 모든 fixture 행에 예상 일본어 표면 토큰이 존재 |
+| 언어 감지 coverage | 대표 혼합 입력에 대해 예상 언어 집합이 일치 |
+| 정제된 실패 coverage | 과도하게 큰 요청 메시지는 length/max 값을 포함하고 원본 사용자 텍스트는 제외 |
 
-## Commands
+## 명령
 
-Run these commands before claiming 0.2.0 quality evidence:
+0.2.0 품질 증거를 주장하기 전에 다음 명령을 실행한다.
 
 ```bash
 ./gradlew :tokenizer-core:test --tests "io.bluetape4k.tokenizer.model.TokenizeMessageTest" --tests "io.bluetape4k.tokenizer.model.BlockMessageTest"
@@ -45,10 +45,9 @@ Run these commands before claiming 0.2.0 quality evidence:
 ./gradlew :lingua:test --tests "io.bluetape4k.lingua.LanguageDetectorExtensionsTest"
 ```
 
-## Limitations
+## 제한 사항
 
-The 0.2.0 gate does not claim statistical NLP accuracy across a large external
-corpus. It locks representative behavior that matters for Kotlin service
-adoption: mixed Korean/Japanese text, language detector setup, and safe request
-boundaries. Larger corpora and quantitative scoring can be added in later
-milestones without changing the 0.2.0 release gate.
+0.2.0 게이트는 대규모 외부 코퍼스에 대한 통계적 NLP 정확도를 주장하지 않는다.
+Kotlin 서비스 도입에 중요한 대표 동작, 즉 한국어/일본어 혼합 텍스트, 언어
+감지기 설정, 안전한 요청 경계를 고정한다. 더 큰 코퍼스와 정량 점수화는 0.2.0
+릴리스 게이트를 바꾸지 않고 이후 milestone에서 추가할 수 있다.

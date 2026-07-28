@@ -5,12 +5,16 @@ import java.io.Serializable
 import java.util.*
 
 /**
- * Request options that control block-word masking and detection severity.
+ * 금칙어 masking과 감지 severity를 제어하는 request option입니다.
  *
- * ## Behavior / Contract
- * - Default mask string is `"*"`; callers may substitute any replacement string.
- * - Default locale is `Locale.KOREAN`.
- * - Default severity is `Severity.DEFAULT` (`LOW`).
+ * ## 동작 계약
+ * - 기본 mask 문자열은 `"*"`이며, 호출자는 원하는 replacement string으로 바꿀 수 있습니다.
+ * - 기본 locale은 `Locale.KOREAN`입니다.
+ * - 기본 severity는 `Severity.DEFAULT`(`LOW`)입니다.
+ *
+ * @property mask 감지한 금칙어를 대체할 문자열입니다. 기본값은 `"*"`입니다.
+ * @property locale 금칙어 처리에 사용할 locale입니다. 기본값은 `Locale.KOREAN`입니다.
+ * @property severity 금칙어 감지 기준의 심각도입니다. 기본값은 [Severity.DEFAULT]입니다.
  *
  * ```kotlin
  * val options = blockwordOptionsOf(mask = "#", severity = Severity.HIGH)
@@ -28,11 +32,11 @@ data class BlockwordOptions(
         private const val serialVersionUID = 1L
 
         /**
-         * The default [BlockwordOptions] instance.
+         * 기본 [BlockwordOptions] instance입니다.
          *
-         * ## Behavior / Contract
-         * - Uses `mask="*"`, `locale=Locale.KOREAN`, `severity=Severity.DEFAULT`.
-         * - Provided as a reusable static default value.
+         * ## 동작 계약
+         * - `mask="*"`, `locale=Locale.KOREAN`, `severity=Severity.DEFAULT`를 사용합니다.
+         * - 반복해서 사용할 수 있는 static default value로 제공합니다.
          *
          * ```kotlin
          * val defaults = BlockwordOptions.DEFAULT
@@ -45,11 +49,16 @@ data class BlockwordOptions(
 }
 
 /**
- * Creates a [BlockwordOptions] instance with the given parameters.
+ * 전달한 값으로 [BlockwordOptions] instance를 만듭니다.
  *
- * ## Behavior / Contract
- * - Maps [mask], [locale], and [severity] directly into a new [BlockwordOptions].
- * - Omitting arguments applies the same defaults as [BlockwordOptions.DEFAULT].
+ * ## 동작 계약
+ * - [mask], [locale], [severity]를 새 [BlockwordOptions]에 그대로 매핑합니다.
+ * - 인자를 생략하면 [BlockwordOptions.DEFAULT]와 같은 기본값을 적용합니다.
+ *
+ * @param mask 감지한 금칙어를 대체할 문자열입니다. 생략하면 `"*"`를 사용합니다.
+ * @param locale 금칙어 처리에 사용할 locale입니다. 생략하면 `Locale.KOREAN`을 사용합니다.
+ * @param severity 금칙어 감지 기준의 심각도입니다. 생략하면 [Severity.DEFAULT]를 사용합니다.
+ * @return 전달한 option 값을 담은 새 [BlockwordOptions]입니다.
  *
  * ```kotlin
  * val options = blockwordOptionsOf()
