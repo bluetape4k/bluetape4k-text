@@ -1,28 +1,28 @@
-# Code scanning workflow permissions
+# Code scanning workflow permission
 
-## Context
+## 배경
 
-GitHub CodeQL reported `actions/missing-workflow-permissions` alerts for the
-Nightly, snapshot publish, and release workflows.
+GitHub CodeQL이 Nightly, snapshot publish, release workflow에 대해
+`actions/missing-workflow-permissions` alert를 보고했다.
 
-## Decision
+## 결정
 
-Declare explicit workflow-level `contents: read` permissions for workflows that
-use checkout, override token-free jobs with `permissions: {}`, and keep
-`contents: write` only on the GitHub Release job that creates releases.
+Checkout을 사용하는 workflow에는 명시적인 workflow-level `contents: read` permission을
+선언한다. Token이 필요 없는 job은 `permissions: {}`로 override하고, `contents: write`는
+release를 생성하는 GitHub Release job에만 둔다.
 
-## Outcome
+## 결과
 
-The workflow token defaults are now least-privilege for the alerted jobs without
-changing CI, publish, or release behavior.
+CI, publish, release 동작을 바꾸지 않으면서 alert 대상 job의 workflow token default가 최소
+권한 원칙을 따른다.
 
-## Verification
+## 검증
 
 - `actionlint .github/workflows/nightly-tests.yml .github/workflows/publish-snapshot.yml .github/workflows/release.yml`
 - `yq` inspection of workflow and job permissions
 - `git diff --check`
 
-## Future guard
+## 향후 guard
 
-For future GitHub Actions edits, add an explicit workflow-level `permissions`
-block first, then widen individual jobs only when a step needs write access.
+앞으로 GitHub Actions를 수정할 때는 먼저 명시적인 workflow-level `permissions` block을
+추가한다. 그 다음 write access가 필요한 step이 있을 때만 개별 job 권한을 넓힌다.

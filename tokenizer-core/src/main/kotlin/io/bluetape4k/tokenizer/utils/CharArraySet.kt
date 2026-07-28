@@ -4,12 +4,14 @@ import io.bluetape4k.logging.KLogging
 import java.io.Serializable
 
 /**
- * Mutable set that stores char-array-based keys without duplicates.
+ * Char-array 기반 key를 중복 없이 저장하는 mutable set입니다.
  *
- * ## Behavior / Contract
- * - Backed by a [CharArrayMap]; only a placeholder value is stored per entry.
- * - Accepts `Any`, `String`, `CharSequence`, and `CharArray` inputs.
- * - Optimized for high-frequency membership lookups such as word dictionaries and block-word lists.
+ * ## 동작 계약
+ * - [CharArrayMap]을 backing store로 사용하며 entry마다 placeholder value만 저장합니다.
+ * - `Any`, `String`, `CharSequence`, `CharArray` input을 받습니다.
+ * - Word dictionary와 block-word list처럼 membership lookup이 잦은 용도에 맞춰 최적화합니다.
+ *
+ * @property map set entry를 저장하는 내부 [CharArrayMap]입니다. Key 비교와 저장 정책을 이 map에 위임합니다.
  *
  * ```kotlin
  * val set = CharArraySet(4)
@@ -27,11 +29,14 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
         @Suppress("USELESS_IS_CHECK")
         @JvmStatic
         /**
-         * Returns a read-only view of [set].
+         * [set]의 read-only view를 반환합니다.
          *
-         * ## Behavior / Contract
-         * - An empty set returns the shared `EMPTY_SET` singleton.
-         * - All other sets are wrapped in an [CharArrayMap.UnmodifiableCharArrayMap]-backed instance.
+         * ## 동작 계약
+         * - Empty set은 공유 `EMPTY_SET` singleton을 반환합니다.
+         * - 그 외 set은 [CharArrayMap.UnmodifiableCharArrayMap] 기반 instance로 감쌉니다.
+         *
+         * @param set read-only view로 감쌀 source set입니다.
+         * @return mutation을 허용하지 않는 [CharArraySet] view입니다.
          *
          * ```kotlin
          * val source = CharArraySet(2).apply { add("a") }
@@ -50,11 +55,14 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
 
         @JvmStatic
         /**
-         * Creates a new [CharArraySet] by copying the contents of [set].
+         * [set]의 내용을 복사해 새 [CharArraySet]을 만듭니다.
          *
-         * ## Behavior / Contract
-         * - When [set] is a [CharArraySet], uses the internal map copy constructor.
-         * - When [set] is the shared empty singleton, returns the same singleton.
+         * ## 동작 계약
+         * - [set]이 [CharArraySet]이면 internal map copy constructor를 사용합니다.
+         * - [set]이 공유 empty singleton이면 같은 singleton을 반환합니다.
+         *
+         * @param set 복사할 source set입니다.
+         * @return source 내용을 담은 새 [CharArraySet]입니다. Empty singleton은 그대로 반환할 수 있습니다.
          *
          * ```kotlin
          * val copied = CharArraySet.copy(setOf("a", "b"))
@@ -70,11 +78,13 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     }
 
     /**
-     * Creates a set with an initial capacity hint based on the expected number of elements.
+     * 예상 element 수를 기준으로 initial capacity hint를 가진 set을 만듭니다.
      *
-     * ## Behavior / Contract
-     * - Internally creates a `CharArrayMap(startSize)`.
-     * - The capacity is a hint to delay rehashing.
+     * ## 동작 계약
+     * - 내부적으로 `CharArrayMap(startSize)`를 만듭니다.
+     * - Capacity는 rehashing을 늦추기 위한 hint입니다.
+     *
+     * @param startSize 예상 element 수에 맞춘 초기 map size hint입니다.
      *
      * ```kotlin
      * val set = CharArraySet(128)
@@ -84,11 +94,13 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     constructor(startSize: Int): this(CharArrayMap<Any>(startSize))
 
     /**
-     * Creates a set by copying the contents of [c].
+     * [c]의 내용을 복사해 set을 만듭니다.
      *
-     * ## Behavior / Contract
-     * - Uses `c.size` for the initial capacity, then populates via `addAll`.
-     * - Duplicate elements are deduplicated by set semantics.
+     * ## 동작 계약
+     * - `c.size`를 initial capacity로 사용한 뒤 `addAll`로 채웁니다.
+     * - Duplicate element는 set semantic에 따라 deduplicate됩니다.
+     *
+     * @param c 새 set에 복사할 source collection입니다.
      *
      * ```kotlin
      * val set = CharArraySet(listOf("a", "a", "b"))
@@ -101,11 +113,11 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     }
 
     /**
-     * Removes all elements from the set.
+     * Set의 모든 element를 제거합니다.
      *
-     * ## Behavior / Contract
-     * - Delegates to [CharArrayMap.clear], resetting all key/value slots.
-     * - After the call, [size] is 0.
+     * ## 동작 계약
+     * - [CharArrayMap.clear]에 위임해 모든 key/value slot을 reset합니다.
+     * - 호출 후 [size]는 0입니다.
      *
      * ```kotlin
      * val set = CharArraySet(2).apply { add("a") }
@@ -118,10 +130,13 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     }
 
     /**
-     * Returns `true` if [element] exists in the set.
+     * [element]가 set에 있으면 `true`를 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Delegates to the internal map's key-comparison rules for any `Any` input.
+     * ## 동작 계약
+     * - 모든 `Any` input에 대해 internal map의 key-comparison rule에 위임합니다.
+     *
+     * @param element 존재 여부를 확인할 element입니다.
+     * @return 같은 문자 content를 가진 key가 있으면 `true`, 없으면 `false`입니다.
      *
      * ```kotlin
      * val set = CharArraySet(2).apply { add("hello") }
@@ -131,10 +146,15 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     override fun contains(element: Any): Boolean = map.containsKey(element)
 
     /**
-     * Returns `true` if the char-array slice `text[off, off+len)` exists in the set.
+     * Char-array slice `text[off, off+len)`이 set에 있으면 `true`를 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Delegates to the internal map's slot search for the given range.
+     * ## 동작 계약
+     * - 주어진 range에 대한 slot search를 internal map에 위임합니다.
+     *
+     * @param text 검색할 source char array입니다.
+     * @param off 검색을 시작할 offset입니다.
+     * @param len 검색할 char 개수입니다. 기본값은 [text] 전체 size입니다.
+     * @return 같은 char-array slice가 key로 있으면 `true`, 없으면 `false`입니다.
      *
      * ```kotlin
      * val set = CharArraySet(4).apply { add("token") }
@@ -145,10 +165,13 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     fun contains(text: CharArray, off: Int, len: Int = text.size) = map.containsKey(text, off, len)
 
     /**
-     * Returns `true` if [cs] exists in the set.
+     * [cs]가 set에 있으면 `true`를 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Comparison is performed on raw character content without case normalization.
+     * ## 동작 계약
+     * - Case normalization 없이 raw character content로 비교합니다.
+     *
+     * @param cs 존재 여부를 확인할 character sequence입니다.
+     * @return 같은 문자 content를 가진 key가 있으면 `true`, 없으면 `false`입니다.
      *
      * ```kotlin
      * val set = CharArraySet(2).apply { add("hello") }
@@ -158,11 +181,14 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     fun contains(cs: CharSequence) = map.containsKey(cs)
 
     /**
-     * Adds [element] to the set.
+     * [element]를 set에 추가합니다.
      *
-     * ## Behavior / Contract
-     * - Stores a placeholder value in the internal map to register the element.
-     * - Returns `true` only when the key was not already present.
+     * ## 동작 계약
+     * - Element 등록을 위해 internal map에 placeholder value를 저장합니다.
+     * - Key가 아직 없었을 때만 `true`를 반환합니다.
+     *
+     * @param element 추가할 element입니다.
+     * @return 새 key가 추가되면 `true`, 이미 있으면 `false`입니다.
      *
      * ```kotlin
      * val set = CharArraySet(2)
@@ -172,11 +198,14 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     override fun add(element: Any): Boolean = map.put(element, PLACEHOLDER) == null
 
     /**
-     * Adds a [CharSequence] key to the set.
+     * [CharSequence] key를 set에 추가합니다.
      *
-     * ## Behavior / Contract
-     * - Deduplication is based on character content.
-     * - Returns `false` if the key already exists.
+     * ## 동작 계약
+     * - Deduplication은 character content 기준으로 수행합니다.
+     * - Key가 이미 있으면 `false`를 반환합니다.
+     *
+     * @param text 추가할 character sequence key입니다.
+     * @return 새 key가 추가되면 `true`, 이미 있으면 `false`입니다.
      *
      * ```kotlin
      * val set = CharArraySet(2)
@@ -186,11 +215,14 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     open fun add(text: CharSequence) = map.put(text, PLACEHOLDER) == null
 
     /**
-     * Adds a [String] key to the set.
+     * [String] key를 set에 추가합니다.
      *
-     * ## Behavior / Contract
-     * - Uses the internal map's string insert path.
-     * - Duplicate keys are not inserted.
+     * ## 동작 계약
+     * - Internal map의 string insert path를 사용합니다.
+     * - Duplicate key는 삽입하지 않습니다.
+     *
+     * @param text 추가할 string key입니다.
+     * @return 새 key가 추가되면 `true`, 이미 있으면 `false`입니다.
      *
      * ```kotlin
      * val set = CharArraySet(2)
@@ -200,11 +232,14 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     open fun add(text: String) = map.put(text, PLACEHOLDER) == null
 
     /**
-     * Adds a char-array key to the set.
+     * Char-array key를 set에 추가합니다.
      *
-     * ## Behavior / Contract
-     * - Stores the array reference directly as an internal key.
-     * - Returns `false` if an equal char sequence is already present.
+     * ## 동작 계약
+     * - Array reference를 internal key로 직접 저장합니다.
+     * - 같은 char sequence가 이미 있으면 `false`를 반환합니다.
+     *
+     * @param text 추가할 char-array key입니다.
+     * @return 새 key가 추가되면 `true`, 이미 있으면 `false`입니다.
      *
      * ```kotlin
      * val set = CharArraySet(2)
@@ -214,11 +249,14 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     open fun add(text: CharArray) = map.put(text, PLACEHOLDER) == null
 
     /**
-     * Adds all elements from [elements] to the set.
+     * [elements]의 모든 element를 set에 추가합니다.
      *
-     * ## Behavior / Contract
-     * - Iterates over each element and calls [add].
-     * - Returns `true` if at least one new element was added.
+     * ## 동작 계약
+     * - 각 element를 순회하며 [add]를 호출합니다.
+     * - 새 element가 하나 이상 추가되면 `true`를 반환합니다.
+     *
+     * @param elements 추가할 element collection입니다.
+     * @return 하나 이상 새로 추가되면 `true`, 모두 이미 있으면 `false`입니다.
      *
      * ```kotlin
      * val set = CharArraySet(2)
@@ -234,11 +272,14 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     }
 
     /**
-     * Removes [element] from the set.
+     * [element]를 set에서 제거합니다.
      *
-     * ## Behavior / Contract
-     * - Returns `true` only when the element was actually present and removed.
-     * - Returns `false` without throwing when the element is absent.
+     * ## 동작 계약
+     * - Element가 실제로 있었고 제거됐을 때만 `true`를 반환합니다.
+     * - Element가 없으면 exception 없이 `false`를 반환합니다.
+     *
+     * @param element 제거할 element입니다.
+     * @return 제거에 성공하면 `true`, 대상이 없으면 `false`입니다.
      *
      * ```kotlin
      * val set = CharArraySet(2).apply { add("a") }
@@ -248,11 +289,14 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     override fun remove(element: Any): Boolean = map.remove(element) != null
 
     /**
-     * Removes a [String] key from the set.
+     * [String] key를 set에서 제거합니다.
      *
-     * ## Behavior / Contract
-     * - Returns `true` only when the key was actually present and removed.
-     * - Returns `false` when the key was absent.
+     * ## 동작 계약
+     * - Key가 실제로 있었고 제거됐을 때만 `true`를 반환합니다.
+     * - Key가 없으면 `false`를 반환합니다.
+     *
+     * @param text 제거할 string key입니다.
+     * @return 제거에 성공하면 `true`, 대상이 없으면 `false`입니다.
      *
      * ```kotlin
      * val set = CharArraySet(2).apply { add("x") }
@@ -263,11 +307,14 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     fun remove(text: String): Boolean = map.remove(text) != null
 
     /**
-     * Removes all elements in [elements] from the set.
+     * [elements]의 모든 element를 set에서 제거합니다.
      *
-     * ## Behavior / Contract
-     * - Calls [remove] for each element.
-     * - Returns `true` if at least one element was actually removed.
+     * ## 동작 계약
+     * - 각 element에 대해 [remove]를 호출합니다.
+     * - 하나 이상 실제로 제거되면 `true`를 반환합니다.
+     *
+     * @param elements 제거할 element collection입니다.
+     * @return 하나 이상 제거되면 `true`, 제거된 항목이 없으면 `false`입니다.
      *
      * ```kotlin
      * val set = CharArraySet(2).apply { addAll(listOf("a", "b")) }
@@ -283,11 +330,14 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     }
 
     /**
-     * Removes all strings in [words] from the set.
+     * [words]의 모든 string을 set에서 제거합니다.
      *
-     * ## Behavior / Contract
-     * - Calls [remove] for each string in the list.
-     * - Returns `true` if at least one element was actually removed.
+     * ## 동작 계약
+     * - List 안의 각 string에 대해 [remove]를 호출합니다.
+     * - 하나 이상 실제로 제거되면 `true`를 반환합니다.
+     *
+     * @param words 제거할 string key 목록입니다.
+     * @return 하나 이상 제거되면 `true`, 제거된 항목이 없으면 `false`입니다.
      *
      * ```kotlin
      * val set = CharArraySet(2).apply { addAll(listOf("x", "y")) }
@@ -303,11 +353,11 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
     }
 
     /**
-     * Returns the number of elements in the set.
+     * Set에 들어 있는 element 수를 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Delegates directly to the internal map's [size].
-     * - Read-only; does not mutate state.
+     * ## 동작 계약
+     * - Internal map의 [size]에 직접 위임합니다.
+     * - Read-only이며 state를 mutate하지 않습니다.
      *
      * ```kotlin
      * val set = CharArraySet(2).apply { add("one") }
@@ -318,11 +368,13 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
         get() = map.size
 
     /**
-     * Returns an iterator over the elements in the set.
+     * Set element를 순회하는 iterator를 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Reuses the internal map's original key set iterator.
-     * - Returned elements are the raw `CharArray` key references.
+     * ## 동작 계약
+     * - Internal map의 original key set iterator를 재사용합니다.
+     * - 반환되는 element는 raw `CharArray` key reference입니다.
+     *
+     * @return set element를 순회하는 mutable iterator입니다.
      *
      * ```kotlin
      * val set = CharArraySet(2).apply { add("it") }

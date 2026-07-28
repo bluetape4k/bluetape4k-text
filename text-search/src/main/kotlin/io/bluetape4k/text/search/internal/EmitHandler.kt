@@ -1,9 +1,9 @@
 package io.bluetape4k.text.search.internal
 
 /**
- * Callback invoked each time a keyword match is found during Aho-Corasick text parsing.
+ * Aho-Corasick text parsing 중 키워드 match를 찾을 때마다 호출되는 콜백입니다.
  *
- * Returning `false` signals the caller to stop processing (used with `stopOnHit`).
+ * `false`를 반환하면 호출자에게 처리를 중단하라고 알립니다. 이 동작은 `stopOnHit`과 함께 사용합니다.
  *
  * ```
  * val handler = EmitHandler { emit ->
@@ -18,29 +18,29 @@ package io.bluetape4k.text.search.internal
  */
 internal fun interface EmitHandler {
     /**
-     * Called when a keyword match is found.
+     * 키워드 match를 찾았을 때 호출됩니다.
      *
-     * @param emit matched keyword information (start, end, keyword)
-     * @return `true` to continue processing; `false` to stop (when `stopOnHit` is active)
+     * @param emit match된 키워드 정보입니다. Start, end, keyword를 포함합니다.
+     * @return 계속 처리하려면 `true`, 중단하려면 `false`를 반환합니다. 중단은 `stopOnHit`이 켜져 있을 때 사용합니다.
      */
     fun emit(emit: Emit): Boolean
 }
 
 /**
- * An [EmitHandler] that accumulates all matched emits into [emits].
+ * Match된 emit을 모두 [emits]에 누적하는 [EmitHandler]입니다.
  *
  * @see AbstractStatefulEmitHandler
  * @see DefaultEmitHandler
  */
 internal interface StatefulEmitHandler: EmitHandler {
-    /** Accumulated list of all matched emits. */
+    /** Match된 emit을 모두 누적한 list입니다. */
     val emits: MutableList<Emit>
 }
 
 /**
- * Abstract base implementation of [StatefulEmitHandler].
+ * [StatefulEmitHandler]의 추상 기본 구현입니다.
  *
- * Stores all emits in an internal list. Override [emit] to apply custom filtering logic.
+ * 모든 emit을 내부 list에 저장합니다. 맞춤 필터링 로직을 적용하려면 [emit]을 override합니다.
  *
  * ```
  * val handler = object : AbstractStatefulEmitHandler() {
@@ -54,21 +54,22 @@ internal interface StatefulEmitHandler: EmitHandler {
  * ```
  */
 internal abstract class AbstractStatefulEmitHandler: StatefulEmitHandler {
-    /** Accumulated emit list. */
+    /** 누적된 emit list입니다. */
     override val emits: MutableList<Emit> = mutableListOf()
 
     /**
-     * Appends [emit] to the list and returns `true`.
+     * [emit]을 list에 추가하고 `true`를 반환합니다.
      *
-     * @param emit the emit to add
+     * @param emit 추가할 emit입니다.
+     * @return list에 추가되면 `true`입니다.
      */
     fun addEmit(emit: Emit): Boolean = emits.add(emit)
 }
 
 /**
- * Default [StatefulEmitHandler] that stores every emit without filtering.
+ * 필터링 없이 모든 emit을 저장하는 기본 [StatefulEmitHandler]입니다.
  */
 internal class DefaultEmitHandler: AbstractStatefulEmitHandler() {
-    /** Appends [emit] to the list and returns `true`. */
+    /** [emit]을 list에 추가하고 `true`를 반환합니다. */
     override fun emit(emit: Emit): Boolean = addEmit(emit)
 }

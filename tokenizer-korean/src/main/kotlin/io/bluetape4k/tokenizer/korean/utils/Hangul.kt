@@ -125,10 +125,13 @@ object Hangul: KLogging() {
      * val hc = Hangul.decomposeHangul('하')
      * // hc == Hangul.HangulChar('ㅎ', 'ㅏ', ' ')
      * ```
+     *
+     * @param c 분해할 유니코드 한글 음절입니다. 초성/중성/종성 자모 단독 문자는 허용하지 않습니다.
+     * @return 초성, 중성, 종성을 담은 [HangulChar]입니다.
      */
     fun decomposeHangul(c: Char): HangulChar {
         require(!(ONSET_MAP.containsKey(c) || VOWEL_MAP.containsKey(c) || CODA_MAP.containsKey(c))) {
-            "Input character is not a valid Korean character"
+            "입력 문자는 유효한 한글 음절이어야 합니다"
         }
         val u = (c - HANGUL_BASE).code
         return HangulChar(
@@ -148,6 +151,9 @@ object Hangul: KLogging() {
      * val has = Hangul.hasCoda('한')
      * // has == true
      * ```
+     *
+     * @param c 받침 여부를 확인할 유니코드 한글 음절입니다.
+     * @return 종성 인덱스가 0보다 크면 `true`입니다.
      */
     fun hasCoda(c: Char): Boolean = (c.code - HANGUL_BASE) % VOWEL_BASE > 0
 
@@ -162,9 +168,14 @@ object Hangul: KLogging() {
      * val h = Hangul.composeHangul('ㅎ', 'ㅏ', 'ㄴ')
      * // h == '한'
      * ```
+     *
+     * @param onset 조합할 초성 자모입니다.
+     * @param vowel 조합할 중성 자모입니다.
+     * @param coda 조합할 종성 자모입니다. 공백이면 받침 없는 음절을 만듭니다.
+     * @return 조합된 유니코드 한글 음절입니다.
      */
     fun composeHangul(onset: Char, vowel: Char, coda: Char = ' '): Char {
-        require(onset != ' ' && vowel != ' ') { "Input characters are not valid" }
+        require(onset != ' ' && vowel != ' ') { "입력 초성과 중성은 유효해야 합니다" }
 
         return (HANGUL_BASE +
                 ((ONSET_MAP[onset] ?: 0) * ONSET_BASE) +
@@ -182,6 +193,9 @@ object Hangul: KLogging() {
      * val c = Hangul.composeHangul(Hangul.HangulChar('ㄱ', 'ㅏ', ' '))
      * // c == '가'
      * ```
+     *
+     * @param hc 조합할 초성/중성/종성 값을 담은 [HangulChar]입니다.
+     * @return 조합된 유니코드 한글 음절입니다.
      */
     fun composeHangul(hc: HangulChar): Char =
         composeHangul(hc.onset, hc.vowel, hc.coda)
