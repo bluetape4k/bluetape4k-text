@@ -1,26 +1,26 @@
-# Threat Model — bluetape4k-text
+# 위협 모델 — bluetape4k-text
 
-**Date:** 2026-05-17
-**Scope:** All `src/main` sources — tokenizer-core, tokenizer-korean, tokenizer-japanese, lingua, text-search
+**날짜:** 2026-05-17
+**범위:** 전체 `src/main` source — tokenizer-core, tokenizer-korean, tokenizer-japanese, lingua, text-search
 
 ---
 
-## Asset Inventory
+## Asset 인벤토리
 
-| Asset | Type | Priority | Notes |
+| Asset | 유형 | 우선순위 | 메모 |
 |---|---|---|---|
-| User-supplied text (tokenize / blockword input) | User input surface | HIGH | Potentially contains PII |
-| Blockword dictionaries (classpath resources) | Static data | MEDIUM | Loaded at startup; classpath-scoped |
-| `BlockwordOptions.mask` field | Consumer config | LOW | Not end-user controlled |
-| Classpath `ClassLoader` reference | Runtime resource | LOW | Consumer can override |
-| Maven Central signing key (`SIGNING_KEY`) | Build secret | HIGH | Loaded from env var only — not in source |
-| `CENTRAL_USERNAME` / `CENTRAL_PASSWORD` | Build secret | HIGH | Loaded from env var only — not in source |
+| 사용자 제공 text(tokenize / blockword input) | 사용자 입력 surface | HIGH | PII를 포함할 수 있음 |
+| Blockword dictionary(classpath resource) | 정적 data | MEDIUM | Startup 때 로드, classpath 범위 |
+| `BlockwordOptions.mask` field | 소비자 config | LOW | End-user 제어 값 아님 |
+| Classpath `ClassLoader` reference | 런타임 resource | LOW | 소비자가 override 가능 |
+| Maven Central signing key(`SIGNING_KEY`) | Build secret | HIGH | env var에서만 로드, source에는 없음 |
+| `CENTRAL_USERNAME` / `CENTRAL_PASSWORD` | Build secret | HIGH | env var에서만 로드, source에는 없음 |
 
 ---
 
-## Trust Boundaries
+## Trust Boundary
 
-```
+```text
 Library Consumer (calling code)
   │
   ├── BlockwordRequest / TokenizeRequest (text, options) — TRUST BOUNDARY
@@ -35,17 +35,17 @@ Library Consumer (calling code)
 
 ---
 
-## STRIDE Analysis
+## STRIDE 분석
 
-| Asset | S | T | R | I | D | E | Notes |
+| Asset | S | T | R | I | D | E | 메모 |
 |---|---|---|---|---|---|---|---|
-| User text input | N/A | LOW | N/A | MEDIUM | MEDIUM | N/A | I: PII in exception messages; D: no input size limit |
-| Blockword dictionary loading | N/A | N/A | N/A | LOW | N/A | N/A | classLoader.getResourceAsStream — classpath-scoped |
-| Serializable model classes | N/A | MEDIUM | N/A | N/A | N/A | N/A | Missing serialVersionUID → deserialization integrity |
-| Build secrets | N/A | N/A | N/A | LOW | N/A | N/A | Env var only; not in source — correctly handled |
+| 사용자 text input | N/A | LOW | N/A | MEDIUM | MEDIUM | N/A | I: 예외 메시지의 PII, D: 입력 크기 제한 없음 |
+| Blockword dictionary loading | N/A | N/A | N/A | LOW | N/A | N/A | `classLoader.getResourceAsStream`, classpath 범위 |
+| Serializable model class | N/A | MEDIUM | N/A | N/A | N/A | N/A | serialVersionUID 누락 → 역직렬화 무결성 |
+| Build secret | N/A | N/A | N/A | LOW | N/A | N/A | Env var only, source에 없음, 올바르게 처리됨 |
 
-**S** (Spoofing) = N/A — no auth layer; library only
-**E** (Elevation of Privilege) = N/A — no privilege model; library only
-**A10** (SSRF) = N/A — zero outbound HTTP in production code
-**A01** (Broken Access Control) = N/A — no access control; library only
-**A07** (Auth Failures) = N/A — no authentication; library only
+**S**(Spoofing) = N/A — auth layer 없음, library only
+**E**(Elevation of Privilege) = N/A — privilege model 없음, library only
+**A10**(SSRF) = N/A — production code에서 outbound HTTP 없음
+**A01**(Broken Access Control) = N/A — access control 없음, library only
+**A07**(Auth Failures) = N/A — authentication 없음, library only

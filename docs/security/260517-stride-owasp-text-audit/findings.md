@@ -1,21 +1,21 @@
-# Security Findings — bluetape4k-text
+# 보안 발견 사항 — bluetape4k-text
 
-**Date:** 2026-05-17  
-**Total:** 0 Critical, 0 High, 3 Medium, 1 Low
+**날짜:** 2026-05-17
+**합계:** Critical 0건, High 0건, Medium 3건, Low 1건
 
 ---
 
-## [MEDIUM] Finding 1: Exception Messages Embed User Input Text — PII Disclosure
+## [MEDIUM] 발견 1: 예외 메시지가 사용자 입력 텍스트를 포함함 — PII 노출
 
 - **OWASP:** A09 — Security Logging and Monitoring Failures
 - **STRIDE:** Information Disclosure
-- **Confidence:** Confirmed
-- **Locations:**
+- **신뢰도:** 확인됨
+- **위치:**
   - `tokenizer-korean/src/main/.../block/KoreanBlockwordProcessor.kt:84`
   - `tokenizer-korean/src/main/.../block/KoreanBlockwordProcessor.kt:137`
   - `tokenizer-japanese/src/main/.../block/JapaneseBlockwordProcessor.kt:142`
 
-### Code Evidence
+### 코드 증거
 
 ```kotlin
 // KoreanBlockwordProcessor.kt:84
@@ -28,26 +28,27 @@ throw TokenizerException("Fail to mask block word. request=$request", e)
 throw TokenizerException("Fail to mask block word. request=$request", e)
 ```
 
-`BlockwordRequest.toString()` includes the full `text` field. When the library is used inside a web service:
-1. The full user input appears in exception messages → propagates to server logs
-2. If the exception is caught and re-thrown to an HTTP response, user input leaks in the error body
-3. If the text contains PII (personal names, medical records, etc.), logs become a PII store
+`BlockwordRequest.toString()`은 전체 `text` 필드를 포함한다. 이 라이브러리를 웹 서비스 안에서 사용할 경우 다음 문제가 생긴다.
 
-### Attack Scenario
+1. 전체 사용자 입력이 예외 메시지에 들어가 서버 로그로 전파된다.
+2. 예외를 잡아 HTTP 응답으로 다시 던지면 사용자 입력이 오류 본문에 노출된다.
+3. 텍스트에 PII(실명, 의료 기록 등)가 포함되면 로그가 PII 저장소가 된다.
 
-1. Web service receives POST /check-text with body `{"text": "사용자_실명_주민번호_X"}`
-2. An internal tokenizer error occurs
-3. `TokenizerException("Fail to mask block word. text=[사용자_실명_주민번호_X]")` is thrown
-4. Exception propagates to HTTP 500 response or log aggregator
-5. PII now visible in logs and potentially in error responses
+### 공격 시나리오
 
-### Mitigation
+1. 웹 서비스가 `{"text": "사용자_실명_주민번호_X"}` 본문을 가진 `POST /check-text`를 받는다.
+2. 내부 토크나이저 오류가 발생한다.
+3. `TokenizerException("Fail to mask block word. text=[사용자_실명_주민번호_X]")`가 던져진다.
+4. 예외가 HTTP 500 응답이나 log aggregator로 전파된다.
+5. PII가 로그와 잠재적인 오류 응답에서 보이게 된다.
+
+### 완화책
 
 ```kotlin
 // Before
 throw TokenizerException("Fail to mask block word. text=[$text]", e)
 
-// After — omit text content; include only structural metadata
+// After — text 본문은 생략하고 구조적 metadata만 포함한다.
 throw TokenizerException(
     "Fail to mask block word. textLength=${text.length}, locale=${request.options.locale}",
     e
@@ -56,17 +57,17 @@ throw TokenizerException(
 
 ---
 
-## [MEDIUM] Finding 2: No Maximum Input Length Validation — DoS Risk for Web Service Wrappers
+## [MEDIUM] 발견 2: 최대 입력 길이 검증 부재 — 웹 서비스 wrapper의 DoS 위험
 
 - **OWASP:** A04 — Insecure Design
 - **STRIDE:** Denial of Service
-- **Confidence:** Confirmed
-- **Locations:**
-  - `tokenizer-korean/.../KoreanProcessor.kt` (all public functions)
-  - `tokenizer-japanese/.../JapaneseProcessor.kt` (all public functions)
+- **신뢰도:** 확인됨
+- **위치:**
+  - `tokenizer-korean/.../KoreanProcessor.kt` 전체 public 함수
+  - `tokenizer-japanese/.../JapaneseProcessor.kt` 전체 public 함수
   - `tokenizer-core/.../model/TokenizeRequest.kt`
 
-### Code Evidence
+### 코드 증거
 
 ```kotlin
 // tokenizeRequestOf — no length validation
@@ -79,38 +80,38 @@ fun tokenizeRequestOf(
 }
 ```
 
-Combined with the O(n²) complexity bug in `KoreanChunker` (#42), a 100,000-character input can consume gigabytes of memory and seconds of CPU per request. There is no maximum input length enforced anywhere in the public API.
+`KoreanChunker`의 O(n²) 복잡도 버그(#42)와 결합되면 100,000자 입력 하나가 요청당 수 GB 메모리와 수 초의 CPU를 소비할 수 있다. public API 어디에도 최대 입력 길이가 강제되지 않는다.
 
-### Impact
+### 영향
 
-The library itself is not a web server, so this is a **library-level risk** that becomes a real DoS vulnerability when the library is wrapped in a web service without its own input validation. Maven Central consumers building REST APIs on top of this library inherit this risk.
+라이브러리 자체는 웹 서버가 아니므로 이는 **라이브러리 수준 위험**이다. 그러나 별도 입력 검증 없이 웹 서비스로 감싸면 실제 DoS 취약점이 된다. 이 라이브러리 위에 REST API를 만드는 Maven Central 소비자는 이 위험을 상속한다.
 
-### Mitigation
+### 완화책
 
 ```kotlin
 private const val MAX_TEXT_LENGTH = 100_000  // or configurable
 
 fun tokenizeRequestOf(text: String, options: TokenizeOptions = TokenizeOptions.DEFAULT): TokenizeRequest {
     text.requireNotBlank("text")
-    require(text.length <= MAX_TEXT_LENGTH) { 
-        "text too long: ${text.length} chars (max $MAX_TEXT_LENGTH)" 
+    require(text.length <= MAX_TEXT_LENGTH) {
+        "text too long: ${text.length} chars (max $MAX_TEXT_LENGTH)"
     }
     return TokenizeRequest(text, options)
 }
 ```
 
-Alternatively, document the lack of input length validation in KDoc so consumers know they must validate themselves.
+대안으로 KDoc에 입력 길이 검증이 없음을 문서화해 소비자가 직접 검증해야 함을 알린다.
 
 ---
 
-## [MEDIUM] Finding 3: Missing serialVersionUID in 20+ Serializable Classes — Deserialization Integrity
+## [MEDIUM] 발견 3: 20개 이상 Serializable class에 serialVersionUID 누락 — 역직렬화 무결성
 
 - **OWASP:** A08 — Software and Data Integrity Failures
 - **STRIDE:** Tampering (integrity)
-- **Confidence:** Confirmed
-- **Note:** Already tracked as issue #27
+- **신뢰도:** 확인됨
+- **참고:** 이미 issue #27로 추적 중
 
-### Classes Missing serialVersionUID
+### serialVersionUID가 누락된 class
 
 | Class | Module |
 |---|---|
@@ -135,11 +136,12 @@ Alternatively, document the lack of input length validation in KDoc so consumers
 | `InternalToken` | text-search |
 | `InternalTrieConfig` | text-search |
 
-Without explicit `serialVersionUID`, the JVM auto-generates one from the class structure. Any field addition/removal/rename causes a UID mismatch → `InvalidClassException` when deserializing previously stored instances (caches, distributed sessions, message queues).
+명시적인 `serialVersionUID`가 없으면 JVM은 class 구조에서 값을 자동 생성한다. 필드 추가, 제거, 이름 변경이 발생하면 UID가 달라져 기존에 저장된 instance(cache, distributed session, message queue)를 역직렬화할 때 `InvalidClassException`이 발생한다.
 
-### Mitigation
+### 완화책
 
-Add to every `Serializable` class:
+모든 `Serializable` class에 다음을 추가한다.
+
 ```kotlin
 companion object {
     private const val serialVersionUID = 1L
@@ -148,38 +150,38 @@ companion object {
 
 ---
 
-## [LOW] Finding 4: DictionaryProvider Path in Error Message — Internal Path Disclosure
+## [LOW] 발견 4: DictionaryProvider 오류 메시지의 path — 내부 경로 노출
 
 - **OWASP:** A05 — Security Misconfiguration
 - **STRIDE:** Information Disclosure
-- **Confidence:** Confirmed
-- **Location:** `tokenizer-core/src/main/.../utils/DictionaryProvider.kt:70`
+- **신뢰도:** 확인됨
+- **위치:** `tokenizer-core/src/main/.../utils/DictionaryProvider.kt:70`
 
-### Code Evidence
+### 코드 증거
 
 ```kotlin
 val stream: InputStream? = classLoader.getResourceAsStream(path)
 check(stream != null) { "Can't open file. path=$path" }
 ```
 
-If `path` is consumer-controlled and the resource does not exist, the error message exposes the full classpath resource path. This is low risk for a library (no web-facing API), but the path could reveal internal project structure if the exception propagates to a client.
+`path`가 소비자 제어 값이고 resource가 없으면 오류 메시지가 전체 classpath resource path를 노출한다. 라이브러리에는 웹 노출 API가 없으므로 위험은 낮지만, 예외가 client로 전파되면 내부 project 구조를 드러낼 수 있다.
 
-### Mitigation
+### 완화책
 
 ```kotlin
 check(stream != null) { "Dictionary resource not found: $path" }
-// or omit path if it may contain sensitive directory structure
+// 또는 path가 민감한 directory 구조를 포함할 수 있으면 path를 생략한다.
 ```
 
 ---
 
-## N/A Items
+## N/A 항목
 
-| OWASP Category | Verdict | Reason |
+| OWASP Category | 판정 | 이유 |
 |---|---|---|
-| A01 Broken Access Control | N/A | No access control; pure library |
-| A02 Cryptographic Failures | N/A | No cryptography in production code; build signing uses env vars correctly |
-| A03 Injection | N/A | No SQL/shell/template injection; VALID_URL regex analyzed — no ReDoS (quantifier groups have unambiguous character classes) |
-| A06 Vulnerable Components | LOW | kuromoji 0.9.0 (2013) is very old but NLP-only, no network; lingua 1.2.2, jackson 2.21.3, eclipse-collections 13.0.0 are current with no known CVEs |
-| A07 Auth Failures | N/A | No authentication layer |
-| A10 SSRF | N/A | Zero outbound HTTP in production source code |
+| A01 Broken Access Control | N/A | 접근 제어 없음, 순수 library |
+| A02 Cryptographic Failures | N/A | Production code에 암호화 없음, build signing은 env var를 올바르게 사용 |
+| A03 Injection | N/A | SQL/shell/template injection 없음, VALID_URL regex 분석 결과 ReDoS 없음(quantifier group이 모호하지 않은 character class를 사용) |
+| A06 Vulnerable Components | LOW | kuromoji 0.9.0(2013)은 매우 오래되었지만 NLP-only이고 network 없음, lingua 1.2.2, jackson 2.21.3, eclipse-collections 13.0.0은 현재 알려진 CVE 없음 |
+| A07 Auth Failures | N/A | 인증 계층 없음 |
+| A10 SSRF | N/A | Production source code에서 outbound HTTP 없음 |
