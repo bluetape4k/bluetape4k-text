@@ -1,31 +1,38 @@
-# README Diagram Image Validation
+# README 다이어그램 이미지 검증
 
-## Context
+## 배경
 
-README diagrams in bluetape4k-text were refreshed with the shared pastel infographic renderer. The work covers current Mermaid blocks and existing README diagram image links recovered from git history.
+`bluetape4k-text` README 다이어그램은 공유 파스텔 인포그래픽 렌더러로 갱신됐다.
+작업 범위에는 현재 Mermaid 블록과 git history에서 복구한 기존 README 다이어그램
+이미지 링크가 포함된다.
 
-## Decision
+## 결정
 
-Use PNG as the README-facing artifact and keep SVG sources beside the PNG files for reuse. Diagram labels are English-only. Generic titles such as `Diagram`, `Architecture`, and `Sequence Diagram` are replaced with module-specific English titles. Sequence labels that lose non-English text fall back to the participating components instead of a meaningless generic label.
+README에 노출되는 아티팩트는 PNG를 사용하고, 재사용을 위해 SVG 원본을 PNG 옆에 둔다.
+다이어그램 레이블은 영어만 사용한다. `Diagram`, `Architecture`, `Sequence Diagram` 같은
+일반 제목은 모듈별 영어 제목으로 교체한다. 비영어 문구를 잃은 시퀀스 레이블은 의미
+없는 일반 레이블 대신 참여 component를 대체 값으로 사용한다.
 
-## Outcome
+## 결과
 
-- 20 rendered artifacts
-- 10 PNG files
-- 10 SVG source files
-- no missing README image links
-- no local SVG image embeds in README files
-- no remaining Mermaid code blocks
-- no shape-check candidates
+- 렌더링된 아티팩트 20개
+- PNG 파일 10개
+- SVG 원본 파일 10개
+- 누락된 README 이미지 링크 없음
+- README 파일의 local SVG 이미지 임베드 없음
+- 남은 Mermaid 코드 블록 없음
+- Shape-check candidate 없음
 
-## Verification
+## 검증
 
 - `node /Users/debop/work/bluetape4k/.omx/scripts/refine-readme-diagrams.mjs .`
-- README image link and Mermaid residue checker
+- README 이미지 링크 및 Mermaid residue checker
 - PNG/SVG shape checker
 - Visual contact sheet review: `/tmp/bluetape4k-text-diagram-review-samples.png`
 - `git diff --check`
 
-## Future Guidance
+## 향후 지침
 
-Regenerate from the original Mermaid source when available, including git history for previously replaced blocks. Keep image size content-driven, avoid fake filler nodes, preserve SVG sources, and inspect a sample sheet before publishing.
+가능하면 git history에서 이전에 교체된 블록까지 포함해 원본 Mermaid source에서 다시
+생성한다. 이미지 크기는 내용 기준으로 유지하고, 가짜 filler node를 피하며, SVG 원본을
+보존하고, 게시 전 sample sheet를 검사한다.

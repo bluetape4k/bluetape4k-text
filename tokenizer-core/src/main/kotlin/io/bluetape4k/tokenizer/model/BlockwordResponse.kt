@@ -1,12 +1,16 @@
 package io.bluetape4k.tokenizer.model
 
 /**
- * Response model that holds block-word processing results and the list of detected words.
+ * Block-word 처리 결과와 감지한 단어 목록을 담는 response model입니다.
  *
- * ## Behavior / Contract
- * - [maskedText] stores the final masked string as provided by the caller.
- * - [blockWords] defaults to an empty list, indicating no words were detected.
- * - [blockwordExists] is a computed property derived from `blockWords.isNotEmpty()`.
+ * ## 동작 계약
+ * - [maskedText]는 caller가 전달한 최종 masked string을 저장합니다.
+ * - [blockWords]의 기본값은 empty list이며 감지한 단어가 없음을 뜻합니다.
+ * - [blockwordExists]는 `blockWords.isNotEmpty()`에서 계산하는 property입니다.
+ *
+ * @property request 이 response를 만든 원본 [BlockwordRequest]입니다.
+ * @property maskedText 금칙어가 masking된 최종 문자열입니다.
+ * @property blockWords 감지한 금칙어 목록입니다. 감지 결과가 없으면 empty list입니다.
  *
  * ```kotlin
  * val request = blockwordRequestOf("sentence")
@@ -21,11 +25,11 @@ data class BlockwordResponse(
     val blockWords: List<String> = emptyList(),
 ): AbstractMessage() {
     /**
-     * Returns `true` when at least one block word was detected.
+     * 감지한 block word가 하나 이상이면 `true`를 반환합니다.
      *
-     * ## Behavior / Contract
-     * - Returns `true` when [blockWords] is not empty.
-     * - Computed property; no separate state is stored.
+     * ## 동작 계약
+     * - [blockWords]가 비어 있지 않으면 `true`를 반환합니다.
+     * - Computed property이며 별도 state를 저장하지 않습니다.
      *
      * ```kotlin
      * val empty = blockwordResponseOf(blockwordRequestOf("sentence"), "sentence")
@@ -37,11 +41,16 @@ data class BlockwordResponse(
 }
 
 /**
- * Creates a [BlockwordResponse] with the given [request], [maskedText], and [blockWords].
+ * 전달한 [request], [maskedText], [blockWords]로 [BlockwordResponse]를 만듭니다.
  *
- * ## Behavior / Contract
- * - Maps all parameters directly into a new [BlockwordResponse].
- * - [blockWords] defaults to an empty list when omitted.
+ * ## 동작 계약
+ * - 모든 parameter를 새 [BlockwordResponse]에 그대로 매핑합니다.
+ * - [blockWords]를 생략하면 empty list를 사용합니다.
+ *
+ * @param request 원본 blockword request입니다.
+ * @param maskedText 금칙어가 masking된 최종 문자열입니다.
+ * @param blockWords 감지한 금칙어 목록입니다. 생략하면 empty list입니다.
+ * @return 전달한 결과 값을 담은 [BlockwordResponse]입니다.
  *
  * ```kotlin
  * val request = blockwordRequestOf("sentence")

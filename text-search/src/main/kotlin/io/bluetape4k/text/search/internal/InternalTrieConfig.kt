@@ -4,18 +4,18 @@ import io.bluetape4k.logging.KLogging
 import java.io.Serializable
 
 /**
- * Configuration for the internal Aho-Corasick trie.
+ * 내부 Aho-Corasick trie 설정입니다.
  *
  * ```kotlin
  * val config = InternalTrieConfig.builder().ignoreCase(true).onlyWholeWords(true).build()
  * // config.ignoreCase == true
  * ```
  *
- * @property allowOverlaps whether overlapping matches are allowed
- * @property onlyWholeWords whether to match whole words only (alphabetic boundary)
- * @property onlyWholeWordsWhiteSpaceSeparated whether to match whole words only (whitespace boundary)
- * @property ignoreCase whether to ignore case
- * @property stopOnHit whether to stop on the first match
+ * @property allowOverlaps 겹치는 match를 허용할지 여부입니다.
+ * @property onlyWholeWords whole word만 match할지 여부입니다. 알파벳 경계를 사용합니다.
+ * @property onlyWholeWordsWhiteSpaceSeparated whole word만 match할지 여부입니다. 공백 경계를 사용합니다.
+ * @property ignoreCase 대소문자를 무시할지 여부입니다.
+ * @property stopOnHit 첫 match에서 중단할지 여부입니다.
  */
 internal data class InternalTrieConfig(
     var allowOverlaps: Boolean = true,
@@ -42,32 +42,32 @@ internal data class InternalTrieConfig(
         private var ignoreCase: Boolean = false
         private var stopOnHit: Boolean = false
 
-        /** Sets [allowOverlaps]. */
+        /** [allowOverlaps]를 설정합니다. */
         fun allowOverlaps(value: Boolean = true) = apply {
             this.allowOverlaps = value
         }
 
-        /** Sets [onlyWholeWords]. */
+        /** [onlyWholeWords]를 설정합니다. */
         fun onlyWholeWords(value: Boolean = false) = apply {
             this.onlyWholeWords = value
         }
 
-        /** Sets [onlyWholeWordsWhiteSpaceSeparated]. */
+        /** [onlyWholeWordsWhiteSpaceSeparated]를 설정합니다. */
         fun onlyWholeWordsWhiteSpaceSeparated(value: Boolean = false) = apply {
             this.onlyWholeWordsWhiteSpaceSeparated = value
         }
 
-        /** Sets [ignoreCase]. */
+        /** [ignoreCase]를 설정합니다. */
         fun ignoreCase(value: Boolean = false) = apply {
             this.ignoreCase = value
         }
 
-        /** Sets [stopOnHit]. */
+        /** [stopOnHit]을 설정합니다. */
         fun stopOnHit(value: Boolean = false) = apply {
             this.stopOnHit = value
         }
 
-        /** Builds an [InternalTrieConfig] from the current settings. */
+        /** 현재 설정으로 [InternalTrieConfig]를 생성합니다. */
         fun build(): InternalTrieConfig {
             return InternalTrieConfig(allowOverlaps, onlyWholeWords, onlyWholeWordsWhiteSpaceSeparated, ignoreCase, stopOnHit)
         }

@@ -12,28 +12,28 @@ class TokenizeMessageIntegrationTest: AbstractCoreTest() {
 
     @Test
     fun `complete tokenize workflow`() {
-        // 1. Create options
+        // 1. Option 생성
         val options = TokenizeOptions(Locale.KOREAN)
 
-        // 2. Create request
+        // 2. Request 생성
         val request =
             tokenizeRequestOf(
                 text = "한글 텍스트",
                 options = options,
             )
 
-        // 3. Verify request
+        // 3. Request 검증
         request.text shouldBeEqualTo "한글 텍스트"
         request.options.locale shouldBeEqualTo Locale.KOREAN
 
-        // 4. Create response
+        // 4. Response 생성
         val response =
             tokenizeResponseOf(
                 text = request.text,
                 tokens = listOf("한글", "텍스트"),
             )
 
-        // 5. Verify response
+        // 5. Response 검증
         response.text shouldBeEqualTo "한글 텍스트"
         response.tokens shouldBeEqualTo listOf("한글", "텍스트")
     }

@@ -1,42 +1,42 @@
-# Security Audit — bluetape4k-text (STRIDE + OWASP Full)
+# 보안 감사 — bluetape4k-text (STRIDE + OWASP 전체)
 
-**Date:** 2026-05-17  
-**Scope:** All `src/main` sources — tokenizer-core, tokenizer-korean, tokenizer-japanese, lingua, text-search  
-**Focus:** OWASP Top 10, deserialization risks, secrets leakage, injection in text processing, unsafe defaults  
-**Iterations:** Standard (comprehensive coverage)
+**날짜:** 2026-05-17
+**범위:** 전체 `src/main` source — tokenizer-core, tokenizer-korean, tokenizer-japanese, lingua, text-search
+**초점:** OWASP Top 10, 역직렬화 위험, secret 유출, 텍스트 처리 injection, 안전하지 않은 기본값
+**반복:** Standard(포괄 coverage)
 
 ---
 
-## Summary
+## 요약
 
-| Severity | Count |
+| 심각도 | 건수 |
 |---|---|
 | Critical | 0 |
 | High | 0 |
 | Medium | 3 |
 | Low | 1 |
 
-- **STRIDE Coverage:** T[✓] R[✓] I[✓] D[✓] — S/E N/A (no auth model)
-- **OWASP Coverage:** A02[✓] A03[✓] A04[✓] A05[✓] A06[✓] A08[✓] A09[✓] — A01/A07/A10 N/A (library)
-- **Confirmed:** 4 | Likely: 0 | Possible: 0
+- **STRIDE Coverage:** T[✓] R[✓] I[✓] D[✓] — S/E N/A(auth model 없음)
+- **OWASP Coverage:** A02[✓] A03[✓] A04[✓] A05[✓] A06[✓] A08[✓] A09[✓] — A01/A07/A10 N/A(library)
+- **확인됨:** 4 | 가능성 높음: 0 | 가능성 있음: 0
 
-**Context:** bluetape4k-text is a pure JVM NLP library with no HTTP/DB/auth surface. Critical/High OWASP categories (broken access control, auth failures, SSRF) are structurally N/A. Security risk is limited to: PII leakage through exception messages, DoS through unbounded input, and deserialization integrity via missing serialVersionUID.
+**맥락:** bluetape4k-text는 HTTP/DB/auth surface가 없는 순수 JVM NLP library다. Broken access control, auth failures, SSRF 같은 Critical/High OWASP category는 구조적으로 N/A다. 보안 위험은 예외 메시지를 통한 PII 유출, unbounded input에 따른 DoS, serialVersionUID 누락에 따른 역직렬화 무결성 문제로 제한된다.
 
-No hardcoded secrets found. Build signing correctly uses environment variables only.
-
----
-
-## Top Findings
-
-1. [MEDIUM] [Exception messages embed user text — PII/info disclosure](./findings.md#medium-finding-1-exception-messages-embed-user-input-text--pii-disclosure)
-2. [MEDIUM] [No maximum input length — DoS risk for web wrappers](./findings.md#medium-finding-2-no-maximum-input-length-validation--dos-risk-for-web-service-wrappers)
-3. [MEDIUM] [Missing serialVersionUID in 20+ Serializable classes](./findings.md#medium-finding-3-missing-serialversionuid-in-20-serializable-classes--deserialization-integrity)
-4. [LOW]    [DictionaryProvider exposes classpath path in error message](./findings.md#low-finding-4-dictionaryprovider-path-in-error-message--internal-path-disclosure)
+Hardcoded secret은 발견되지 않았다. Build signing은 환경 변수만 올바르게 사용한다.
 
 ---
 
-## Files in This Report
+## 주요 발견 사항
 
-- [Threat Model](./threat-model.md) — STRIDE analysis, assets, trust boundaries
-- [Findings](./findings.md) — all findings ranked by severity
-- [Iteration Log](./security-audit-results.tsv) — raw audit log
+1. [MEDIUM] [예외 메시지가 사용자 텍스트를 포함함 — PII/정보 노출](./findings.md#medium-발견-1-예외-메시지가-사용자-입력-텍스트를-포함함--pii-노출)
+2. [MEDIUM] [최대 입력 길이 없음 — web wrapper의 DoS 위험](./findings.md#medium-발견-2-최대-입력-길이-검증-부재--웹-서비스-wrapper의-dos-위험)
+3. [MEDIUM] [20개 이상 Serializable class에 serialVersionUID 누락](./findings.md#medium-발견-3-20개-이상-serializable-class에-serialversionuid-누락--역직렬화-무결성)
+4. [LOW] [DictionaryProvider가 오류 메시지에서 classpath path를 노출](./findings.md#low-발견-4-dictionaryprovider-오류-메시지의-path--내부-경로-노출)
+
+---
+
+## 이 보고서의 파일
+
+- [위협 모델](./threat-model.md) — STRIDE 분석, asset, trust boundary
+- [발견 사항](./findings.md) — 심각도 순으로 정렬한 전체 발견 사항
+- [반복 로그](./security-audit-results.tsv) — raw audit log

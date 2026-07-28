@@ -34,48 +34,48 @@ object NounTokenizer: KLogging() {
     private const val MAX_TRACE_BACK = 8
 
     /**
-     * 0 for optional, 1 for required
-     * * for optional repeatable, + for required repeatable
+     * 0은 선택, 1은 필수를 뜻합니다.
+     * *는 선택 반복, +는 필수 반복을 뜻합니다.
      *
-     * Substantive: 체언 (초거대기업의)
-     * Predicate: 용언 (하였었습니다, 개예뻤었다)
-     * Modifier: 수식언 (모르는 할수도있는 보이기도하는 예뻐 예쁜 완전 레알 초인간적인 잘 잘한)
-     * Standalone: 독립언
-     * Functional: 관계언 (조사)
+     * 체언: 초거대기업의
+     * 용언: 하였었습니다, 개예뻤었다
+     * 수식언(Modifier): 모르는, 할수도있는, 보이기도하는, 예뻐, 예쁜, 완전, 레알, 초인간적인, 잘, 잘한
+     * 독립언: 문장 안에서 독립적으로 쓰이는 품사
+     * 관계언: 조사
      *
-     * N Noun: 명사 (Nouns, Pronouns, Company Names, Proper Noun, Person Names, Numerals, Standalone, Dependent)
-     * V Verb: 동사 (하, 먹, 자, 차)
-     * J Adjective: 형용사 (예쁘다, 크다, 작다)
-     * A Adverb: 부사 (잘, 매우, 빨리, 반드시, 과연)
-     * D Determiner: 관형사 (새, 헌, 참, 첫, 이, 그, 저)
-     * E Exclamation: 감탄사 (헐, ㅋㅋㅋ, 어머나, 얼씨구)
+     * `N`/`Noun`: 명사(대명사, 회사명, 고유명사, 인명, 수사, 독립/의존 명사 포함)
+     * `V`/`Verb`: 동사(하, 먹, 자, 차)
+     * `J`/`Adjective`: 형용사(예쁘다, 크다, 작다)
+     * `A`/`Adverb`: 부사(잘, 매우, 빨리, 반드시, 과연)
+     * `D`/`Determiner`: 관형사(새, 헌, 참, 첫, 이, 그, 저)
+     * `E`/`Exclamation`: 감탄사(헐, ㅋㅋㅋ, 어머나, 얼씨구)
      *
-     * C Conjunction: 접속사
+     * `C`/`Conjunction`: 접속사
      *
-     * j SubstantiveJosa: 조사 (의, 에, 에서)
-     * l AdverbialJosa: 부사격 조사 (~인, ~의, ~일)
-     * e Eomi: 어말어미 (다, 요, 여, 하댘ㅋㅋ)
-     * r PreEomi: 선어말어미 (었)
+     * `j`/`SubstantiveJosa`: 조사(의, 에, 에서)
+     * `l`/`AdverbialJosa`: 부사격 조사(~인, ~의, ~일)
+     * `e`/`Eomi`: 어말어미(다, 요, 여, 하댘ㅋㅋ)
+     * `r`/`PreEomi`: 선어말어미(었)
      *
-     * m Modifier: 관형사 ('초'대박)
-     * v VerbPrefix: 동사 접두어 ('쳐'먹어)
-     * s Suffix: 접미사 (~적)
+     * `m`/`Modifier`: 관형사('초'대박)
+     * `v`/`VerbPrefix`: 동사 접두어('쳐'먹어)
+     * `s`/`Suffix`: 접미사(~적)
      */
     //  private val SequenceDefinition = mapOf(
-    //      // Substantive
+    //      // 체언
     //      "D0m*N1s0j0" to Noun,
-    //      // Predicate 초기뻐하다, 와주세요, 초기뻤었고, 추첨하다, 구경하기힘들다, 기뻐하는, 기쁜, 추첨해서, 좋아하다, 걸려있을
+    //      // 용언: 초기뻐하다, 와주세요, 초기뻤었고, 추첨하다, 구경하기힘들다, 기뻐하는, 기쁜, 추첨해서, 좋아하다, 걸려있을
     //      "v*V1r*e0" to Verb,
     //      "v*J1r*e0" to Adjective,
-    //      // Modifier 부사
+    //      // 수식언: 부사
     //      "A1" to Adverb,
-    //      // Standalone
+    //      // 독립언
     //      "C1" to Conjunction,
     //      "E+" to Exclamation,
     //      "j1" to Josa)
 
     private val SequenceDefinition = mutableMapOf(
-        // Substantive
+        // 체언
         "D0m*N1s0" to Noun,
         "C1" to Conjunction
     )
@@ -144,10 +144,10 @@ object NounTokenizer: KLogging() {
                 .map {
                     when (it.pos) {
                         Korean -> {
-                            // Get the best parse of each chunk
+                            // 각 청크의 최적 분석 후보를 구합니다.
                             val parsed = parseKoreanChunk(it, profile, topN)
 
-                            // Collapse sequence of one-char nouns into one unknown noun: (가Noun 회Noun -> 가회Noun*)
+                            // 한 글자 명사가 이어진 구간을 하나의 unknown 명사로 접습니다: (가Noun 회Noun -> 가회Noun*)
                             parsed.map(KoreanSubstantive::collapseNouns)
                         }
 
@@ -161,11 +161,12 @@ object NounTokenizer: KLogging() {
     }
 
     /**
-     * Find the best parse using dynamic programming.
+     * 동적 계획법으로 [chunk]의 상위 명사 중심 분석 후보를 구합니다.
      *
-     * @param chunk Input chunk. The input has to be entirely. Check for input validity is skipped
-     *              for performance optimization. This method is private and is called only by tokenize.
-     * @return The best possible parse.
+     * @param chunk 전체가 `Korean` 품사인 입력 청크입니다. 호출자가 청크 유효성을 보장하므로 성능을 위해 반복 검증하지 않습니다.
+     * @param profile 토큰 점수 계산과 `spaceGuide` 적용 방식을 제어하는 프로필입니다.
+     * @param topN 반환할 상위 후보 개수입니다.
+     * @return 점수순으로 고른 상위 후보별 토큰 경로 목록입니다.
      */
     private fun parseKoreanChunk(
         chunk: KoreanToken,
@@ -179,7 +180,7 @@ object NounTokenizer: KLogging() {
         val directMatch: List<List<KoreanToken>> = findDirectMatch(chunk)
         val nounDictionary = koreanDictionary[Noun]
 
-        // Buffer for solution
+        // 위치별 후보 해석을 저장하는 버퍼입니다.
         val solutions = listMultimapOf<Int, CandidateParse>()
             .apply {
                 val candidateParse = CandidateParse(
@@ -190,7 +191,7 @@ object NounTokenizer: KLogging() {
                 put(0, candidateParse)
             }
 
-        // Find N best parses per state
+        // 각 위치 상태마다 상위 N개 후보를 유지합니다.
         for (end in 1..chunk.length) {
             for (start in end - 1 downTo (end - MAX_TRACE_BACK).coerceAtLeast(0)) {
                 val word = chunk.text.slice(start until end)

@@ -191,8 +191,8 @@ class KoreanTextProcessorTest: TestBase() {
     }
 
     /**
-     * Known limitation: a small number of normalization edge cases produce unexpected tokenization results.
-     * The test exercises the full example set; any failures indicate known NLP boundary conditions, not regressions.
+     * 알려진 한계: 일부 정규화 경계 사례는 예상과 다른 토큰화 결과를 만들 수 있다.
+     * 이 테스트는 전체 예제 집합을 실행한다. 실패가 발생하면 회귀라기보다 알려진 NLP 경계 조건을 의미한다.
      */
     @Test
     fun `should correctly tokenize the example set with normalization`() = runSuspendTest {
@@ -289,7 +289,7 @@ class KoreanTextProcessorTest: TestBase() {
     @Test
     fun `mask block words`() = runSuspendTest {
         // `걸.레` 는 resources/koreantext/block/block_low.txt 에 이미 등록되어 있다
-        // KoreanTextProcessor.addBlockwordToDictionary(listOf("걸.레"), Severity.LOW)
+        // 예전 API 사용 예: KoreanTextProcessor.addBlockwordToDictionary(listOf("걸.레"), Severity.LOW)
 
         val original = "홈쇼핑 미니미는 무슨 걸.레 어쩌라구?"
         val expected = "홈쇼핑 미니미는 무슨 ** 어쩌라구?"

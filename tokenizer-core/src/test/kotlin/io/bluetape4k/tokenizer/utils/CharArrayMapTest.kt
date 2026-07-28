@@ -106,7 +106,7 @@ class CharArrayMapTest {
 
         map.remove("test")
 
-        // Remove가 호출되었으므로 키가 더 이상 존재하지 않아야 함
+        // Remove가 호출되었으므로 key가 더 이상 존재하지 않아야 한다.
         map.containsKey("test").shouldBeFalse()
     }
 
@@ -143,14 +143,14 @@ class CharArrayMapTest {
     fun `rehash on many insertions`() {
         val map = CharArrayMap<String>(8)
 
-        // Insert many elements to trigger rehash
+        // Rehash가 발생하도록 element를 많이 insert한다.
         repeat(100) { i ->
             map["key$i"] = "value$i"
         }
 
         map shouldHaveSize 100
 
-        // Verify all entries are still accessible
+        // 모든 entry가 여전히 접근 가능한지 검증한다.
         repeat(100) { i ->
             map["key$i"] shouldBeEqualTo "value$i"
         }
@@ -266,7 +266,7 @@ class CharArrayMapTest {
     fun `collision handling - different keys`() {
         val map = CharArrayMap<String>(16)
 
-        // Insert elements that might have hash collisions
+        // Hash collision이 날 수 있는 element를 insert한다.
         map["Aa"] = "value1"
         map["BB"] = "value2"
 

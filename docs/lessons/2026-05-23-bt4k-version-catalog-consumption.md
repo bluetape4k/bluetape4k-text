@@ -1,27 +1,26 @@
-# bt4k Version Catalog Consumption
+# bt4k Version Catalog 사용
 
-## Context
+## 배경
 
-`bluetape4k-text` had a local shared version pin that should follow the
-ecosystem catalog.
+`bluetape4k-text`에는 ecosystem catalog를 따라야 하는 local shared version pin이 있었다.
 
-## Decision
+## 결정
 
-Import the shared `bt4k` version catalog and use `bt4kVersion(alias)` for shared
-leaf dependency constraints.
+공유 `bt4k` version catalog를 가져오고, shared leaf dependency constraint에는
+`bt4kVersion(alias)`를 사용한다.
 
-## Outcome
+## 결과
 
-The selected shared dependency alias is versionless locally, and dependency
-management supplies its version from `bluetape4k-dependencies`.
+선택한 shared dependency alias는 local version을 갖지 않으며, dependency management가
+`bluetape4k-dependencies`에서 version을 공급한다.
 
-## Verification
+## 검증
 
 - `git diff --check`
 - `./gradlew help --no-daemon --no-configuration-cache`
 - `./gradlew compileKotlin --no-daemon --no-configuration-cache`
 
-## Future Guidance
+## 향후 지침
 
-Keep text-specific library choices local, but do not pin shared version values
-that already exist in `bt4k`.
+Text-specific library 선택은 local에 둘 수 있다. 그러나 이미 `bt4k`에 존재하는 shared
+version value는 local에서 pin하지 않는다.
