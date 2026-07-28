@@ -100,8 +100,8 @@ class UnicodeDetectorTest: AbstractLinguaTest() {
         @Test
         fun `지원하지 않는 로케일은 false를 반환한다`() {
             val arabicLocale = Locale.of("ar")
-            // Arabic is not in SupportedLanguages, so filterString returns only ASCII chars
-            // For a text with no ASCII, containsAny should be false
+            // 아랍어는 SupportedLanguages에 없으므로 filterString은 아스키 문자만 반환합니다.
+            // 아스키가 없는 텍스트에서는 containsAny가 false여야 합니다.
             val arabicText = "مرحبا"
             unicodeDetector.containsAny(arabicText, arabicLocale).shouldBeFalse()
         }
