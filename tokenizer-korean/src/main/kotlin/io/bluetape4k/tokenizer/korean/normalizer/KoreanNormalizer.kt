@@ -54,6 +54,9 @@ object KoreanNormalizer: KLogging() {
      * val out = KoreanNormalizer.normalize("가쟝 용기있는 사람이 머굼 되는거즤")
      * // out == "가장 용기있는 사람이 먹음 되는거지"
      * ```
+     *
+     * @param input 정규화할 입력 문자열입니다.
+     * @return 한글 구간만 정규화하고 비한글 구간은 보존한 문자열입니다.
      */
     fun normalize(input: CharSequence): CharSequence {
         requireTokenizeTextLength(input)
@@ -79,33 +82,33 @@ object KoreanNormalizer: KLogging() {
 
     private fun normalizeKoreanChunk(input: CharSequence): CharSequence {
 
-        // Normalize endings: 안됔ㅋㅋㅋ -> 안돼ㅋㅋ
+        // 어미 반복을 정규화한다: 안됔ㅋㅋㅋ -> 안돼ㅋㅋ
         val endingNormalized = KOREAN_TO_NORMALIZE_REGEX.replace(input) {
             processNormalizationCandidate(it).toString()
         }
 
-        // Normalize repeating chars: ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ -> ㅋㅋㅋ
+        // 반복 문자를 정규화한다: ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ -> ㅋㅋㅋ
         val exclamationNormalized = REPEATING_CHAR_REGEX.replace(endingNormalized) {
             Matcher.quoteReplacement(it.groupValues[0].take(3))
         }
 
-        // Normalize repeating 2 chars: 훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍 -> 훌쩍훌쩍
+        // 2글자 반복을 정규화한다: 훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍훌쩍 -> 훌쩍훌쩍
         val repeatingNormalized2 = REPEATING_2CHAR_REGEX.replace(exclamationNormalized) {
             Matcher.quoteReplacement(it.groupValues[0].take(4))
         }
 
-        // Normalize repeating 3 chars: 사브작사브작사브작사브작 -> 사브작사브작
+        // 3글자 반복을 정규화한다: 사브작사브작사브작사브작 -> 사브작사브작
         val repeatingNormalized3 = REPEATING_3CHAR_REGEX.replace(repeatingNormalized2) {
             Matcher.quoteReplacement(it.groupValues[0].take(6))
         }
 
-        // Coda normalization (명사 + ㄴ 첨가 정규화): 소린가 -> 소리인가
+        // 종성 ㄴ을 보정한다(명사 + ㄴ 첨가 정규화): 소린가 -> 소리인가
         val codaNNormalized = normalizeCodaN(repeatingNormalized3)
 
-        // Typo correction: 하겟다 -> 하겠다
+        // 오타를 교정한다: 하겟다 -> 하겠다
         val typoCorrected = correctTypo(codaNNormalized)
 
-        // Spaces, tabs, new lines are replaced with a single space.
+        // 공백, tab, 줄바꿈은 단일 공백으로 치환한다.
         return WHITESPACE_REGEX.replace(typoCorrected, " ")
     }
 
@@ -120,6 +123,9 @@ object KoreanNormalizer: KLogging() {
      * val fixed = KoreanNormalizer.correctTypo("가쟝")
      * // fixed == "가장"
      * ```
+     *
+     * @param chunk 오타 사전으로 교정할 한글 청크입니다.
+     * @return 오타 사전 항목을 적용한 청크입니다. 매칭 항목이 없으면 입력 문자열을 그대로 반환합니다.
      */
     fun correctTypo(chunk: CharSequence): CharSequence {
         var output = chunk.toString()
@@ -129,7 +135,7 @@ object KoreanNormalizer: KLogging() {
                 output.sliding(wordLen)
                     .forEach { slice ->
                         if (typoMap.containsKey(slice)) {
-                            log.trace { "Typo check. sliceLength=${slice.length}, replacementLength=${typoMap[slice]?.length}" }
+                            log.trace { "오타 검사. sliceLength=${slice.length}, replacementLength=${typoMap[slice]?.length}" }
                             output = output.replace(slice, typoMap[slice].toString(), ignoreCase = true)
                         }
                     }
@@ -150,6 +156,9 @@ object KoreanNormalizer: KLogging() {
      * val corrected = KoreanNormalizer.normalizeCodaN("버슨가")
      * // corrected == "버스인가"
      * ```
+     *
+     * @param chunk 종성 `ㄴ` 보정 후보 문자열입니다.
+     * @return 보정 조건을 만족하면 `ㄴ` 탈락을 복원한 문자열, 아니면 원본 문자열입니다.
      */
     fun normalizeCodaN(chunk: CharSequence): CharSequence {
         if (chunk.length < 2)

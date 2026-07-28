@@ -11,6 +11,10 @@ package io.bluetape4k.tokenizer.korean.utils
  * val exists = nameDictionaryContains("family_name", "김")
  * // exists == true 또는 false
  * ```
+ *
+ * @param key 이름 사전의 분류 키입니다.
+ * @param charseq 조회할 이름 후보 문자 시퀀스입니다.
+ * @return 해당 분류 사전에 후보가 포함되면 `true`입니다.
  */
 fun nameDictionaryContains(key: String, charseq: CharSequence): Boolean =
     KoreanDictionaryProvider.nameDictionary[key]?.contains(charseq) ?: false
@@ -26,6 +30,10 @@ fun nameDictionaryContains(key: String, charseq: CharSequence): Boolean =
  * val exists = nameDictionaryContains("full_name", "문재인")
  * // exists == true 또는 false
  * ```
+ *
+ * @param key 이름 사전의 분류 키입니다.
+ * @param str 조회할 이름 후보 문자열입니다.
+ * @return 해당 분류 사전에 후보가 포함되면 `true`입니다.
  */
 fun nameDictionaryContains(key: String, str: String): Boolean =
     KoreanDictionaryProvider.nameDictionary[key]?.contains(str) ?: false
@@ -41,6 +49,10 @@ fun nameDictionaryContains(key: String, str: String): Boolean =
  * val exists = koreanContains(KoreanPos.Noun, "사랑")
  * // exists == true 또는 false
  * ```
+ *
+ * @param pos 조회할 품사 사전입니다.
+ * @param cs 조회할 후보 문자 시퀀스입니다.
+ * @return 해당 품사 사전에 후보가 포함되면 `true`입니다.
  */
 fun koreanContains(pos: KoreanPos, cs: CharSequence): Boolean =
     KoreanDictionaryProvider.koreanDictionary[pos]?.contains(cs) ?: false

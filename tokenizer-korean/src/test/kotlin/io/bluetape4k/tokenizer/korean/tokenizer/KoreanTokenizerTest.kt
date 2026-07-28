@@ -183,7 +183,7 @@ class KoreanTokenizerTest: TestBase() {
             KoreanToken("보다가", Verb, 0, 3, stem = "보다")
         )
 
-        // BUG : "하" 를 PreEomi 로 판단하는 경우가 가끔 있다
+        // 버그: "하"를 PreEomi로 판단하는 경우가 가끔 있다
         //    actual = tokenize("하...")
         //    expected = listOf(KoreanToken("하", PreEomi, 0, 1),
         //                          KoreanToken("...", Punctuation, 1, 3))
