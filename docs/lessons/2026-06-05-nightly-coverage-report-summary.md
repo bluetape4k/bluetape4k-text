@@ -1,35 +1,34 @@
 # Nightly Coverage Report Summary
 
-## Context
+## 배경
 
-Nightly run `26958373293` uploaded module-level Kover XML artifacts, but the
-`Coverage Report` job only downloaded and re-uploaded them as `coverage-all`.
-The job succeeded without writing a visible GitHub Step Summary coverage table.
+Nightly run `26958373293`은 module-level Kover XML artifact를 upload했지만,
+`Coverage Report` job은 이를 `coverage-all`로 download한 뒤 다시 upload하기만 했다. Job은
+성공했지만 GitHub Step Summary에 보이는 coverage table은 작성하지 않았다.
 
-## Decision
+## 결정
 
-Mirror the proven projects/exposed pattern: checkout the repository in the
-coverage aggregation job, run a small Kover XML aggregation script, and write a
-module summary to `$GITHUB_STEP_SUMMARY`.
+검증된 projects/exposed pattern을 따른다. Coverage aggregation job에서 repository를
+checkout하고, 작은 Kover XML aggregation script를 실행한 뒤 module summary를
+`$GITHUB_STEP_SUMMARY`에 작성한다.
 
-The text workflow also validates the expected coverage artifact names before
-aggregation. A missing artifact or missing `report.xml`/`reportJvm.xml` now
-fails the `Coverage Report` job instead of silently publishing an empty wrapper
-artifact.
+Text workflow는 aggregation 전에 예상 coverage artifact name도 검증한다. Artifact가
+없거나 `report.xml`/`reportJvm.xml`이 없으면 이제 빈 wrapper artifact를 조용히 publish하지
+않고 `Coverage Report` job을 실패시킨다.
 
-## Outcome
+## 결과
 
-Nightly coverage artifacts stay downloadable through `coverage-all`, and the
-job summary now shows per-module line and instruction coverage.
+Nightly coverage artifact는 `coverage-all`을 통해 계속 download할 수 있고, job summary는
+module별 line coverage와 instruction coverage를 보여준다.
 
-## Verification
+## 검증
 
 - `python3 .github/scripts/aggregate-kover-coverage.py <coverage-all>` against
   run `26958373293` coverage artifacts.
 - `actionlint .github/workflows/nightly-tests.yml`.
 - `git diff --check`.
 
-## Future Guidance
+## 향후 지침
 
-When adding or renaming a text module, update both the test job artifact name
-and the `Validate coverage artifacts` expected list in `nightly-tests.yml`.
+Text module을 추가하거나 rename할 때는 test job artifact name과 `nightly-tests.yml`의
+`Validate coverage artifacts` expected list를 함께 업데이트한다.
