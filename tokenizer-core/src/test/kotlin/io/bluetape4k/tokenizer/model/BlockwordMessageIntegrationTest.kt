@@ -13,26 +13,26 @@ class BlockwordMessageIntegrationTest: AbstractCoreTest() {
 
     @Test
     fun `complete blockword workflow`() {
-        // 1. Create options
+        // 1. Option 생성
         val options =
             blockwordOptionsOf(
                 mask = "*",
                 severity = Severity.MIDDLE,
             )
 
-        // 2. Create request
+        // 2. Request 생성
         val request =
             blockwordRequestOf(
                 text = "This is a test message",
                 options = options,
             )
 
-        // 3. Verify request
+        // 3. Request 검증
         request.text shouldBeEqualTo "This is a test message"
         request.options.mask shouldBeEqualTo "*"
         request.options.severity shouldBeEqualTo Severity.MIDDLE
 
-        // 4. Create response
+        // 4. Response 생성
         val response =
             blockwordResponseOf(
                 request = request,
@@ -40,7 +40,7 @@ class BlockwordMessageIntegrationTest: AbstractCoreTest() {
                 blockWords = listOf("test"),
             )
 
-        // 5. Verify response
+        // 5. Response 검증
         response.request shouldBeEqualTo request
         response.maskedText shouldBeEqualTo "This is a **** message"
         response.blockWords shouldBeEqualTo listOf("test")

@@ -4,17 +4,17 @@ import io.bluetape4k.logging.KLogging
 import java.io.Serializable
 
 /**
- * Common contract for an internal tokenization fragment.
+ * 내부 tokenization fragment의 공통 계약입니다.
  *
- * [fragment] holds a substring of the original text. A non-null [emit] indicates a keyword match.
+ * [fragment]는 원본 문자열의 substring을 보관합니다. [emit]이 non-null이면 키워드 match를 뜻합니다.
  *
  * ```kotlin
  * val token: InternalToken = MatchToken("PM", Emit(0, 1, "PM"))
  * // token.isMatch() == true
  * ```
  *
- * @property fragment substring of the original text
- * @property emit emit information, or `null` for non-matching fragments
+ * @property fragment 원본 문자열의 substring입니다.
+ * @property emit emit 정보입니다. 비매치 fragment이면 `null`입니다.
  */
 internal sealed interface InternalToken: Serializable {
     val fragment: String
@@ -32,9 +32,9 @@ internal abstract class AbstractInternalToken(override val fragment: String): In
 }
 
 /**
- * An [InternalToken] that carries a keyword [Emit]. [isMatch] always returns `true`.
+ * 키워드 [Emit]을 담는 [InternalToken]입니다. [isMatch]는 항상 `true`를 반환합니다.
  *
- * @property emit the associated emit
+ * @property emit 연결된 emit입니다.
  */
 internal class MatchToken(fragment: String, override val emit: Emit): AbstractInternalToken(fragment) {
     companion object : KLogging() {
@@ -45,7 +45,7 @@ internal class MatchToken(fragment: String, override val emit: Emit): AbstractIn
 }
 
 /**
- * An [InternalToken] for a non-matching fragment. [isMatch] always returns `false`; [emit] is always `null`.
+ * 비매치 fragment용 [InternalToken]입니다. [isMatch]는 항상 `false`를 반환하고 [emit]은 항상 `null`입니다.
  */
 internal class FragmentToken(fragment: String): AbstractInternalToken(fragment) {
     companion object : KLogging() {
