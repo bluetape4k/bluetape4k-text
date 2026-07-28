@@ -31,7 +31,7 @@ class AhoCorasickKoreanTest {
 
     @Test
     fun `NFC 정규화로 자모 분리 텍스트에서 키워드 매치`() {
-        // Arrange — 키워드는 음절 형태("가"), 입력은 자모 분리 형태(ᄀ + ᅡ)
+        // 준비 — 키워드는 음절 형태("가"), 입력은 자모 분리 형태(ᄀ + ᅡ)
         val automaton = ahoCorasick<String> {
             normalization = NormalizationForm.NFC
             keyword(COMPOSED_GA, "GA")
@@ -39,10 +39,10 @@ class AhoCorasickKoreanTest {
         val input = "X" + DECOMPOSED_GA + "Y"  // 4 chars: 'X', ᄀ(U+1100), ᅡ(U+1161), 'Y'
         input.length shouldBeEqualTo 4
 
-        // Act
+        // 실행
         val matches = automaton.parseText(input)
 
-        // Assert — 1건 매치 발생.
+        // 검증 — 1건 매치 발생.
         // OffsetMapping 알고리즘 특성: NFC 합성 시 "마지막 기여 origPos"가 매핑되므로
         // 합성 음절 '가'(norm pos 1)는 종결 자모 ᅡ(origPos=2)로 역매핑된다.
         // 따라서 (start, end) == (2, 2) — 합성에 마지막으로 기여한 단일 char만 가리킴.
@@ -58,7 +58,7 @@ class AhoCorasickKoreanTest {
 
     @Test
     fun `NFC + WHITESPACE_SEPARATED로 한글 단어 경계 매치`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasick<String> {
             normalization = NormalizationForm.NFC
             wordBoundary = WordBoundary.WHITESPACE_SEPARATED
@@ -67,10 +67,10 @@ class AhoCorasickKoreanTest {
         }
         val input = "오늘 사과 와 바나나 를 먹었다"
 
-        // Act
+        // 실행
         val matches = automaton.parseText(input)
 
-        // Assert — 공백으로 분리된 두 토큰만 매치
+        // 검증 — 공백으로 분리된 두 토큰만 매치
         matches shouldHaveSize 2
         val byValue = matches.associateBy { it.value }
         byValue["APPLE"].shouldNotBeNull()
@@ -83,7 +83,7 @@ class AhoCorasickKoreanTest {
 
     @Test
     fun `NFKC 정규화로 ㈜ 포함 텍스트에서 키워드 매치`() {
-        // Arrange — 키워드는 풀어진 형태 "(주)", 입력은 합성 기호 "㈜"
+        // 준비 — 키워드는 풀어진 형태 "(주)", 입력은 합성 기호 "㈜"
         val automaton = ahoCorasick<String> {
             normalization = NormalizationForm.NFKC
             keyword("(주)", "CORP")
@@ -92,10 +92,10 @@ class AhoCorasickKoreanTest {
         // 회(0)사(1)명(2):(3) (4)㈜(5)블(6)루(7)테(8)이(9)프(10)
         val expectedStart = 5
 
-        // Act
+        // 실행
         val matches = automaton.parseText(input)
 
-        // Assert — 1건 매치, 원본 offset은 ㈜ 위치 (start == end == 5)
+        // 검증 — 1건 매치, 원본 offset은 ㈜ 위치 (start == end == 5)
         matches shouldHaveSize 1
         val first = matches.first()
         first.value shouldBeEqualTo "CORP"
@@ -107,7 +107,7 @@ class AhoCorasickKoreanTest {
 
     @Test
     fun `LATIN_ALPHA boundary는 한글에 적합하지 않음 - CJK도 alphabetic이라 경계가 형성되지 않음`() {
-        // Arrange — Character.isAlphabetic()은 한글도 true이므로 한글 사이 경계가 인식되지 않음
+        // 준비 — Character.isAlphabetic()은 한글도 true이므로 한글 사이 경계가 인식되지 않음
         // → "사과"가 "사과나무" 같은 합성어 안에 있어도 매치되지 않는다는 점을 보여주는 경고 케이스
         val automaton = ahoCorasick<String> {
             normalization = NormalizationForm.NFC
@@ -117,17 +117,17 @@ class AhoCorasickKoreanTest {
         // 합성어 "사과나무" — "사과" 뒤에 한글이 이어지므로 LATIN_ALPHA 경계 미형성 → 매치 실패
         val compounded = "사과나무"
 
-        // Act
+        // 실행
         val matches = automaton.parseText(compounded)
 
-        // Assert — 한글은 모두 alphabetic이라 경계로 분리되지 않아 매치되지 않음
+        // 검증 — 한글은 모두 alphabetic이라 경계로 분리되지 않아 매치되지 않음
         matches shouldHaveSize 0
         log.debug { "LATIN_ALPHA 한글 부적합 케이스: matches=$matches (한글에는 WHITESPACE_SEPARATED 권장)" }
     }
 
     @Test
     fun `한글 텍스트에서 replaceAll 마스킹`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasick<String> {
             normalization = NormalizationForm.NFC
             keyword("비밀", "***")
@@ -135,10 +135,10 @@ class AhoCorasickKoreanTest {
         }
         val input = "이것은 비밀 이고 저것은 암호 이다"
 
-        // Act
+        // 실행
         val result = automaton.replaceAll(input) { match -> match.value }
 
-        // Assert
+        // 검증
         result shouldBeEqualTo "이것은 *** 이고 저것은 *** 이다"
         log.debug { "한글 마스킹 결과: $result" }
     }

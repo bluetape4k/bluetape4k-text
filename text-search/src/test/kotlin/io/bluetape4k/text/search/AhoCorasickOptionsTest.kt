@@ -23,7 +23,7 @@ class AhoCorasickOptionsTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `ignoreCase=false allowOverlaps=true NONE NONE - 모든 매치 포함`() {
-        // Arrange: 기본 옵션 — 대소문자 구분, 겹침 허용
+        // 준비: 기본 옵션 — 대소문자 구분, 겹침 허용
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("he", "HE")
             .add("she", "SHE")
@@ -39,10 +39,10 @@ class AhoCorasickOptionsTest : AbstractAhoCorasickTest() {
             )
             .build()
 
-        // Act
+        // 실행
         val matches = automaton.parseText("ushers")
 
-        // Assert: "ushers" 에서 she(1), he(2), hers(2) 가 매치됨
+        // 검증: "ushers" 에서 she(1), he(2), hers(2) 가 매치됨
         matches.shouldNotBeEmpty()
         val keywords = matches.map { it.keyword }.toSet()
         keywords.contains("she").shouldBeTrue()
@@ -55,17 +55,17 @@ class AhoCorasickOptionsTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `ignoreCase=true - 대소문자 무시`() {
-        // Arrange
+        // 준비
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("apple", "APPLE")
             .add("banana", "BANANA")
             .options(SearchOptions(ignoreCase = true))
             .build()
 
-        // Act
+        // 실행
         val matches = automaton.parseText("APPLE and Banana")
 
-        // Assert: 대소문자 무관하게 2건 매치
+        // 검증: 대소문자 무관하게 2건 매치
         matches shouldHaveSize 2
         val keywords = matches.map { it.keyword }.toSet()
         // ignoreCase=true 시 키워드는 소문자로 정규화됨
@@ -78,17 +78,17 @@ class AhoCorasickOptionsTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `allowOverlaps=false - 더 긴 keyword 우선 (hotel 케이스)`() {
-        // Arrange: "hot"과 "hotel" 둘 다 등록 — "hotel" 텍스트에서 겹침 제거 시 "hotel"이 우선
+        // 준비: "hot"과 "hotel" 둘 다 등록 — "hotel" 텍스트에서 겹침 제거 시 "hotel"이 우선
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("hot", "HOT")
             .add("hotel", "HOTEL")
             .options(SearchOptions(allowOverlaps = false))
             .build()
 
-        // Act
+        // 실행
         val matches = automaton.parseText("hotel")
 
-        // Assert: "hotel"만 살아남아야 함 (더 긴 키워드 우선)
+        // 검증: "hotel"만 살아남아야 함 (더 긴 키워드 우선)
         matches shouldHaveSize 1
         matches[0].keyword shouldBeEqualTo "hotel"
         matches[0].value shouldBeEqualTo "HOTEL"
@@ -99,17 +99,17 @@ class AhoCorasickOptionsTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `wordBoundary=LATIN_ALPHA - 부분 단어 제외`() {
-        // Arrange: "apple"을 LATIN_ALPHA 경계로만 매치 — "pineapple" 내부에서는 매치 안 됨
+        // 준비: "apple"을 LATIN_ALPHA 경계로만 매치 — "pineapple" 내부에서는 매치 안 됨
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("apple", "APPLE")
             .options(SearchOptions(wordBoundary = WordBoundary.LATIN_ALPHA))
             .build()
 
-        // Act
+        // 실행
         val noMatch = automaton.parseText("pineapple")
         val matched = automaton.parseText("eat apple now")
 
-        // Assert: 합성어 내부는 매치 안 됨
+        // 검증: 합성어 내부는 매치 안 됨
         noMatch shouldHaveSize 0
 
         // 단독 단어는 매치됨
@@ -122,17 +122,17 @@ class AhoCorasickOptionsTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `wordBoundary=WHITESPACE_SEPARATED - 공백 경계만 매치`() {
-        // Arrange
+        // 준비
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("run", "RUN")
             .options(SearchOptions(wordBoundary = WordBoundary.WHITESPACE_SEPARATED))
             .build()
 
-        // Act
+        // 실행
         val noMatch = automaton.parseText("running fast")    // 뒤에 문자가 붙어 있음
         val matched = automaton.parseText("please run now")  // 공백으로 분리된 단독 단어
 
-        // Assert
+        // 검증
         noMatch shouldHaveSize 0
         matched shouldHaveSize 1
         matched[0].keyword shouldBeEqualTo "run"
@@ -143,7 +143,7 @@ class AhoCorasickOptionsTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `stopOnFirstMatch=true - 첫 매치 후 중단`() {
-        // Arrange
+        // 준비
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("one", "1")
             .add("two", "2")
@@ -151,10 +151,10 @@ class AhoCorasickOptionsTest : AbstractAhoCorasickTest() {
             .options(SearchOptions(stopOnFirstMatch = true))
             .build()
 
-        // Act
+        // 실행
         val matches = automaton.parseText("one two three")
 
-        // Assert: stopOnFirstMatch=true이므로 정확히 1건만 반환
+        // 검증: stopOnFirstMatch=true이므로 정확히 1건만 반환
         matches shouldHaveSize 1
         matches[0].keyword shouldBeEqualTo "one"
         log.debug { "stopOnFirstMatch=true 결과: $matches" }
@@ -164,7 +164,7 @@ class AhoCorasickOptionsTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `stopOnFirstMatch=true는 blocking parseText API에서 첫 매치만 반환함`() {
-        // Arrange: stopOnFirstMatch=true 옵션으로 automaton 생성
+        // 준비: stopOnFirstMatch=true 옵션으로 automaton 생성
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("alpha", "ALPHA")
             .add("beta", "BETA")
@@ -180,11 +180,11 @@ class AhoCorasickOptionsTest : AbstractAhoCorasickTest() {
 
         val text = "alpha beta gamma"
 
-        // Act
+        // 실행
         val stoppedMatches = automaton.parseText(text)
         val allMatches = allOpts.parseText(text)
 
-        // Assert: stopOnFirstMatch 버전은 1건만 반환
+        // 검증: stopOnFirstMatch 버전은 1건만 반환
         stoppedMatches shouldHaveSize 1
         // 전체 매치 버전은 3건 반환
         allMatches shouldHaveSize 3
