@@ -1,65 +1,81 @@
-# Changelog
+# 변경 이력
 
-All notable changes to `bluetape4k-text` are documented here.
+`bluetape4k-text`의 주요 변경 사항을 이 문서에 기록한다.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+형식은 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)를 따른다.
+이 프로젝트는 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)을 따른다.
 
-## [Unreleased]
+## [미배포]
 
 ## [0.2.1] - 2026-06-26
 
-### Added
+### 추가
 
-- Added runnable text-search, Lingua, and tokenizer web-safety examples for the 0.2.1 readiness milestone ([#109](https://github.com/bluetape4k/bluetape4k-text/issues/109), [#110](https://github.com/bluetape4k/bluetape4k-text/issues/110), [#111](https://github.com/bluetape4k/bluetape4k-text/issues/111)).
-- Covered Lingua low-accuracy mode, strict threshold behavior, and detector reuse in builder tests ([#98](https://github.com/bluetape4k/bluetape4k-text/issues/98)).
-- Documented tokenizer and blockword web-service input limits and 400/413 mapping in root and module README files ([#99](https://github.com/bluetape4k/bluetape4k-text/issues/99)).
+- 0.2.1 readiness milestone을 위해 실행 가능한 text-search, Lingua, tokenizer
+  web-safety example을 추가했다([#109](https://github.com/bluetape4k/bluetape4k-text/issues/109), [#110](https://github.com/bluetape4k/bluetape4k-text/issues/110), [#111](https://github.com/bluetape4k/bluetape4k-text/issues/111)).
+- builder test에서 Lingua low-accuracy mode, strict threshold behavior, detector
+  reuse를 다뤘다([#98](https://github.com/bluetape4k/bluetape4k-text/issues/98)).
+- root 및 module README 파일에 tokenizer와 blockword web-service input limit 및
+  400/413 mapping을 문서화했다([#99](https://github.com/bluetape4k/bluetape4k-text/issues/99)).
 
-### Changed
+### 변경
 
-- Prepared the 0.2.1 release line to consume `io.github.bluetape4k:bluetape4k-bom:1.10.0` and the stable `catalog/2026-06-01-01` dependency catalog.
-- Excluded runnable example projects from `bluetape4k-text-bom` dependency constraints so release metadata only publishes library modules.
+- 0.2.1 release line이 `io.github.bluetape4k:bluetape4k-bom:1.10.0`과 stable
+  `catalog/2026-06-01-01` dependency catalog를 소비하도록 준비했다.
+- release metadata가 library module만 publish하도록 runnable example project를
+  `bluetape4k-text-bom` dependency constraint에서 제외했다.
 
 ## [0.2.0] - 2026-05-27
 
-### Added
+### 추가
 
-- Defined the tokenizer dictionary update pipeline and block-word governance so Korean and Japanese tokenizers can refresh dictionary data predictably ([#85](https://github.com/bluetape4k/bluetape4k-text/issues/85)).
-- Published the text quality benchmark plan, fixture corpus, and README benchmark report for tokenizer and language-detection quality tracking ([#83](https://github.com/bluetape4k/bluetape4k-text/issues/83), [#86](https://github.com/bluetape4k/bluetape4k-text/issues/86)).
-- Added Korean/Japanese mixed-text tokenizer accuracy fixtures and security regression coverage for validation and sanitized failures ([#84](https://github.com/bluetape4k/bluetape4k-text/issues/84), [#96](https://github.com/bluetape4k/bluetape4k-text/issues/96)).
+- Korean/Japanese tokenizer가 dictionary data를 예측 가능하게 refresh할 수 있도록
+  tokenizer dictionary update pipeline과 block-word governance를 정의했다([#85](https://github.com/bluetape4k/bluetape4k-text/issues/85)).
+- tokenizer와 language-detection quality tracking을 위한 text quality benchmark
+  plan, fixture corpus, README benchmark report를 publish했다([#83](https://github.com/bluetape4k/bluetape4k-text/issues/83), [#86](https://github.com/bluetape4k/bluetape4k-text/issues/86)).
+- validation과 sanitized failure 검증을 위해 Korean/Japanese mixed-text tokenizer
+  accuracy fixture와 security regression coverage를 추가했다([#84](https://github.com/bluetape4k/bluetape4k-text/issues/84), [#96](https://github.com/bluetape4k/bluetape4k-text/issues/96)).
 
-### Changed
+### 변경
 
-- Established the 0.2.0 quality gates in PR validation before opening the stable release line ([PR #106](https://github.com/bluetape4k/bluetape4k-text/pull/106)).
+- stable release line을 열기 전에 PR validation에서 0.2.0 quality gate를 확립했다([PR #106](https://github.com/bluetape4k/bluetape4k-text/pull/106)).
 
 ## [0.1.2] - 2026-05-23
 
-### Changed
+### 변경
 
-- Parameterized the release catalog reference and resolved shared build aliases from the catalog source for the 0.1.2 release line ([PR #80](https://github.com/bluetape4k/bluetape4k-text/pull/80)).
+- 0.1.2 release line을 위해 release catalog reference를 parameterize하고 catalog
+  source에서 shared build alias를 resolve하도록 했다([PR #80](https://github.com/bluetape4k/bluetape4k-text/pull/80)).
 
 ## [0.1.1] - 2026-05-22
 
-### Changed
+### 변경
 
-- Prepared the 0.1.1 release line to consume `io.github.bluetape4k:bluetape4k-bom:1.9.0`.
+- 0.1.1 release line이 `io.github.bluetape4k:bluetape4k-bom:1.9.0`을 소비하도록
+  준비했다.
 
-### Fixed
+### 수정
 
-- `matchesAsFlow()` now streams default Aho-Corasick matches from trie traversal and stops cooperatively when collectors cancel with `take(N)`; overlap and word-boundary post-processing still uses the eager filtered path ([#67](https://github.com/bluetape4k/bluetape4k-text/issues/67)).
+- `matchesAsFlow()`가 이제 trie traversal에서 default Aho-Corasick match를
+  stream하고, collector가 `take(N)`으로 cancel하면 협력적으로 중단한다. overlap과
+  word-boundary post-processing은 여전히 eager filtered path를 사용한다([#67](https://github.com/bluetape4k/bluetape4k-text/issues/67)).
 
 ## [0.1.0] - 2026-05-17
 
-### Added
+### 추가
 
-- Root README hero image plus refreshed project-purpose, feature, and language-switch entrypoint documentation ([PR #20](https://github.com/bluetape4k/bluetape4k-text/pull/20)).
-- GitHub Actions workflows for CI, nightly, snapshot, release, and code-quality checks ([PR #2](https://github.com/bluetape4k/bluetape4k-text/pull/2)).
-- `bluetape4k-text-bom` BOM module for text library consumers ([PR #7](https://github.com/bluetape4k/bluetape4k-text/pull/7)).
-- English and Korean README files for the text BOM module ([PR #8](https://github.com/bluetape4k/bluetape4k-text/pull/8)).
+- Root README hero image와 project-purpose, feature, language-switch entrypoint
+  documentation을 갱신했다([PR #20](https://github.com/bluetape4k/bluetape4k-text/pull/20)).
+- CI, nightly, snapshot, release, code-quality check를 위한 GitHub Actions
+  workflow를 추가했다([PR #2](https://github.com/bluetape4k/bluetape4k-text/pull/2)).
+- text library consumer를 위한 `bluetape4k-text-bom` BOM module을 추가했다([PR #7](https://github.com/bluetape4k/bluetape4k-text/pull/7)).
+- text BOM module의 English/Korean README 파일을 추가했다([PR #8](https://github.com/bluetape4k/bluetape4k-text/pull/8)).
 
-### Changed
+### 변경
 
-- Normalized lessons, Kover, Dependabot, NMCP, compatibility guards, and dependency maintenance ([PR #10](https://github.com/bluetape4k/bluetape4k-text/pull/10), [PR #11](https://github.com/bluetape4k/bluetape4k-text/pull/11), [PR #12](https://github.com/bluetape4k/bluetape4k-text/pull/12), [PR #16](https://github.com/bluetape4k/bluetape4k-text/pull/16), [PR #17](https://github.com/bluetape4k/bluetape4k-text/pull/17), [PR #18](https://github.com/bluetape4k/bluetape4k-text/pull/18), [PR #19](https://github.com/bluetape4k/bluetape4k-text/pull/19)).
-- Updated text dependency catalog and dependency bumps, including GitHub Actions and annotations ([PR #9](https://github.com/bluetape4k/bluetape4k-text/pull/9), [PR #14](https://github.com/bluetape4k/bluetape4k-text/pull/14), [PR #15](https://github.com/bluetape4k/bluetape4k-text/pull/15)).
-- CI uses path filtering and retry configuration ([PR #5](https://github.com/bluetape4k/bluetape4k-text/pull/5)).
-- Test code migrated from Kluent to `bluetape4k-assertions` ([PR #6](https://github.com/bluetape4k/bluetape4k-text/pull/6)).
+- lessons, Kover, Dependabot, NMCP, compatibility guard, dependency maintenance를
+  정비했다([PR #10](https://github.com/bluetape4k/bluetape4k-text/pull/10), [PR #11](https://github.com/bluetape4k/bluetape4k-text/pull/11), [PR #12](https://github.com/bluetape4k/bluetape4k-text/pull/12), [PR #16](https://github.com/bluetape4k/bluetape4k-text/pull/16), [PR #17](https://github.com/bluetape4k/bluetape4k-text/pull/17), [PR #18](https://github.com/bluetape4k/bluetape4k-text/pull/18), [PR #19](https://github.com/bluetape4k/bluetape4k-text/pull/19)).
+- GitHub Actions와 annotation을 포함해 text dependency catalog와 dependency bump를
+  갱신했다([PR #9](https://github.com/bluetape4k/bluetape4k-text/pull/9), [PR #14](https://github.com/bluetape4k/bluetape4k-text/pull/14), [PR #15](https://github.com/bluetape4k/bluetape4k-text/pull/15)).
+- CI가 path filtering과 retry configuration을 사용하도록 했다([PR #5](https://github.com/bluetape4k/bluetape4k-text/pull/5)).
+- Test code를 Kluent에서 `bluetape4k-assertions`로 이전했다([PR #6](https://github.com/bluetape4k/bluetape4k-text/pull/6)).
