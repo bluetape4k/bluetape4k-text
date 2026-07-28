@@ -20,7 +20,7 @@ class AhoCorasickFirstMatchTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `ushers + he she hers allowOverlaps=true - firstMatch는 she (start=1)`() {
-        // Arrange: allowOverlaps=true로 "ushers"에서 she(start=1), he(start=2), hers(start=2) 모두 매치
+        // 준비: allowOverlaps=true로 "ushers"에서 she(start=1), he(start=2), hers(start=2) 모두 매치
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("he", "HE")
             .add("she", "SHE")
@@ -28,10 +28,10 @@ class AhoCorasickFirstMatchTest : AbstractAhoCorasickTest() {
             .options(SearchOptions(allowOverlaps = true))
             .build()
 
-        // Act
+        // 실행
         val first = automaton.firstMatch("ushers")
 
-        // Assert: leftmost 기준 she(start=1)이 he/hers(start=2)보다 앞섬
+        // 검증: leftmost 기준 she(start=1)이 he/hers(start=2)보다 앞섬
         first.shouldNotBeNull()
         first.keyword shouldBeEqualTo "she"
         first.start shouldBeEqualTo 1
@@ -43,17 +43,17 @@ class AhoCorasickFirstMatchTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `동일 start이면 더 긴 keyword 우선`() {
-        // Arrange: "he"와 "hers" 둘 다 start=0 에서 시작 ("hers" 텍스트)
+        // 준비: "he"와 "hers" 둘 다 start=0 에서 시작 ("hers" 텍스트)
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("he", "HE")
             .add("hers", "HERS")
             .options(SearchOptions(allowOverlaps = true))
             .build()
 
-        // Act
+        // 실행
         val first = automaton.firstMatch("hers")
 
-        // Assert: start=0으로 동일 — 더 긴 "hers"(length=4) 가 "he"(length=2) 보다 우선
+        // 검증: start=0으로 동일 — 더 긴 "hers"(length=4) 가 "he"(length=2) 보다 우선
         first.shouldNotBeNull()
         first.keyword shouldBeEqualTo "hers"
         first.start shouldBeEqualTo 0
@@ -66,16 +66,16 @@ class AhoCorasickFirstMatchTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `매치 없음 - firstMatch는 null`() {
-        // Arrange
+        // 준비
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("apple", "APPLE")
             .add("banana", "BANANA")
             .build()
 
-        // Act
+        // 실행
         val first = automaton.firstMatch("no keywords here")
 
-        // Assert
+        // 검증
         first.shouldBeNull()
         log.debug { "매치 없음 → firstMatch=null 검증 완료" }
     }
@@ -84,7 +84,7 @@ class AhoCorasickFirstMatchTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `allowOverlaps=false와 true의 firstMatch 동작 비교`() {
-        // Arrange
+        // 준비
         // "hot", "hotel" — allowOverlaps=false 시 "hotel"만 남음
         val automatonOverlap = AhoCorasickAutomaton.builder<String>()
             .add("hot", "HOT")
@@ -100,11 +100,11 @@ class AhoCorasickFirstMatchTest : AbstractAhoCorasickTest() {
 
         val text = "hotel"
 
-        // Act
+        // 실행
         val firstWithOverlap = automatonOverlap.firstMatch(text)
         val firstNoOverlap = automatonNoOverlap.firstMatch(text)
 
-        // Assert
+        // 검증
         // allowOverlaps=true: "hot"(start=0, len=3)과 "hotel"(start=0, len=5) 중 더 긴 "hotel" 우선
         firstWithOverlap.shouldNotBeNull()
         firstWithOverlap.keyword shouldBeEqualTo "hotel"
@@ -117,6 +117,6 @@ class AhoCorasickFirstMatchTest : AbstractAhoCorasickTest() {
         firstWithOverlap.keyword shouldBeEqualTo firstNoOverlap.keyword
         firstWithOverlap.start shouldBeEqualTo firstNoOverlap.start
 
-        log.debug { "allowOverlaps 비교 — overlap: $firstWithOverlap, noOverlap: $firstNoOverlap" }
+        log.debug { "allowOverlaps 비교 — 겹침 허용: $firstWithOverlap, 겹침 제거: $firstNoOverlap" }
     }
 }

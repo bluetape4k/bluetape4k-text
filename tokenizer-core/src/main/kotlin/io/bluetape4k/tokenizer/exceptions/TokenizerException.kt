@@ -3,12 +3,12 @@ package io.bluetape4k.tokenizer.exceptions
 import io.bluetape4k.exceptions.BluetapeException
 
 /**
- * Base exception type used throughout the tokenizer module.
+ * Tokenizer module 전체에서 사용하는 base exception type입니다.
  *
- * ## Behavior / Contract
- * - Extends `BluetapeException` to follow the upstream exception-handling policy.
- * - Provides a default no-arg constructor and all message/cause combinations.
- * - Module-specific exceptions extend this type for finer-grained classification.
+ * ## 동작 계약
+ * - Upstream exception-handling policy를 따르기 위해 `BluetapeException`을 확장합니다.
+ * - 기본 no-arg constructor와 message/cause 조합 constructor를 모두 제공합니다.
+ * - Module-specific exception은 더 세밀한 분류를 위해 이 type을 확장합니다.
  *
  * ```kotlin
  * val ex = TokenizerException("tokenize failed")
@@ -17,7 +17,7 @@ import io.bluetape4k.exceptions.BluetapeException
  */
 open class TokenizerException: BluetapeException {
     /**
-     * Creates an exception with no message or cause.
+     * Message와 cause가 없는 exception을 만듭니다.
      *
      * ```kotlin
      * val ex = TokenizerException()
@@ -27,7 +27,9 @@ open class TokenizerException: BluetapeException {
     constructor(): super()
 
     /**
-     * Creates an exception with a descriptive [message].
+     * 설명용 [message]를 담은 exception을 만듭니다.
+     *
+     * @param message 실패 원인을 설명하는 message입니다.
      *
      * ```kotlin
      * val ex = TokenizerException("invalid input")
@@ -37,11 +39,14 @@ open class TokenizerException: BluetapeException {
     constructor(message: String): super(message)
 
     /**
-     * Creates an exception with a [message] and a [cause].
+     * [message]와 [cause]를 함께 담은 exception을 만듭니다.
      *
-     * ## Behavior / Contract
-     * - Both [message] and [cause] are forwarded to the parent constructor.
-     * - Use for exception-chain tracing.
+     * ## 동작 계약
+     * - [message]와 [cause]를 모두 parent constructor로 전달합니다.
+     * - Exception-chain tracing이 필요할 때 사용합니다.
+     *
+     * @param message 실패 원인을 설명하는 message입니다.
+     * @param cause 이 exception을 유발한 원본 throwable입니다.
      *
      * ```kotlin
      * val cause = IllegalArgumentException("invalid")
@@ -52,7 +57,9 @@ open class TokenizerException: BluetapeException {
     constructor(message: String, cause: Throwable?): super(message, cause)
 
     /**
-     * Creates an exception wrapping [cause] with no additional message.
+     * 추가 message 없이 [cause]를 wrapping하는 exception을 만듭니다.
+     *
+     * @param cause 이 exception을 유발한 원본 throwable입니다.
      *
      * ```kotlin
      * val cause = RuntimeException("boom")
