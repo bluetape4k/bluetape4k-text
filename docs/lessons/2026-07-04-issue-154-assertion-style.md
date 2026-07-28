@@ -1,32 +1,35 @@
 # Issue 154 Assertion Style Cleanup
 
-## Context
+## 배경
 
-The text repo still had several Java/JUnit-style or scalar assertion patterns in tests:
+Text 저장소 test에는 아직 Java/JUnit style 또는 scalar assertion pattern이 몇 가지 남아
+있었다.
 
 - `.size shouldBeEqualTo n`
 - `expr shouldBeEqualTo true/false`
 - `kotlin.test.assertFailsWith`
 - `org.junit.jupiter.api.assertThrows`
 
-These patterns work, but they do not follow the current bluetape4k Kotlin assertion guidance.
+이 pattern들은 동작하지만 현재 bluetape4k Kotlin assertion guidance를 따르지 않는다.
 
-## Decision
+## 결정
 
-Normalize tests to bluetape4k assertion intent matchers:
+Test를 bluetape4k assertion intent matcher로 정규화한다.
 
 - `collection shouldHaveSize n`
 - `predicate.shouldBeTrue()` / `predicate.shouldBeFalse()`
 - `io.bluetape4k.assertions.assertFailsWith<T> { ... }`
 
-Keep the cleanup mechanical and avoid production behavior changes.
+Cleanup은 기계적으로 유지하고 production behavior change를 피한다.
 
-## Outcome
+## 결과
 
-The cleanup touched `text-search`, `tokenizer-core`, and `tokenizer-korean` tests plus `TrieCore` KDoc examples. Full test verification passed.
+Cleanup은 `text-search`, `tokenizer-core`, `tokenizer-korean` test와 `TrieCore` KDoc example을
+수정했다. 전체 test verification은 통과했다.
 
-## Future Guidance
+## 향후 지침
 
-- When touching tests, scan for assertion API drift before committing.
-- Prefer matcher intent over scalar projections when a bluetape4k assertion exists.
-- Include JUnit `assertThrows` in future forbidden-pattern scans, not only `kotlin.test.assertFailsWith`.
+- Test를 수정할 때는 commit 전에 assertion API drift를 scan한다.
+- bluetape4k assertion이 있으면 scalar 값 투영보다 matcher intent를 우선한다.
+- 앞으로 forbidden-pattern scan에는 `kotlin.test.assertFailsWith`뿐 아니라 JUnit
+  `assertThrows`도 포함한다.
