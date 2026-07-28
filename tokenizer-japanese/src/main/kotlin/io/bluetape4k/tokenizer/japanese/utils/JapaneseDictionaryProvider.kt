@@ -8,11 +8,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
 /**
- * Loads and manages the blockword dictionary used by the Japanese tokenizer.
+ * 일본어 토크나이저가 사용하는 금칙어 사전을 로드하고 관리합니다.
  *
- * Dictionary files are resolved relative to [BASE_PATH] (`japanesetext`) and loaded
- * via [io.bluetape4k.tokenizer.utils.DictionaryProvider]. The [blockWordDictionary]
- * is lazily initialized on first access and reused for the object's lifetime.
+ * 사전 파일은 [BASE_PATH](`japanesetext`) 기준 상대 경로로 해석하고
+ * [io.bluetape4k.tokenizer.utils.DictionaryProvider]로 로드합니다.
+ * [blockWordDictionary]는 최초 접근 시 lazy 초기화한 뒤 객체 수명 동안 재사용합니다.
  *
  * ```kotlin
  * val hasWord = JapaneseDictionaryProvider.blockWordDictionary.contains("性器")
@@ -22,13 +22,13 @@ import kotlinx.coroutines.runBlocking
  */
 object JapaneseDictionaryProvider: KLoggingChannel() {
 
-    /** Root classpath prefix for all Japanese dictionary resources (`japanesetext`). */
+    /** 모든 일본어 사전 리소스의 classpath 루트 접두사입니다(`japanesetext`). */
     const val BASE_PATH = "japanesetext"
 
     /**
-     * Reads the specified dictionary files and returns their contents as a [MutableSet].
+     * 지정한 사전 파일을 읽어 내용을 [MutableSet]으로 반환합니다.
      *
-     * Paths are resolved relative to [BASE_PATH]. Duplicate words are deduplicated by the set.
+     * 경로는 [BASE_PATH] 기준 상대 경로로 해석합니다. 중복 단어는 set 특성으로 제거됩니다.
      *
      * ```kotlin
      * val words = kotlinx.coroutines.runBlocking {
@@ -37,15 +37,18 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      *
      * // result == true (words.isNotEmpty())
      * ```
+     *
+     * @param paths [BASE_PATH] 기준의 상대 사전 파일 경로 목록입니다.
+     * @return 중복을 제거한 mutable 문자열 집합입니다.
      */
     suspend fun readWordsAsSet(vararg paths: String): MutableSet<String> {
         return DictionaryProvider.readWordsAsSet(*paths.map { "$BASE_PATH/$it" }.toTypedArray())
     }
 
     /**
-     * Reads the specified dictionary files and returns their contents as a [CharArraySet].
+     * 지정한 사전 파일을 읽어 내용을 [CharArraySet]으로 반환합니다.
      *
-     * Paths are resolved relative to [BASE_PATH].
+     * 경로는 [BASE_PATH] 기준 상대 경로로 해석합니다.
      *
      * ```kotlin
      * val words = kotlinx.coroutines.runBlocking {
@@ -54,15 +57,18 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      *
      * // result == true (words.isNotEmpty())
      * ```
+     *
+     * @param paths [BASE_PATH] 기준의 상대 사전 파일 경로 목록입니다.
+     * @return 금칙어 조회에 쓰는 [CharArraySet]입니다.
      */
     suspend fun readWords(vararg paths: String): CharArraySet {
         return DictionaryProvider.readWords(*paths.map { "$BASE_PATH/$it" }.toTypedArray())
     }
 
     /**
-     * In-memory blockword dictionary, lazily loaded from `block/blocks.txt` on first access.
+     * 최초 접근 시 `block/blocks.txt`에서 lazy 로드하는 인메모리 금칙어 사전입니다.
      *
-     * Mutations via [addBlockwords], [removeBlockwords], and [clearBlockwords] take effect immediately.
+     * [addBlockwords], [removeBlockwords], [clearBlockwords]로 수행한 변경은 즉시 반영됩니다.
      *
      * ```kotlin
      * val dictionary = JapaneseDictionaryProvider.blockWordDictionary
@@ -77,7 +83,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     }
 
     /**
-     * Adds words to the in-memory blockword dictionary. Duplicates are ignored.
+     * 인메모리 금칙어 사전에 단어를 추가합니다. 중복 단어는 무시됩니다.
      *
      * ```kotlin
      * JapaneseDictionaryProvider.addBlockwords(listOf("19禁", "29禁"))
@@ -85,14 +91,16 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      *
      * // value == true
      * ```
+     *
+     * @param words 추가할 금칙어 단어 컬렉션입니다.
      */
     fun addBlockwords(words: Collection<String>) {
-        log.debug { "Add block words. count=${words.size}, totalLength=${words.sumOf { it.length }}" }
+        log.debug { "금칙어를 추가합니다. count=${words.size}, totalLength=${words.sumOf { it.length }}" }
         blockWordDictionary.addAll(words)
     }
 
     /**
-     * Removes words from the in-memory blockword dictionary. Unknown words are silently ignored.
+     * 인메모리 금칙어 사전에서 단어를 제거합니다. 등록되지 않은 단어는 무시합니다.
      *
      * ```kotlin
      * JapaneseDictionaryProvider.removeBlockwords(listOf("19禁"))
@@ -100,14 +108,16 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      *
      * // value == false
      * ```
+     *
+     * @param words 제거할 금칙어 단어 컬렉션입니다.
      */
     fun removeBlockwords(words: Collection<String>) {
-        log.debug { "Remove block words. count=${words.size}, totalLength=${words.sumOf { it.length }}" }
+        log.debug { "금칙어를 제거합니다. count=${words.size}, totalLength=${words.sumOf { it.length }}" }
         blockWordDictionary.removeAll(words)
     }
 
     /**
-     * Clears the in-memory blockword dictionary. Does not modify the underlying resource files.
+     * 인메모리 금칙어 사전을 비웁니다. 원본 리소스 파일은 수정하지 않습니다.
      *
      * ```kotlin
      * JapaneseDictionaryProvider.clearBlockwords()
@@ -117,7 +127,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      * ```
      */
     fun clearBlockwords() {
-        log.debug { "Clear block words" }
+        log.debug { "금칙어 사전을 비웁니다" }
         blockWordDictionary.clear()
     }
 }
