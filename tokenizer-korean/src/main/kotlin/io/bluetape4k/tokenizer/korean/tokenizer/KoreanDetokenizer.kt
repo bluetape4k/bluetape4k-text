@@ -73,17 +73,17 @@ object KoreanDetokenizer: KLogging() {
     fun detokenize(input: Collection<String>): String {
         requireTokenizeTextLength(input.sumOf { it.length })
 
-        // Space guide prevents tokenizing a word that was not tokenized in the input.
+        // 입력 단어 경계는 원래 단어가 다시 쪼개지지 않도록 spaceGuide로 전달합니다.
         val spaceGuide = getSpaceGuide(input)
 
-        // Tokenize a merged text with the space guide.
+        // 병합 문자열을 spaceGuide와 함께 다시 토크나이즈합니다.
         val tokenized = KoreanTokenizer.tokenize(
             input.joinToString(""),
             TokenizerProfile(spaceGuide = spaceGuide)
         )
 
-        // Attach suffixes and prefixes.
-        // Attach Noun + Verb
+        // 접미사/접두사를 앞뒤 토큰에 붙입니다.
+        // 명사 + 동사 조합도 붙입니다.
         if (tokenized.isEmpty()) {
             return ""
         }

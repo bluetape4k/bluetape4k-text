@@ -186,42 +186,42 @@ object KoreanPhraseExtractor: KLogging() {
     val PhraseTailPoses = setOf(Noun, ProperNoun, Alpha, Number)
 
     /**
-     * 0 for optional, 1 for required
-     * * for optional repeatable, + for required repeatable
+     * 0은 선택, 1은 필수를 뜻합니다.
+     * *는 선택 반복, +는 필수 반복을 뜻합니다.
      *
-     * Substantive: 체언 (초거대기업의)
-     * Predicate: 용언 (하였었습니다, 개예뻤었다)
-     * Modifier: 수식언 (모르는 할수도있는 보이기도하는 예뻐 예쁜 완전 레알 초인간적인 잘 잘한)
-     * Standalone: 독립언
-     * Functional: 관계언 (조사)
+     * 체언: 초거대기업의
+     * 용언: 하였었습니다, 개예뻤었다
+     * 수식언(Modifier): 모르는, 할수도있는, 보이기도하는, 예뻐, 예쁜, 완전, 레알, 초인간적인, 잘, 잘한
+     * 독립언: 문장 안에서 독립적으로 쓰이는 품사
+     * 관계언: 조사
      *
-     * N Noun: 명사 (Nouns, Pronouns, Company Names, Proper Noun, Person Names, Numerals, Standalone, Dependent)
-     * V Verb: 동사 (하, 먹, 자, 차)
-     * J Adjective: 형용사 (예쁘다, 크다, 작다)
-     * A Adverb: 부사 (잘, 매우, 빨리, 반드시, 과연)
-     * D Determiner: 관형사 (새, 헌, 참, 첫, 이, 그, 저)
-     * E Exclamation: 감탄사 (헐, ㅋㅋㅋ, 어머나, 얼씨구)
+     * `N`/`Noun`: 명사(대명사, 회사명, 고유명사, 인명, 수사, 독립/의존 명사 포함)
+     * `V`/`Verb`: 동사(하, 먹, 자, 차)
+     * `J`/`Adjective`: 형용사(예쁘다, 크다, 작다)
+     * `A`/`Adverb`: 부사(잘, 매우, 빨리, 반드시, 과연)
+     * `D`/`Determiner`: 관형사(새, 헌, 참, 첫, 이, 그, 저)
+     * `E`/`Exclamation`: 감탄사(헐, ㅋㅋㅋ, 어머나, 얼씨구)
      *
-     * C Conjunction: 접속사
+     * `C`/`Conjunction`: 접속사
      *
-     * j SubstantiveJosa: 조사 (의, 에, 에서)
-     * l AdverbialJosa: 부사격 조사 (~인, ~의, ~일)
-     * e Eomi: 어말어미 (다, 요, 여, 하댘ㅋㅋ)
-     * r PreEomi: 선어말어미 (었)
+     * `j`/`SubstantiveJosa`: 조사(의, 에, 에서)
+     * `l`/`AdverbialJosa`: 부사격 조사(~인, ~의, ~일)
+     * `e`/`Eomi`: 어말어미(다, 요, 여, 하댘ㅋㅋ)
+     * `r`/`PreEomi`: 선어말어미(었)
      *
-     * p NounPrefix: 접두사 ('초'대박)
-     * v VerbPrefix: 동사 접두어 ('쳐'먹어)
-     * s Suffix: 접미사 (~적)
+     * `p`/`NounPrefix`: 접두사('초'대박)
+     * `v`/`VerbPrefix`: 동사 접두어('쳐'먹어)
+     * `s`/`Suffix`: 접미사(~적)
      *
-     * a Alpha,
-     * n Number
-     * o Others
+     * `a`/`Alpha`: 영문자
+     * `n`/`Number`: 숫자
+     * `o`: 기타 토큰
      */
     private val COLLAPSING_RULES = mapOf(
-        "D0m*N1s0" to Noun, // Substantive
+        "D0m*N1s0" to Noun, // 체언
         "n*a+n*" to Noun,
         "n+" to Noun,
-        /* Predicate 초기뻐하다, 와주세요, 초기뻤었고, 추첨하다, 구경하기힘들다, 기뻐하는, 기쁜, 추첨해서, 좋아하다, 걸려있을 */
+        /* 용언: 초기뻐하다, 와주세요, 초기뻤었고, 추첨하다, 구경하기힘들다, 기뻐하는, 기쁜, 추첨해서, 좋아하다, 걸려있을 */
         "v*V1r*e0" to Verb,
         "v*J1r*e0" to Adjective
     )
@@ -338,7 +338,7 @@ object KoreanPhraseExtractor: KLogging() {
             .onEach { token ->
                 when {
                     curTrie.any { it?.curPos == token.pos } -> {
-                        // Extend the current phase
+                        // 현재 phrase를 확장합니다.
                         val (ct, nt) = getTries(token, curTrie)
 
                         if (phrases.isEmpty() || curTrie == collapseTrie) {
@@ -355,14 +355,14 @@ object KoreanPhraseExtractor: KLogging() {
                     }
 
                     collapseTrie.any { it.curPos == token.pos } -> {
-                        // Start a new phrase
+                        // 새 phrase를 시작합니다.
                         val (ct, nt) = getTries(token, collapseTrie)
                         phrases.add(KoreanPhrase(listOf(token), ct?.ending ?: Noun))
                         curTrie = nt
                     }
 
                     else                                    -> {
-                        // Add a single word
+                        // 규칙에 맞지 않는 토큰은 단일 phrase로 추가합니다.
                         phrases.add(KoreanPhrase(listOf(token), token.pos))
                         curTrie = collapseTrie
                     }
@@ -448,7 +448,7 @@ object KoreanPhraseExtractor: KLogging() {
             fun addPhraseToBuffer(phrase: KoreanPhrase, buffer: List<KoreanPhraseChunk>) =
                 buffer.map { it + phrase }.toList()
 
-            // NOTE: 현재 이 부분은 변경하면 안됩니다.
+            // 주의: 현재 이 부분은 변경하면 안 됩니다.
             //
             fun newBuffer() = listOf(listOf<KoreanPhrase>())
 

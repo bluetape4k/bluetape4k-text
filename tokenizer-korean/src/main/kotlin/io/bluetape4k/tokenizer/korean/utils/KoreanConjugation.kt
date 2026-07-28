@@ -22,7 +22,7 @@ import io.bluetape4k.tokenizer.utils.DictionaryProvider
  */
 object KoreanConjugation: KLogging() {
 
-    // ㅋ, ㅎ for 잨ㅋㅋㅋㅋ 잔댛ㅎㅎㅎㅎ
+    // `잨ㅋㅋㅋㅋ`, `잔댛ㅎㅎㅎㅎ`처럼 자음형 감탄 표현에서 쓰는 종성입니다.
     private val CODAS_COMMON = charArrayOf('ㅂ', 'ㅆ', 'ㄹ', 'ㄴ', 'ㅁ')
 
     // 파랗다 -> 파래, 파램, 파랠, 파랬
@@ -66,6 +66,10 @@ object KoreanConjugation: KLogging() {
      * val set = KoreanConjugation.conjugatePredicatesToCharArraySet(setOf("가다"))
      * // set.contains("가")
      * ```
+     *
+     * @param words 기본형 어미 `다`를 제외하지 않은 용언 기본형 집합입니다.
+     * @param isAdjective 형용사 활용 규칙을 적용할지 여부입니다. `false`이면 동사 규칙과 동사용 예외 제거를 적용합니다.
+     * @return 생성된 활용형 표면어를 담은 `CharArraySet`입니다.
      */
     fun conjugatePredicatesToCharArraySet(words: Set<String>, isAdjective: Boolean = false): CharArraySet {
         val newSet = DictionaryProvider.newCharArraySet()
@@ -80,8 +84,7 @@ object KoreanConjugation: KLogging() {
     private val adjective_하다_Set2 = setOf("합", "해")
 
     /**
-     * Cases without codas
-     * 하다, special case
+     * 받침 없는 `하다` 계열 특수 활용을 확장합니다.
      */
     private fun expandChar_하다(lastChar: Char, isAdjective: Boolean): List<String> {
         val endings = if (isAdjective) adjective_하다_Set else adjective_하다_Set2
@@ -210,7 +213,7 @@ object KoreanConjugation: KLogging() {
     private val PRE_EOMI_만들다_2 by lazy { PRE_EOMI_2 + PRE_EOMI_6 + PRE_EOMI_RESPECT }
 
     /**
-     * Cases with codas : 만들다, 알다, 풀다
+     * 받침 있는 `만들다`, `알다`, `풀다` 계열 활용을 확장합니다.
      */
     private fun expandChar_만들다(lastChar: Char, onset: Char, vowel: Char): List<String> {
         return mutableListOf<String>().apply {
@@ -333,6 +336,10 @@ object KoreanConjugation: KLogging() {
      * val forms = KoreanConjugation.conjugatePredicated(setOf("느리다"), isAdjective = true)
      * // forms.contains("느려") == true
      * ```
+     *
+     * @param words 기본형 어미 `다`를 제외하지 않은 용언 기본형 집합입니다.
+     * @param isAdjective 형용사 활용 규칙과 형용사 전용 예외를 적용할지 여부입니다.
+     * @return 입력 기본형에서 파생한 중복 없는 활용형 표면어 집합입니다.
      */
     fun conjugatePredicated(words: Set<String>, isAdjective: Boolean): Set<String> {
 
@@ -387,10 +394,10 @@ object KoreanConjugation: KLogging() {
                 } else if (coda == 'ㅎ' && isAdjective) {
                     expandChar_파랗다(lastChar, onset, vowel)
                 } else if (word.length == 1 || (isAdjective && coda == 'ㅆ')) {
-                    // 1 char with coda adjective, 있다, 컸다
+                    // 받침 있는 한 글자 형용사와 `있다`, `컸다` 계열을 처리합니다.
                     addPreEomi(lastChar, PRE_EOMI_있다) + mutableListOf(lastCharString)
                 } else if (word.length == 1 && isAdjective) {
-                    // 1 char with coda adjective, 밝다
+                    // 받침 있는 한 글자 형용사와 `밝다` 계열을 처리합니다.
                     addPreEomi(lastChar, PRE_EOMI_밝다) + mutableListOf(lastCharString)
                 } else {
                     // 부여잡다, 얻어맞다, 얻어먹다
@@ -428,7 +435,7 @@ object KoreanConjugation: KLogging() {
             expandedList.map { init + it } + irregularExpression
         }.toSet()
 
-        // Edge cases: these more likely to be a conjugation of an adjective than a verb
+        // 동사보다 형용사 활용형으로 보는 편이 자연스러운 예외 표면형을 동사 결과에서 제외합니다.
         return if (isAdjective) expanded else expanded - EDGE_CASE
     }
 }

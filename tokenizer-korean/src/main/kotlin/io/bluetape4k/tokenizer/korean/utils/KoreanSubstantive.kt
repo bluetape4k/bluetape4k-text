@@ -35,6 +35,10 @@ object KoreanSubstantive: KLogging() {
      * val ok = KoreanSubstantive.isJosaAttachable('플', '은')
      * // ok == true
      * ```
+     *
+     * @param prevChar 조사 앞에 놓인 마지막 한글 음절입니다.
+     * @param headChar 결합하려는 조사 문자열의 첫 글자입니다.
+     * @return 받침 유무와 조사 첫 글자 조합이 맞으면 `true`입니다.
      */
     fun isJosaAttachable(prevChar: Char, headChar: Char): Boolean {
         return (hasCoda(prevChar) && headChar !in JOSA_HEAD_FOR_NO_CODA) ||
@@ -55,6 +59,9 @@ object KoreanSubstantive: KLogging() {
      * val isName = KoreanSubstantive.isName("문재인")
      * // isName == true
      * ```
+     *
+     * @param chunk 이름 후보 문자열입니다.
+     * @return 이름 사전의 전체 이름/이름/성+이름 조합 규칙에 맞으면 `true`입니다.
      */
     fun isName(chunk: CharSequence): Boolean {
         if (nameDictionaryContains("full_name", chunk) || nameDictionaryContains("given_name", chunk)) {
@@ -86,6 +93,9 @@ object KoreanSubstantive: KLogging() {
      * val number = KoreanSubstantive.isKoreanNumber("천이백만이십오")
      * // number == true
      * ```
+     *
+     * @param chunk 한글 수사 후보 문자열입니다.
+     * @return 모든 문자가 허용된 한글 수사 문자 집합에 속하면 `true`입니다.
      */
     fun isKoreanNumber(chunk: CharSequence): Boolean =
         (0 until chunk.length).fold(true) { output, i ->
@@ -108,6 +118,9 @@ object KoreanSubstantive: KLogging() {
      * val variation = KoreanSubstantive.isKoreanNameVariation("호혀니")
      * // variation == true
      * ```
+     *
+     * @param chunk 이름 변형 후보 문자열입니다.
+     * @return `ㅇ` 초성 복원 후 이름 사전 규칙에 맞으면 `true`입니다.
      */
     fun isKoreanNameVariation(chunk: CharSequence): Boolean {
         // val nounDict = KoreanDictionaryProvider.koreanDictionary[Noun]!!
@@ -125,7 +138,7 @@ object KoreanSubstantive: KLogging() {
         if (lastChar.onset == 'ㅇ' || lastChar.vowel != 'ㅣ' || lastChar.coda != ' ') return false
         if (decomposed.init().last().coda != ' ') return false
 
-        // Recover missing 'ㅇ' (우혀니 -> 우현, 우현이, 빠순이 -> 빠순, 빠순이)
+        // 빠진 초성 `ㅇ`을 복원합니다: 우혀니 -> 우현/우현이, 빠순이 -> 빠순/빠순이
         val recovered: String = decomposed.mapIndexed { i, hc ->
             when (i) {
                 s.lastIndex -> '이'
@@ -151,6 +164,9 @@ object KoreanSubstantive: KLogging() {
      * )
      * // merged.first().text == "마코토"
      * ```
+     *
+     * @param posNodes 토크나이저가 계산한 품사 토큰 열입니다.
+     * @return 연속 1글자 명사를 병합한 토큰 목록입니다.
      */
     fun collapseNouns(posNodes: Iterable<KoreanToken>): List<KoreanToken> {
         val nodes = mutableListOf<KoreanToken>()
