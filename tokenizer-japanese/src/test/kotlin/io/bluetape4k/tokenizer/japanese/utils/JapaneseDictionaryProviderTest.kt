@@ -31,14 +31,14 @@ class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
         val newWord = "19禁"
         val newWord2 = "29禁"
 
-        // Add blockword to dictionary
+        // 금칙어를 사전에 추가합니다.
         blockwords.contains(newWord).shouldBeFalse()
         blockwords.contains(newWord2).shouldBeFalse()
         JapaneseDictionaryProvider.addBlockwords(listOf(newWord, newWord2))
         blockwords.contains(newWord).shouldBeTrue()
         blockwords.contains(newWord2).shouldBeTrue()
 
-        // Remove blockword from dictionary
+        // 금칙어를 사전에서 제거합니다.
         JapaneseDictionaryProvider.removeBlockwords(listOf(newWord, newWord2))
 
         blockwords.contains(newWord).shouldBeFalse()
