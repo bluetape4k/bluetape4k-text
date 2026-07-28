@@ -28,43 +28,43 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `parseText - 빈 keyword set은 empty result 반환`() {
-        // Arrange: 키워드 없이 automaton 빌드
+        // 준비: 키워드 없이 automaton 빌드
         val automaton = AhoCorasickAutomaton.builder<String>().build()
 
-        // Act
+        // 실행
         val matches = automaton.parseText("some text")
 
-        // Assert
+        // 검증
         matches.shouldHaveSize(0)
         log.debug { "빈 keyword set 결과: $matches" }
     }
 
     @Test
     fun `parseText - 빈 input은 empty result 반환`() {
-        // Arrange
+        // 준비
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("apple", "APPLE")
             .build()
 
-        // Act
+        // 실행
         val matches = automaton.parseText("")
 
-        // Assert
+        // 검증
         matches.shouldHaveSize(0)
         log.debug { "빈 input 결과: $matches" }
     }
 
     @Test
     fun `parseText - 단일 keyword 매치 start, end, keyword, value 검증`() {
-        // Arrange
+        // 준비
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("apple", "APPLE_VALUE")
             .build()
 
-        // Act
+        // 실행
         val matches = automaton.parseText("I like apple here")
 
-        // Assert
+        // 검증
         matches shouldHaveSize 1
         val match = matches.first()
         match.shouldNotBeNull()
@@ -78,17 +78,17 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `parseText - 다중 매치 start ascending 정렬 순서`() {
-        // Arrange
+        // 준비
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("one", "1")
             .add("two", "2")
             .add("three", "3")
             .build()
 
-        // Act
+        // 실행
         val matches = automaton.parseText("one two three")
 
-        // Assert
+        // 검증
         matches shouldHaveSize 3
         // 매치 결과는 start 위치 오름차순이어야 함
         for (i in 1 until matches.size) {
@@ -104,16 +104,16 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `containsMatch - 매치 있을 때 true, 없을 때 false`() {
-        // Arrange
+        // 준비
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("hello", "HELLO")
             .add("world", "WORLD")
             .build()
 
-        // Act & Assert — true case
+        // 실행 및 검증 — true case
         automaton.containsMatch("say hello there").shouldBeTrue()
 
-        // Act & Assert — false case
+        // 실행 및 검증 — false case
         automaton.containsMatch("no keywords here").shouldBeFalse()
         log.debug { "containsMatch 검증 완료" }
     }
@@ -122,17 +122,17 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `tokenize - Match와 Fragment가 올바르게 교차함`() {
-        // Arrange
+        // 준비
         val automaton = AhoCorasickAutomaton.builder<String>()
             .add("foo", "FOO")
             .add("bar", "BAR")
             .build()
         val input = "prefix foo middle bar suffix"
 
-        // Act
+        // 실행
         val tokens = automaton.tokenize(input)
 
-        // Assert: Fragment("prefix "), Match("foo"), Fragment(" middle "), Match("bar"), Fragment(" suffix")
+        // 검증: Fragment("prefix "), Match("foo"), Fragment(" middle "), Match("bar"), Fragment(" suffix")
         tokens shouldHaveSize 5
 
         (tokens[0] is SearchToken.Fragment).shouldBeTrue()
@@ -158,11 +158,11 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `Builder add - 빈 keyword는 IllegalArgumentException`() {
-        // Act & Assert — empty string
+        // 실행 및 검증 — empty string
         assertFailsWith<IllegalArgumentException> {
             AhoCorasickAutomaton.builder<String>().add("", "value")
         }
-        // Act & Assert — blank string (whitespace only)
+        // 실행 및 검증 — blank string (whitespace only)
         assertFailsWith<IllegalArgumentException> {
             AhoCorasickAutomaton.builder<String>().add("   ", "value")
         }
@@ -173,15 +173,15 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `AhoCorasickMatch Serializable round-trip`() {
-        // Arrange
+        // 준비
         val original = AhoCorasickMatch(start = 3, end = 7, keyword = "hello", value = "HELLO")
 
-        // Act
+        // 실행
         val baos = ByteArrayOutputStream()
         ObjectOutputStream(baos).use { it.writeObject(original) }
         val restored = ObjectInputStream(ByteArrayInputStream(baos.toByteArray())).use { it.readObject() }
 
-        // Assert
+        // 검증
         restored.shouldNotBeNull()
         restored.shouldBeInstanceOf<AhoCorasickMatch<*>>()
         @Suppress("UNCHECKED_CAST")
@@ -196,16 +196,16 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `SearchToken Match Serializable round-trip`() {
-        // Arrange
+        // 준비
         val match = AhoCorasickMatch(start = 0, end = 2, keyword = "hi", value = "HI")
         val original = SearchToken.Match("hi", match)
 
-        // Act
+        // 실행
         val baos = ByteArrayOutputStream()
         ObjectOutputStream(baos).use { it.writeObject(original) }
         val restored = ObjectInputStream(ByteArrayInputStream(baos.toByteArray())).use { it.readObject() }
 
-        // Assert
+        // 검증
         restored.shouldNotBeNull()
         restored.shouldBeInstanceOf<SearchToken.Match<*>>()
         @Suppress("UNCHECKED_CAST")
@@ -218,15 +218,15 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `SearchToken Fragment Serializable round-trip`() {
-        // Arrange
+        // 준비
         val original = SearchToken.Fragment("some text fragment")
 
-        // Act
+        // 실행
         val baos = ByteArrayOutputStream()
         ObjectOutputStream(baos).use { it.writeObject(original) }
         val restored = ObjectInputStream(ByteArrayInputStream(baos.toByteArray())).use { it.readObject() }
 
-        // Assert
+        // 검증
         restored.shouldNotBeNull()
         restored.shouldBeInstanceOf<SearchToken.Fragment>()
         restored.text shouldBeEqualTo original.text
@@ -236,7 +236,7 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
 
     @Test
     fun `SearchOptions Serializable round-trip`() {
-        // Arrange
+        // 준비
         val original = SearchOptions(
             ignoreCase = true,
             allowOverlaps = false,
@@ -245,12 +245,12 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
             stopOnFirstMatch = true,
         )
 
-        // Act
+        // 실행
         val baos = ByteArrayOutputStream()
         ObjectOutputStream(baos).use { it.writeObject(original) }
         val restored = ObjectInputStream(ByteArrayInputStream(baos.toByteArray())).use { it.readObject() }
 
-        // Assert
+        // 검증
         restored.shouldNotBeNull()
         restored.shouldBeInstanceOf<SearchOptions>()
         restored.ignoreCase shouldBeEqualTo original.ignoreCase

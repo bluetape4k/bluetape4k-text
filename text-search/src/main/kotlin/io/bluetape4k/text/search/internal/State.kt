@@ -5,10 +5,10 @@ import io.bluetape4k.logging.KLogging
 import java.util.*
 
 /**
- * A single state in the Aho-Corasick automaton trie.
+ * Aho-Corasick automaton trie의 단일 상태입니다.
  *
- * Maintains success transitions, a failure link, and the set of emitted keywords.
- * State transitions are performed via [nextState] and [addState].
+ * 성공 전이, failure link, 이 상태에서 emit되는 keyword 집합을 보관합니다. 상태 전이는 [nextState]와
+ * [addState]로 수행합니다.
  *
  * ```kotlin
  * val root = State()
@@ -16,7 +16,7 @@ import java.util.*
  * // next.depth == 1
  * ```
  *
- * @property depth depth of this state from the root
+ * @property depth root에서 이 상태까지의 깊이입니다.
  */
 internal class State(val depth: Int = 0): ValueObject {
 
@@ -28,7 +28,13 @@ internal class State(val depth: Int = 0): ValueObject {
 
     var failure: State? = null
 
-    /** Looks up the transition for [ch]. On a miss at the root state, returns the root itself (unless [ignoreRootState]). */
+    /**
+     * [ch] 전이를 조회합니다.
+     *
+     * @param ch 조회할 전이 문자입니다.
+     * @param ignoreRootState `true`이면 root 상태에서 miss가 나도 root 자신을 반환하지 않습니다.
+     * @return 전이 대상 상태입니다. Root에서 자기 자신으로 되돌아가는 경로도 없으면 `null`입니다.
+     */
     fun nextState(ch: Char, ignoreRootState: Boolean = false): State? {
         var nextState = this.success[ch]
 
@@ -39,17 +45,27 @@ internal class State(val depth: Int = 0): ValueObject {
         return nextState
     }
 
-    /** Looks up the transition for [ch] without falling back to the root state. */
+    /** Root에서 자기 자신으로 되돌아가지 않고 [ch] 전이를 조회합니다. */
     fun nextStateIgnoreRootState(ch: Char): State? = nextState(ch, true)
 
-    /** Traverses or creates states for each character in [keyword] and returns the final state. */
+    /**
+     * [keyword]의 각 문자를 따라 상태를 순회하거나 생성하고 마지막 상태를 반환합니다.
+     *
+     * @param keyword trie에 추가할 keyword입니다.
+     * @return [keyword]의 마지막 문자를 나타내는 상태입니다.
+     */
     fun addState(keyword: String): State {
         var state = this
         keyword.forEach { state = state.addState(it) }
         return state
     }
 
-    /** Adds a single-character transition for [ch], or returns the existing target state. */
+    /**
+     * [ch]에 대한 단일 문자 전이를 추가하거나 기존 대상 상태를 반환합니다.
+     *
+     * @param ch 추가할 전이 문자입니다.
+     * @return [ch] 전이가 가리키는 상태입니다.
+     */
     fun addState(ch: Char): State {
         var nextState = nextStateIgnoreRootState(ch)
         if (nextState == null) {
@@ -59,7 +75,12 @@ internal class State(val depth: Int = 0): ValueObject {
         return nextState
     }
 
-    /** Adds transitions for each character in [chars] in order and returns the final state. */
+    /**
+     * [chars]의 각 문자를 순서대로 전이로 추가하고 마지막 상태를 반환합니다.
+     *
+     * @param chars 추가할 전이 문자들입니다.
+     * @return 마지막 전이 문자가 가리키는 상태입니다.
+     */
     fun addStates(vararg chars: Char): State {
         var state = this
         chars.forEach {
@@ -68,28 +89,28 @@ internal class State(val depth: Int = 0): ValueObject {
         return state
     }
 
-    /** Adds a keyword emit to this state. */
+    /** 이 상태에 keyword emit을 추가합니다. */
     fun addEmit(keyword: String) {
         this.emits.add(keyword)
     }
 
-    /** Adds all emits from [emits] collection to this state. */
+    /** [emits] collection의 모든 keyword emit을 이 상태에 추가합니다. */
     fun addEmits(emits: Collection<String>) {
         this.emits.addAll(emits)
     }
 
-    /** Adds all emits from vararg [emits] to this state. */
+    /** Vararg [emits]의 모든 keyword emit을 이 상태에 추가합니다. */
     fun addEmits(vararg emits: String) {
         this.emits.addAll(emits)
     }
 
-    /** Returns the set of keyword emits for this state. */
+    /** 이 상태에서 emit되는 keyword 집합을 반환합니다. */
     fun emit(): Collection<String> = this.emits
 
-    /** Returns the collection of child states. */
+    /** 이 상태에서 성공 전이로 도달할 수 있는 자식 상태 collection을 반환합니다. */
     fun getStates(): Collection<State> = this.success.values
 
-    /** Returns the collection of characters with outgoing transitions. */
+    /** 이 상태에서 나가는 전이 문자 collection을 반환합니다. */
     fun getTransitions(): Collection<Char> = this.success.keys
 
     override fun toString(): String = "State(emits=$emits, failure=$failure)"

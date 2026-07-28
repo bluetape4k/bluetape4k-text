@@ -1,25 +1,24 @@
-# Release Changelog Section
+# 릴리스 Changelog 섹션
 
-## Context
+## 배경
 
-The 0.1.0 release preflight found that `CHANGELOG.md` still kept release notes
-under `Unreleased`, so the release workflow would fall back to generic GitHub
-release notes.
+0.1.0 release preflight에서 `CHANGELOG.md`의 release note가 여전히 `Unreleased`
+아래에 있어 release workflow가 일반 GitHub release note로 fallback할 수 있음을
+확인했다.
 
-## Decision
+## 결정
 
-Move the prepared notes under `## [0.1.0] - 2026-05-17` before tagging.
+Tag를 만들기 전에 준비된 note를 `## [0.1.0] - 2026-05-17` 아래로 이동한다.
 
-## Outcome
+## 결과
 
-The release workflow can now extract version-specific notes for GitHub Release
-creation.
+Release workflow는 이제 GitHub Release 생성에 사용할 version-specific note를 추출할 수 있다.
 
-## Verification
+## 검증
 
-- Checked `CHANGELOG.md` for the `0.1.0` section.
+- `CHANGELOG.md`에서 `0.1.0` 섹션을 확인했다.
 
-## Future Guidance
+## 향후 지침
 
-Before tagging a release, verify that `CHANGELOG.md` has a section matching
-`baseVersion`.
+Release tag를 만들기 전에 `CHANGELOG.md`에 `baseVersion`과 일치하는 섹션이 있는지
+검증한다.

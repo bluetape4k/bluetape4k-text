@@ -1,32 +1,30 @@
-# 2026-05-18 — Text WIP audit and matchesAsFlow contract
+# 2026-05-18 — Text WIP audit와 matchesAsFlow contract
 
-## Context
+## 배경
 
-The repository had no assigned open issues, while qmd surfaced an older
-text-search performance note from the pre-split `bluetape4k-projects` docs.
-Live GitHub state showed the 2026-05-17 bug, security, test, and release-prep
-queue had already been closed.
+저장소에는 할당된 open issue가 없었지만, qmd는 분리 전 `bluetape4k-projects` 문서에
+있던 오래된 text-search performance note를 보여줬다. Live GitHub state에서는
+2026-05-17 bug, security, test, release-prep queue가 이미 닫혀 있었다.
 
-## Decision
+## 결정
 
-Register #67 for the remaining `matchesAsFlow()` contract gap. The function
-claims backpressure-friendly streaming and recommends `take(1)`, but it calls
-eager `parseText(text)` before emitting any `Flow` item.
+남은 `matchesAsFlow()` contract gap을 #67로 등록한다. 이 함수는 backpressure-friendly
+streaming을 주장하고 `take(1)`을 권장하지만, `Flow` item을 emit하기 전에 eager
+`parseText(text)`를 호출한다.
 
-## Outcome
+## 결과
 
-`WIP.md` now lists one open assigned issue, #67, as the next
-correctness/performance item for `text-search`.
+`WIP.md`는 이제 `text-search`의 다음 correctness/performance item으로 open assigned
+issue #67 하나를 나열한다.
 
-## Verification
+## 검증
 
-- `gh issue list --state open --assignee debop` returned one open issue.
-- `gh issue view 67` confirmed #67 is open, labelled `bug`, `performance`, and
-  `text-search`, and assigned to `debop`.
-- `rg` confirmed #67 and the open count are present in `WIP.md`.
+- `gh issue list --state open --assignee debop`는 open issue 하나를 반환했다.
+- `gh issue view 67`로 #67이 open이고 `bug`, `performance`, `text-search` label과
+  assignee `debop`을 가진 것을 확인했다.
+- `rg`로 #67과 open count가 `WIP.md`에 있음을 확인했다.
 
-## Future Agents
+## 향후 agent 지침
 
-For text-search Flow work, validate both behavioral results and allocation or
-early-cancellation shape. A passing match list alone does not prove the Flow
-contract.
+Text-search Flow 작업에서는 동작 결과와 allocation 또는 early-cancellation 형태를
+모두 검증한다. Passing match list만으로는 Flow contract를 증명할 수 없다.

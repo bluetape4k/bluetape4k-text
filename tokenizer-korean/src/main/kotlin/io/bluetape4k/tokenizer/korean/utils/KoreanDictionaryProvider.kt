@@ -66,6 +66,9 @@ object KoreanDictionaryProvider: KLogging() {
      * val words = KoreanDictionaryProvider.readWordsAsSet("verb/verb.txt")
      * // words.isNotEmpty() == true
      * ```
+     *
+     * @param filenames `koreantext/` 기준의 상대 리소스 파일 경로 목록입니다.
+     * @return 중복을 제거한 mutable 문자열 집합입니다.
      */
     suspend fun readWordsAsSet(vararg filenames: String): MutableSet<String> {
         return DictionaryProvider.readWordsAsSet(paths = filenames.map { "$BASE_PATH/$it" }.toTypedArray())
@@ -82,6 +85,9 @@ object KoreanDictionaryProvider: KLogging() {
      * val words = KoreanDictionaryProvider.readWords("noun/nouns.txt")
      * // words.isNotEmpty() == true
      * ```
+     *
+     * @param filenames `koreantext/` 기준의 상대 리소스 파일 경로 목록입니다.
+     * @return 토크나이저 사전 조회에 쓰는 `CharArraySet`입니다.
      */
     suspend fun readWords(vararg filenames: String): CharArraySet {
         return DictionaryProvider.readWords(paths = filenames.map { "$BASE_PATH/$it" }.toTypedArray())
@@ -119,6 +125,9 @@ object KoreanDictionaryProvider: KLogging() {
      * KoreanDictionaryProvider.addWordsToDictionary(KoreanPos.Noun, listOf("없는명사다"))
      * // KoreanDictionaryProvider.koreanDictionary[KoreanPos.Noun]!!.contains("없는명사다") == true
      * ```
+     *
+     * @param pos 단어를 추가할 대상 품사입니다.
+     * @param words 대상 사전에 추가할 단어 컬렉션입니다.
      */
     fun addWordsToDictionary(pos: KoreanPos, words: Collection<String>) {
         dictionaryMutationLock.withLock {
@@ -138,6 +147,9 @@ object KoreanDictionaryProvider: KLogging() {
      * KoreanDictionaryProvider.addWordsToDictionary(KoreanPos.Noun, "주말특가", "주말행사")
      * // KoreanDictionaryProvider.koreanDictionary[KoreanPos.Noun]!!.contains("주말특가") == true
      * ```
+     *
+     * @param pos 단어를 추가할 대상 품사입니다.
+     * @param words 대상 사전에 추가할 가변 인자 단어 목록입니다.
      */
     fun addWordsToDictionary(pos: KoreanPos, vararg words: String) {
         if (words.isNotEmpty()) {

@@ -38,7 +38,7 @@ class AhoCorasickMigrationTest {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Case 1: keyword and text are same
+    // 사례 1: 키워드와 문자열이 같은 경우
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
@@ -48,13 +48,13 @@ class AhoCorasickMigrationTest {
      */
     @Test
     fun `케이스1 - keyword와 text가 동일하면 1건 매치`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasickOf("abc")
 
-        // Act
+        // 실행
         val matches = automaton.parseText("abc")
 
-        // Assert
+        // 검증
         matches shouldHaveSize 1
         matches[0].start shouldBeEqualTo 0
         matches[0].end shouldBeEqualTo 2
@@ -63,7 +63,7 @@ class AhoCorasickMigrationTest {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Case 2: ushers overlaps — he / she / hers
+    // 사례 2: `ushers`에서 `he`, `she`, `hers`가 겹치는 경우
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
@@ -74,13 +74,13 @@ class AhoCorasickMigrationTest {
      */
     @Test
     fun `케이스2 - ushers 겹침 매치 3건`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasickOf(PRONOUNS)
 
-        // Act
+        // 실행
         val matches = automaton.parseText("ushers")
 
-        // Assert
+        // 검증
         matches shouldHaveSize 3
         val byKeyword = matches.associateBy { it.keyword }
         byKeyword["she"].shouldNotBeNull().let {
@@ -99,7 +99,7 @@ class AhoCorasickMigrationTest {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Case 3: food recipes — 다중 keyword + 다중 매치
+    // 사례 3: 음식 조리법에서 여러 키워드와 여러 match가 있는 경우
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
@@ -110,14 +110,14 @@ class AhoCorasickMigrationTest {
      */
     @Test
     fun `케이스3 - food recipes 다중 매치 4건`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasickOf(FOOD)
         val text = "2 cauliflowers, 3 tomatoes, 4 slices of veal, 100g broccoli"
 
-        // Act
+        // 실행
         val matches = automaton.parseText(text)
 
-        // Assert
+        // 검증
         matches shouldHaveSize 4
         val byKeyword = matches.associateBy { it.keyword }
 
@@ -141,7 +141,7 @@ class AhoCorasickMigrationTest {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Case 4: start of churchill speech — ignoreOverlaps(allowOverlaps=false)
+    // 사례 4: Churchill 연설 시작 구간에서 ignoreOverlaps(allowOverlaps=false)를 적용하는 경우
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
@@ -153,7 +153,7 @@ class AhoCorasickMigrationTest {
      */
     @Test
     fun `케이스4 - start of churchill speech 겹침제거 2건`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasick<String> {
             allowOverlaps = false
             keywords(
@@ -170,10 +170,10 @@ class AhoCorasickMigrationTest {
             )
         }
 
-        // Act
+        // 실행
         val matches = automaton.parseText("Turning")
 
-        // Assert
+        // 검증
         matches shouldHaveSize 2
         val sorted = matches.sortedBy { it.start }
         sorted[0].start shouldBeEqualTo 0
@@ -186,7 +186,7 @@ class AhoCorasickMigrationTest {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Case 5: partial match exclusion — wordBoundary=LATIN_ALPHA
+    // 사례 5: wordBoundary=LATIN_ALPHA로 부분 match를 제외하는 경우
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
@@ -197,17 +197,17 @@ class AhoCorasickMigrationTest {
      */
     @Test
     fun `케이스5 - partial match exclusion wordBoundary LATIN_ALPHA`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasick<String> {
             wordBoundary = WordBoundary.LATIN_ALPHA
             keyword("sugar", "sugar")
         }
         val text = "sugarcane sugarcane sugar canesugar" // left, middle, right test
 
-        // Act
+        // 실행
         val matches = automaton.parseText(text)
 
-        // Assert
+        // 검증
         matches shouldHaveSize 1
         matches[0].start shouldBeEqualTo 20
         matches[0].end shouldBeEqualTo 24
@@ -216,29 +216,29 @@ class AhoCorasickMigrationTest {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Case 6: tokenize full sentence
+    // 사례 6: 전체 문장을 token으로 나누는 경우
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
      * 케이스 6: `tokenize` 결과 — [SearchToken.Fragment]와 [SearchToken.Match] 순서 검증.
      *
      * 구 API `TrieTest.tokenize full sentence`:
-     * Fragment "Hear: " / Match "Alpha" / Fragment " team first, " /
-     * Match "Beta" / Fragment " from the rear, " / Match "Gamma" / Fragment " in reserve"
+     * `Fragment("Hear: ")`, `Match("Alpha")`, `Fragment(" team first, ")`,
+     * `Match("Beta")`, `Fragment(" from the rear, ")`, `Match("Gamma")`, `Fragment(" in reserve")`
      *
      * 신 API 차이: `tokens[i].fragment` 대신 `SearchToken.Fragment.text` 또는
      * `SearchToken.Match.text` 를 사용한다.
      */
     @Test
     fun `케이스6 - tokenize full sentence Fragment와 Match 순서 검증`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasickOf(GREEK_LETTERS)
         val text = "Hear: Alpha team first, Beta from the rear, Gamma in reserve"
 
-        // Act
+        // 실행
         val tokens = automaton.tokenize(text)
 
-        // Assert: Fragment 4개 + Match 3개 = 7개 토큰
+        // 검증: Fragment 4개 + Match 3개 = 7개 토큰
         tokens shouldHaveSize 7
         (tokens[0] as SearchToken.Fragment).text shouldBeEqualTo "Hear: "
         (tokens[1] as SearchToken.Match).text shouldBeEqualTo "Alpha"
@@ -256,7 +256,7 @@ class AhoCorasickMigrationTest {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Case 7: ignoreCase — UNICODE keywords
+    // 사례 7: ignoreCase와 유니코드 키워드를 함께 쓰는 경우
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
@@ -267,17 +267,17 @@ class AhoCorasickMigrationTest {
      */
     @Test
     fun `케이스7 - ignoreCase UNICODE 4건 매치`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasick<String> {
             ignoreCase = true
             wordBoundary = WordBoundary.LATIN_ALPHA
             keywords(UNICODE.associateWith { it })
         }
 
-        // Act
+        // 실행
         val matches = automaton.parseText("TurninG OnCe AgAiN BÖRKÜ")
 
-        // Assert
+        // 검증
         matches shouldHaveSize 4
         val byKeyword = matches.associateBy { it.keyword }
         byKeyword["turning"].shouldNotBeNull().let {
@@ -300,7 +300,7 @@ class AhoCorasickMigrationTest {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Case 8: replaceAll with map
+    // 사례 8: map 기반 replaceAll을 사용하는 경우
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
@@ -310,7 +310,7 @@ class AhoCorasickMigrationTest {
      */
     @Test
     fun `케이스8 - replaceAll map으로 약어를 풀네임으로 치환`() {
-        // Arrange
+        // 준비
         val replacementMap = mapOf(
             "cauliflower" to "콜리플라워",
             "tomatoes" to "토마토",
@@ -320,18 +320,18 @@ class AhoCorasickMigrationTest {
         val automaton = ahoCorasickOf(FOOD)
         val text = "2 cauliflowers, 3 tomatoes, 4 slices of veal, 100g broccoli"
 
-        // Act
+        // 실행
         val result = automaton.replaceAll(text) { match ->
             replacementMap[match.keyword] ?: match.keyword
         }
 
-        // Assert
+        // 검증
         result shouldBeEqualTo "2 콜리플라워s, 3 토마토, 4 slices of 송아지고기, 100g 브로콜리"
         log.debug { "케이스8 replaceAll 치환 결과: $result" }
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Case 9: containsMatch → true/false
+    // 사례 9: containsMatch가 true/false를 반환하는 경우
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
@@ -341,21 +341,21 @@ class AhoCorasickMigrationTest {
      */
     @Test
     fun `케이스9 - containsMatch true false 반환`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasick<String> {
             keyword("ab", "ab")
             keyword("cba", "cba")
             keyword("ababc", "ababc")
         }
 
-        // Act & Assert
+        // 실행 및 검증
         automaton.containsMatch("ababcbab").shouldBeTrue()
         automaton.containsMatch("xyz").shouldBeFalse()
         log.debug { "케이스9 containsMatch 검증 완료" }
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Case 10: ignoreOverlaps (allowOverlaps=false)
+    // 사례 10: ignoreOverlaps(allowOverlaps=false)를 적용하는 경우
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
@@ -366,7 +366,7 @@ class AhoCorasickMigrationTest {
      */
     @Test
     fun `케이스10 - allowOverlaps false 비겹침 2건`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasick<String> {
             allowOverlaps = false
             keyword("ab", "ab")
@@ -374,10 +374,10 @@ class AhoCorasickMigrationTest {
             keyword("ababc", "ababc")
         }
 
-        // Act
+        // 실행
         val matches = automaton.parseText("ababcbab")
 
-        // Assert
+        // 검증
         matches shouldHaveSize 2
         val sorted = matches.sortedBy { it.start }
         sorted[0].start shouldBeEqualTo 0
@@ -390,7 +390,7 @@ class AhoCorasickMigrationTest {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Case 11: firstMatch - ushers (R5 leftmost-longest)
+    // 사례 11: `ushers`의 firstMatch(R5 leftmost-longest) 동작
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
@@ -411,13 +411,13 @@ class AhoCorasickMigrationTest {
      */
     @Test
     fun `케이스11 - firstMatch ushers R5 leftmost-longest she 반환`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasickOf(PRONOUNS)
 
-        // Act
+        // 실행
         val first = automaton.firstMatch("ushers")
 
-        // Assert: R5 leftmost → she(start=1) 가 he(start=2)보다 앞서므로 she 반환
+        // 검증: R5 leftmost → she(start=1) 가 he(start=2)보다 앞서므로 she 반환
         first.shouldNotBeNull()
         first.keyword shouldBeEqualTo "she"
         first.start shouldBeEqualTo 1
@@ -426,7 +426,7 @@ class AhoCorasickMigrationTest {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Case 12: firstMatch - unicode (R5 leftmost-longest)
+    // 사례 12: 유니코드 문자열의 firstMatch(R5 leftmost-longest) 동작
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
@@ -442,17 +442,17 @@ class AhoCorasickMigrationTest {
      */
     @Test
     fun `케이스12 - firstMatch unicode R5 leftmost turning 반환`() {
-        // Arrange
+        // 준비
         val automaton = ahoCorasick<String> {
             ignoreCase = true
             wordBoundary = WordBoundary.LATIN_ALPHA
             keywords(UNICODE.associateWith { it })
         }
 
-        // Act
+        // 실행
         val first = automaton.firstMatch("TurninG OnCe AgAiN BÖRKÜ")
 
-        // Assert: leftmost match는 start=0 의 "turning" — R5 기준과 탐색 순서 기준이 동일 결과
+        // 검증: leftmost match는 start=0 의 "turning" — R5 기준과 탐색 순서 기준이 동일 결과
         first.shouldNotBeNull()
         first.keyword shouldBeEqualTo "turning"
         first.start shouldBeEqualTo 0

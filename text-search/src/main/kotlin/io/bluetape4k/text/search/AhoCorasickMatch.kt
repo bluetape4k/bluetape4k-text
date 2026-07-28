@@ -3,15 +3,15 @@ package io.bluetape4k.text.search
 import java.io.Serializable
 
 /**
- * A single keyword match result produced by [AhoCorasickAutomaton].
+ * [AhoCorasickAutomaton]이 만든 단일 키워드 match 결과입니다.
  *
- * Named `AhoCorasickMatch` to avoid collision with `kotlin.text.MatchResult`.
+ * `kotlin.text.MatchResult`와 이름 충돌을 피하기 위해 `AhoCorasickMatch`라고 부릅니다.
  *
- * @param V covariant type of the value associated with the matched keyword
- * @param start inclusive start offset in the original text
- * @param end inclusive end offset in the original text
- * @param keyword matched keyword (in normalized form when normalization is active)
- * @param value value associated with the keyword
+ * @param V match된 키워드에 연결된 공변 값 타입입니다.
+ * @property start 원본 문자열의 inclusive start offset입니다.
+ * @property end 원본 문자열의 inclusive end offset입니다.
+ * @property keyword match된 키워드입니다. 정규화가 켜져 있으면 정규화된 형태입니다.
+ * @property value 키워드에 연결된 값입니다.
  */
 data class AhoCorasickMatch<out V>(
     val start: Int,
@@ -24,6 +24,6 @@ data class AhoCorasickMatch<out V>(
         private const val serialVersionUID: Long = 1L
     }
 
-    /** Match length (`end - start + 1`). */
+    /** Match 길이입니다. 계산식은 `end - start + 1`입니다. */
     val length: Int get() = end - start + 1
 }
