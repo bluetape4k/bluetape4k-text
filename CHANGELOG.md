@@ -10,6 +10,8 @@
 ### 변경
 
 - 한국어 Keep a Changelog에서 `Fixed` 범주를 `버그 수정`으로 표준화했다([#225](https://github.com/bluetape4k/bluetape4k-text/issues/225)).
+- GitHub Actions의 `Secret Scan (gitleaks)` 설치가 고정된 `v8.30.1` 릴리스 자산을 사용하도록 정비했다([#140](https://github.com/bluetape4k/bluetape4k-text/issues/140)).
+- 현재 0.3.0 GitHub 이슈 대기열과 완료된 유지보수 작업을 루트의 WIP와 CHANGELOG에 반영했다([#227](https://github.com/bluetape4k/bluetape4k-text/issues/227)).
 
 ## [0.2.1] - 2026-06-26
 
