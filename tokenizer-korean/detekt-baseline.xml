@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:KoreanConjugation.kt:KoreanConjugation$coda == 'ㄹ' &amp;&amp; ((onset == 'ㅁ' &amp;&amp; vowel == 'ㅓ') || vowel == 'ㅡ' || vowel == 'ㅏ' || vowel == 'ㅜ')</ID>
+    <ID>CyclomaticComplexMethod:KoreanConjugation.kt:KoreanConjugation$fun conjugatePredicated: Set&lt;String></ID>
+    <ID>CyclomaticComplexMethod:KoreanNormalizer.kt:KoreanNormalizer$fun normalizeCodaN: CharSequence</ID>
+    <ID>CyclomaticComplexMethod:KoreanPhraseExtractor.kt:KoreanPhraseExtractor$fun collapsePos: List&lt;KoreanPhrase></ID>
+    <ID>CyclomaticComplexMethod:KoreanPhraseExtractor.kt:KoreanPhraseExtractor$private fun getCandidatePhraseChunks: List&lt;KoreanPhraseChunk></ID>
+    <ID>CyclomaticComplexMethod:KoreanPosx.kt:KoreanPosx$fun buildTrie: List&lt;KoreanPosTrie></ID>
+    <ID>CyclomaticComplexMethod:KoreanTokenizer.kt:KoreanTokenizer$private fun findTopCandidates: List&lt;List&lt;KoreanToken>></ID>
+    <ID>CyclomaticComplexMethod:NounPhraseExtractor.kt:NounPhraseExtractor$fun collapsePos: List&lt;KoreanPhrase></ID>
+    <ID>CyclomaticComplexMethod:NounPhraseExtractor.kt:NounPhraseExtractor$private fun getCandidatePhraseChunks: List&lt;KoreanPhraseChunk></ID>
+    <ID>CyclomaticComplexMethod:NounPhraseExtractor.kt:NounPhraseExtractor$private fun isProperPhraseChunk: Boolean</ID>
+    <ID>CyclomaticComplexMethod:NounTokenizer.kt:NounTokenizer$private fun findTopCandidates: List&lt;List&lt;KoreanToken>></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_간지럽다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_겨누다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_꿰다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_낫다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_놓다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_눕다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_마시다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_만들다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_물러서다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_붇다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_사귀다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_쏘다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_아름답다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_쥐다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_치르다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_파랗다: List&lt;String></ID>
+    <ID>FunctionNaming:KoreanConjugation.kt:KoreanConjugation$private fun expandChar_하다: List&lt;String></ID>
+    <ID>LongMethod:KoreanChunkerTest.kt:KoreanChunkerTest$@Test fun `findAllPatterns should find all patterns`</ID>
+    <ID>LongMethod:KoreanConjugation.kt:KoreanConjugation$fun conjugatePredicated: Set&lt;String></ID>
+    <ID>LongMethod:KoreanTokenizer.kt:KoreanTokenizer$private fun findTopCandidates: List&lt;List&lt;KoreanToken>></ID>
+    <ID>LongMethod:NounTokenizer.kt:NounTokenizer$private fun findTopCandidates: List&lt;List&lt;KoreanToken>></ID>
+    <ID>MagicNumber:KoreanSubstantive.kt:KoreanSubstantive$3</ID>
+    <ID>MagicNumber:KoreanSubstantive.kt:KoreanSubstantive$4</ID>
+    <ID>MagicNumber:KoreanSubstantive.kt:KoreanSubstantive$5</ID>
+    <ID>MagicNumber:PunctuationProcessor.kt:PunctuationProcessor$3</ID>
+    <ID>MagicNumber:TokenizerProfile.kt:TokenizerProfile$0.01f</ID>
+    <ID>MatchingDeclarationName:KoreanProcessorTest.kt:KoreanTextProcessorTest : TestBase</ID>
+    <ID>MaxLineLength:KoreanBlockwordProcessor.kt:KoreanBlockwordProcessor$throw InvalidTokenizeRequestException("Invalid Language[${request.options.locale.language}], Only support Korean")</ID>
+    <ID>MaxLineLength:KoreanConjugation.kt:KoreanConjugation$}</ID>
+    <ID>MaxLineLength:KoreanNormalizer.kt:KoreanNormalizer$log.trace { "오타 검사. sliceLength=${slice.length}, replacementLength=${typoMap[slice]?.length}" }</ID>
+    <ID>MaxLineLength:KoreanPhraseExtractor.kt:KoreanPhraseExtractor$(trimmed.length >= MinCharsPerPhraseChunkWithoutSpaces || trimmed.tokens.size >= MinPhrasesPerPhraseChunk)</ID>
+    <ID>MaxLineLength:NounPhraseExtractor.kt:NounPhraseExtractor$(trimmed.length >= MinCharsPerPhraseChunkWithoutSpaces || trimmed.tokens.size >= MinPhrasesPerPhraseChunk)</ID>
+    <ID>MaxLineLength:NounPhraseExtractor.kt:NounPhraseExtractor$return KoreanDictionaryProvider.koreanDictionary[Noun].requireNotNull("koreanDictionary[Noun]").contains(singleTokenTest)</ID>
+    <ID>MaxLineLength:PunctuationProcessor.kt:PunctuationProcessor$.</ID>
+    <ID>MaxLineLength:PunctuationProcessor.kt:PunctuationProcessor$log.trace { "remove punctuation token. offset=${token.offset}, length=${token.length}, remove=${it.second}" }</ID>
+    <ID>NestedBlockDepth:KoreanChunker.kt:KoreanChunker$private fun splitChunks: List&lt;ChunkMatch></ID>
+    <ID>ObjectPropertyNaming:KoreanConjugation.kt:KoreanConjugation$private val PRE_EOMI_VOWEL_하다: CharArray by lazy { PRE_EOMI_VOWEL + PRE_EOMI_1_5 + PRE_EOMI_6 }</ID>
+    <ID>ObjectPropertyNaming:KoreanConjugation.kt:KoreanConjugation$private val PRE_EOMI_겨누다 by lazy { PRE_EOMI_VOWEL + PRE_EOMI_1_2 + PRE_EOMI_2 + PRE_EOMI_6 }</ID>
+    <ID>ObjectPropertyNaming:KoreanConjugation.kt:KoreanConjugation$private val PRE_EOMI_눕다 by lazy { PRE_EOMI_1_4 + PRE_EOMI_4 + PRE_EOMI_5 }</ID>
+    <ID>ObjectPropertyNaming:KoreanConjugation.kt:KoreanConjugation$private val PRE_EOMI_만들다 by lazy { PRE_EOMI_1_2 + PRE_EOMI_3 }</ID>
+    <ID>ObjectPropertyNaming:KoreanConjugation.kt:KoreanConjugation$private val PRE_EOMI_만들다_2 by lazy { PRE_EOMI_2 + PRE_EOMI_6 + PRE_EOMI_RESPECT }</ID>
+    <ID>ObjectPropertyNaming:KoreanConjugation.kt:KoreanConjugation$private val PRE_EOMI_물러서다 by lazy { PRE_EOMI_VOWEL + PRE_EOMI_1_1 + PRE_EOMI_2 + PRE_EOMI_6 }</ID>
+    <ID>ObjectPropertyNaming:KoreanConjugation.kt:KoreanConjugation$private val PRE_EOMI_밝다 by lazy { PRE_EOMI_COMMON + PRE_EOMI_1_2 + PRE_EOMI_1_3 + PRE_EOMI_2 + PRE_EOMI_4 + PRE_EOMI_5 }</ID>
+    <ID>ObjectPropertyNaming:KoreanConjugation.kt:KoreanConjugation$private val PRE_EOMI_붇다 by lazy { PRE_EOMI_1_2 + PRE_EOMI_1_4 + PRE_EOMI_4 + PRE_EOMI_5 }</ID>
+    <ID>ObjectPropertyNaming:KoreanConjugation.kt:KoreanConjugation$private val PRE_EOMI_쏘다: CharArray by lazy { PRE_EOMI_VOWEL + PRE_EOMI_2 + PRE_EOMI_1_3 + PRE_EOMI_6 }</ID>
+    <ID>ObjectPropertyNaming:KoreanConjugation.kt:KoreanConjugation$private val PRE_EOMI_있다 by lazy { PRE_EOMI_COMMON + PRE_EOMI_1_2 + PRE_EOMI_1_3 + PRE_EOMI_2 + PRE_EOMI_4 + PRE_EOMI_5 + PRE_EOMI_6 }</ID>
+    <ID>ObjectPropertyNaming:KoreanConjugation.kt:KoreanConjugation$private val PRE_EOMI_하다: CharArray by lazy { PRE_EOMI_COMMON + PRE_EOMI_2 + PRE_EOMI_6 + PRE_EOMI_RESPECT }</ID>
+    <ID>ObjectPropertyNaming:KoreanConjugation.kt:KoreanConjugation$private val VOWEL_뀌다 = hashSetOf('ㅞ', 'ㅚ', 'ㅙ')</ID>
+    <ID>ObjectPropertyNaming:KoreanConjugation.kt:KoreanConjugation$private val adjective_하다_Set = setOf("합", "해", "히", "하")</ID>
+    <ID>ObjectPropertyNaming:KoreanConjugation.kt:KoreanConjugation$private val adjective_하다_Set2 = setOf("합", "해")</ID>
+    <ID>ReturnCount:KoreanNormalizer.kt:KoreanNormalizer$fun normalize: CharSequence</ID>
+    <ID>ReturnCount:KoreanNormalizer.kt:KoreanNormalizer$fun normalizeCodaN: CharSequence</ID>
+    <ID>ReturnCount:KoreanNormalizer.kt:KoreanNormalizer$private fun normalizeEmotionAttachedChunk: CharSequence</ID>
+    <ID>ReturnCount:KoreanStemmer.kt:KoreanStemmer$fun stem: List&lt;KoreanToken></ID>
+    <ID>ReturnCount:KoreanSubstantive.kt:KoreanSubstantive$fun isKoreanNameVariation: Boolean</ID>
+    <ID>SerialVersionUIDInSerializableClass:CandidateParse.kt:CandidateParse : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:Hangul.kt:Hangul$DoubleCoda : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:Hangul.kt:Hangul$HangulChar : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:KoreanChunk.kt:KoreanChunk : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:KoreanPhrase.kt:KoreanPhrase : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:KoreanPhraseExtractorTest.kt:KoreanPhraseExtractorTest$SampleTextPair : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:KoreanPos.kt:KoreanPos : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:KoreanPosTrie.kt:KoreanPosTrie : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:KoreanToken.kt:KoreanToken : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:NounPhraseExtractorTest.kt:NounPhraseExtractorTest$SampleTextPair : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:ParsedChunk.kt:ParsedChunk : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:PhraseBuffer.kt:PhraseBuffer : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:PossibleTrie.kt:PossibleTrie : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:Sentence.kt:Sentence : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:TokenizerProfile.kt:TokenizerProfile : Serializable</ID>
+    <ID>ThrowsCount:KoreanBlockwordProcessor.kt:KoreanBlockwordProcessor$fun maskBlockwords: BlockwordResponse</ID>
+    <ID>TooGenericExceptionCaught:KoreanBlockwordProcessor.kt:KoreanBlockwordProcessor$e: Error</ID>
+    <ID>TooGenericExceptionCaught:KoreanBlockwordProcessor.kt:KoreanBlockwordProcessor$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:KoreanTokenizer.kt:KoreanTokenizer$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:NounTokenizer.kt:NounTokenizer$e: Exception</ID>
+    <ID>TooManyFunctions:KoreanConjugation.kt:KoreanConjugation : KLogging</ID>
+    <ID>TooManyFunctions:KoreanProcessor.kt:KoreanProcessor : KLogging</ID>
+    <ID>UnusedPrivateClass:KoreanNormalizer.kt:KoreanNormalizer$Segment</ID>
+  </CurrentIssues>
+</SmellBaseline>

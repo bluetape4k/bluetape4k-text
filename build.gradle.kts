@@ -1,5 +1,5 @@
-import io.gitlab.arturbosch.detekt.Detekt
-import io.gitlab.arturbosch.detekt.report.ReportMergeTask
+import dev.detekt.gradle.Detekt
+import dev.detekt.gradle.report.ReportMergeTask
 import nmcp.NmcpAggregationExtension
 import nmcp.NmcpExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
@@ -16,7 +16,7 @@ plugins {
     alias(libs.plugins.kotlinx.benchmark) apply false
     alias(bt4k.plugins.kover)
 
-    alias(libs.plugins.detekt)
+    alias(libs.plugins.detekt) apply false
     alias(bt4k.plugins.dependency.management)
 
     alias(bt4k.plugins.dokka)
@@ -55,6 +55,25 @@ fun Project.isNonPublishedModule(): Boolean =
 
 fun Project.isRunnableExampleModule(): Boolean =
     path.startsWith(":examples:")
+
+val requestedTaskNames = gradle.startParameter.taskNames + gradle.startParameter.excludedTaskNames
+fun isRequestedTask(token: String): Boolean =
+    requestedTaskNames.any { it.substringAfterLast(':').contains(token, ignoreCase = true) }
+
+val detektRequested = requestedTaskNames.isEmpty() || isRequestedTask("detekt")
+val detektAggregate = tasks.register("detekt") {
+    group = "verification"
+    description = "Runs Detekt for every Kotlin source module."
+    dependsOn(
+        subprojects
+            .filterNot { it.name == "bluetape4k-text-bom" }
+            .map { "${it.path}:detekt" },
+    )
+}
+val detektReportMerge = tasks.register<ReportMergeTask>("detektReportMerge") {
+    output.set(layout.buildDirectory.file("reports/detekt/merged.xml"))
+}
+detektAggregate.configure { finalizedBy(detektReportMerge) }
 
 allprojects {
     group = projectGroup
@@ -109,6 +128,9 @@ subprojects {
     apply {
         plugin<JavaLibraryPlugin>()
         plugin("org.jetbrains.kotlin.jvm")
+        if (detektRequested) {
+            plugin("dev.detekt")
+        }
         plugin("com.adarshr.test-logger")
         if (isRunnableExampleModule()) {
             plugin("application")
@@ -206,12 +228,12 @@ subprojects {
             showFullStackTraces = true
         }
 
-        val reportMerge = register<ReportMergeTask>("reportMerge") {
-            output.set(rootProject.layout.buildDirectory.file("reports/detekt/merged.xml"))
-        }
         withType<Detekt>().configureEach detekt@{
-            finalizedBy(reportMerge)
-            reportMerge.configure { input.from(this@detekt.xmlReportFile) }
+            buildUponDefaultConfig.set(true)
+            reports.checkstyle.required.set(true)
+            detektReportMerge.configure {
+                input.from(this@detekt.reports.checkstyle.outputLocation)
+            }
         }
 
         jar {

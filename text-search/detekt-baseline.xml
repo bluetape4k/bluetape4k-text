@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>EqualsWithHashCodeExist:IntervalNode.kt:IntervalNode : AbstractValueObject</ID>
+    <ID>LoopWithTooManyJumpStatements:AhoCorasickAutomaton.kt:AhoCorasickAutomaton$for</ID>
+    <ID>MaxLineLength:AhoCorasickMigrationTest.kt:AhoCorasickMigrationTest$*</ID>
+    <ID>MaxLineLength:InternalTrieConfig.kt:InternalTrieConfig.Builder$return InternalTrieConfig(allowOverlaps, onlyWholeWords, onlyWholeWordsWhiteSpaceSeparated, ignoreCase, stopOnHit)</ID>
+    <ID>MaxLineLength:TrieCore.kt:TrieCore$val newFailureState = requireNotNull(traceFailureState.nextState(transition)) { "nextState must exist after failure traversal" }</ID>
+    <ID>ReturnCount:AhoCorasickAutomaton.kt:AhoCorasickAutomaton$fun parseText: List&lt;AhoCorasickMatch&lt;V>></ID>
+    <ID>ReturnCount:AhoCorasickAutomaton.kt:AhoCorasickAutomaton$fun tokenize: List&lt;SearchToken&lt;V>></ID>
+    <ID>ReturnCount:OffsetMapping.kt:OffsetMapping.Companion$fun build: Pair&lt;String, OffsetMapping?></ID>
+    <ID>ReturnCount:TrieCore.kt:TrieCore$fun firstMatch: Emit?</ID>
+    <ID>TooManyFunctions:State.kt:State : ValueObject</ID>
+    <ID>TooManyFunctions:TrieCore.kt:TrieCore</ID>
+  </CurrentIssues>
+</SmellBaseline>

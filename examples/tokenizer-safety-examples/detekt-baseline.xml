@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MagicNumber:TokenizerSafetyExamples.kt:TokenizerSafetyHandler$200</ID>
+    <ID>MagicNumber:TokenizerSafetyExamples.kt:TokenizerSafetyHandler$400</ID>
+    <ID>MagicNumber:TokenizerSafetyExamples.kt:TokenizerSafetyHandler$413</ID>
+    <ID>MagicNumber:TokenizerSafetyExamples.kt:TokenizerSafetyHandler$500</ID>
+    <ID>MaxLineLength:TokenizerSafetyExamples.kt:TokenizerSafetyHandler$private val japaneseBlockword: (String) -> String = { JapaneseProcessor.maskBlockwords(blockwordRequestOf(it)).maskedText }</ID>
+    <ID>MaxLineLength:TokenizerSafetyExamples.kt:TokenizerSafetyHandler$private val koreanBlockword: (String) -> String = { KoreanProcessor.maskBlockwords(blockwordRequestOf(it)).maskedText }</ID>
+    <ID>ReturnCount:TokenizerSafetyExamples.kt:TokenizerSafetyHandler$private fun validate: SafetyResponse?</ID>
+  </CurrentIssues>
+</SmellBaseline>
