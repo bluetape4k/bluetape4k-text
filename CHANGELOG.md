@@ -54,7 +54,7 @@
 - 0.1.1 release line이 `io.github.bluetape4k:bluetape4k-bom:1.9.0`을 소비하도록
   준비했다.
 
-### 수정
+### 버그 수정
 
 - `matchesAsFlow()`가 이제 trie traversal에서 default Aho-Corasick match를
   stream하고, collector가 `take(N)`으로 cancel하면 협력적으로 중단한다. overlap과
