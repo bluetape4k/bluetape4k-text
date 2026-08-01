@@ -1,21 +1,29 @@
 # WIP - bluetape4k-text
 
 스냅샷: 2026-08-01 KST
-범위: 0.3.0 릴리스 트레인의 문서 정리와 열린 backlog 관리.
-열린 이슈 수: 7개.
+범위: 0.3.0 릴리스 트레인의 CI·문서 정리와 열린 백로그 관리.
+열린 이슈 수: 6개.
 
 ## 2026-08-01 GitHub 상태 갱신
 
-현재 근거: GitHub 기준 열린 이슈는 7개다. `0.3.0`에는 #225가 진행 중이며,
-PR #226에서 WIP와 CHANGELOG 최신화를 함께 검토한다. 나머지 #104, #105,
-#116, #117, #118, #140은 `Backlog`에 남아 있다.
+현재 근거: GitHub 기준 열린 이슈는 6개다. `0.3.0`에는 #227 문서 갱신이
+진행 중이다. #140 gitleaks 설치 강화와 #225 CHANGELOG 용어 표준화는
+각각 PR #165와 PR #226에서 완료됐다. 나머지 #104, #105, #116, #117, #118은
+백로그에 남아 있다.
 
 ### 진행 중
 
-- [#225](https://github.com/bluetape4k/bluetape4k-text/issues/225)
-  `docs(i18n): standardize Korean CHANGELOG Fixed terminology` — 한국어
-  Keep a Changelog의 `Fixed` 범주를 `버그 수정`으로 표준화하고 WIP/CHANGELOG를
-  현재 GitHub 상태에 맞춘다.
+- [#227](https://github.com/bluetape4k/bluetape4k-text/issues/227)
+  `docs: refresh WIP and CHANGELOG for current 0.3.0 queue` — 현재 GitHub
+  이슈 대기열과 완료된 유지보수 작업을 WIP/CHANGELOG에 반영한다.
+
+### 최근 완료
+
+- [#140](https://github.com/bluetape4k/bluetape4k-text/issues/140)의 gitleaks
+  설치 강화를 [PR #165](https://github.com/bluetape4k/bluetape4k-text/pull/165)에서 완료했다.
+- [#225](https://github.com/bluetape4k/bluetape4k-text/issues/225)의 한국어
+  `Fixed` 범주 표준화를 [PR #226](https://github.com/bluetape4k/bluetape4k-text/pull/226)에서
+  완료했다.
 
 ### 백로그
 
@@ -29,8 +37,6 @@ PR #226에서 WIP와 CHANGELOG 최신화를 함께 검토한다. 나머지 #104,
    `examples: add offline corpus quality report generator sample`
 5. [#118](https://github.com/bluetape4k/bluetape4k-text/issues/118)
    `epic: build runnable bluetape4k-text examples suite`
-6. [#140](https://github.com/bluetape4k/bluetape4k-text/issues/140)
-   `ci: harden gitleaks release asset install`
 
 ## 2026-05-24 마일스톤 갱신
 
@@ -98,8 +104,8 @@ publication을 위해 `snapshotVersion=`은 비워 둔다.
 
 | Priority | Issue | 난이도 | 비고 |
 |---|---|---:|---|
-| P1 | [#225](https://github.com/bluetape4k/bluetape4k-text/issues/225) | 낮음 | PR #226에서 WIP와 CHANGELOG 최신화 및 `Fixed` 용어 표준화를 마무리한다. |
-| P2 | #104, #105, #116, #117, #118, #140 | 중간 | `Backlog` 항목은 구체적인 범위와 실행 근거를 확인한 뒤 일정에 올린다. |
+| P1 | [#227](https://github.com/bluetape4k/bluetape4k-text/issues/227) | 낮음 | 현재 GitHub 이슈 대기열과 #140/#225 완료 상태를 WIP와 CHANGELOG에 반영한다. |
+| P2 | #104, #105, #116, #117, #118 | 중간 | 백로그 항목은 구체적인 범위와 실행 근거를 확인한 뒤 일정에 올린다. |
 
 ## WIP Limits
 
@@ -107,5 +113,5 @@ publication을 위해 `snapshotVersion=`은 비워 둔다.
 |---|---:|---|
 | Correctness / performance | 1 | 구체적인 regression이 생길 때까지 `Backlog`를 유지한다. |
 | Feature work | 1 | #105와 #116의 backend 평가 범위를 먼저 확정한다. |
-| Build/CI maintenance | 1 | #104와 #140은 재현 가능한 release/CI 근거가 있을 때 처리한다. |
-| Docs/KDoc polish | 1 | PR #226의 WIP/CHANGELOG 갱신을 마무리한 뒤 다음 assigned issue를 기다린다. |
+| Build/CI maintenance | 1 | #140은 검증 완료됐고, 새 릴리스/CI 실패가 있을 때만 처리한다. |
+| Docs/KDoc polish | 1 | PR #227의 WIP/CHANGELOG 갱신을 마무리한 뒤 다음 할당 이슈를 기다린다. |
