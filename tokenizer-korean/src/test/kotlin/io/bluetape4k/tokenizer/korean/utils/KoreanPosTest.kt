@@ -16,9 +16,9 @@ import org.junit.jupiter.api.Test
 class KoreanPosTest: TestBase() {
 
     companion object {
-        val NOUN_TRIE = KoreanPosTrie(Noun, emptyList(), ending = Noun)
-        val NOUN_SELF_NODE = KoreanPosTrie(Noun, listOf(SelfNode), ending = Noun)
-        val SUFFIX_NOUN = KoreanPosTrie(Suffix, emptyList(), ending = Noun)
+        private val NOUN_TRIE = KoreanPosTrie(Noun, emptyList(), ending = Noun)
+        private val NOUN_SELF_NODE = KoreanPosTrie(Noun, listOf(SelfNode), ending = Noun)
+        private val SUFFIX_NOUN = KoreanPosTrie(Suffix, emptyList(), ending = Noun)
     }
 
     @Test

@@ -92,7 +92,7 @@ object NounTokenizer: KLogging() {
      * // trie.isNotEmpty() == true
      * ```
      */
-    val koreanPosTrie by lazy { KoreanPosx.getTrie(SequenceDefinition) }
+    internal val koreanPosTrie by lazy { KoreanPosx.getTrie(SequenceDefinition) }
 
     /**
      * 문장을 1-best 명사 중심 토큰 리스트로 분석합니다.

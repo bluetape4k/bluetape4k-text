@@ -1,7 +1,5 @@
 package io.bluetape4k.tokenizer.korean.utils
 
-import java.io.Serializable
-
 /**
  * 품사 시퀀스 규칙을 표현하는 트라이 노드입니다.
  *
@@ -19,8 +17,8 @@ import java.io.Serializable
  * @property nextTrie 다음 트라이 후보
  * @property ending 종결 품사
  */
-data class KoreanPosTrie(
+internal data class KoreanPosTrie(
     val curPos: KoreanPos?,
     val nextTrie: List<KoreanPosTrie>? = null,
     val ending: KoreanPos? = null,
-): Serializable
+)

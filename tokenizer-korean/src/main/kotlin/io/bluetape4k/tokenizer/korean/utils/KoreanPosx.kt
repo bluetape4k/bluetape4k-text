@@ -40,7 +40,7 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.VerbPrefix
  * // trie.isNotEmpty() == true
  * ```
  */
-object KoreanPosx: KLogging() {
+internal object KoreanPosx: KLogging() {
 
     /**
      * 청크 레벨 기타 품사 집합입니다.
