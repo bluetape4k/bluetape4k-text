@@ -53,4 +53,5 @@ internal fun renderLinguaExampleReport(report: LinguaExampleReport): String =
 
 fun main() {
     println(renderLinguaExampleReport(runLinguaExamples()))
+    println(renderMixedLanguagePipeline(runMixedLanguagePipeline("Hello 안녕하세요 こんにちは")))
 }
