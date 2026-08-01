@@ -1,8 +1,36 @@
 # WIP - bluetape4k-text
 
-스냅샷: 2026-06-02 KST
-범위: 0.2.0 릴리스 트레인 이후 버전 정렬.
-열린 이슈 수: 20개.
+스냅샷: 2026-08-01 KST
+범위: 0.3.0 릴리스 트레인의 문서 정리와 열린 backlog 관리.
+열린 이슈 수: 7개.
+
+## 2026-08-01 GitHub 상태 갱신
+
+현재 근거: GitHub 기준 열린 이슈는 7개다. `0.3.0`에는 #225가 진행 중이며,
+PR #226에서 WIP와 CHANGELOG 최신화를 함께 검토한다. 나머지 #104, #105,
+#116, #117, #118, #140은 `Backlog`에 남아 있다.
+
+### 진행 중
+
+- [#225](https://github.com/bluetape4k/bluetape4k-text/issues/225)
+  `docs(i18n): standardize Korean CHANGELOG Fixed terminology` — 한국어
+  Keep a Changelog의 `Fixed` 범주를 `버그 수정`으로 표준화하고 WIP/CHANGELOG를
+  현재 GitHub 상태에 맞춘다.
+
+### 백로그
+
+1. [#104](https://github.com/bluetape4k/bluetape4k-text/issues/104)
+   `build: add release metadata smoke check against Maven Central before handoff`
+2. [#105](https://github.com/bluetape4k/bluetape4k-text/issues/105)
+   `feat: evaluate modern Japanese tokenizer backend beyond Kuromoji IPADic`
+3. [#116](https://github.com/bluetape4k/bluetape4k-text/issues/116)
+   `examples: evaluate Japanese tokenizer backend comparison sample`
+4. [#117](https://github.com/bluetape4k/bluetape4k-text/issues/117)
+   `examples: add offline corpus quality report generator sample`
+5. [#118](https://github.com/bluetape4k/bluetape4k-text/issues/118)
+   `epic: build runnable bluetape4k-text examples suite`
+6. [#140](https://github.com/bluetape4k/bluetape4k-text/issues/140)
+   `ci: harden gitleaks release asset install`
 
 ## 2026-05-24 마일스톤 갱신
 
@@ -70,13 +98,14 @@ publication을 위해 `snapshotVersion=`은 비워 둔다.
 
 | Priority | Issue | 난이도 | 비고 |
 |---|---|---:|---|
-| P1 | next minor development | 0.3.0 | 0.2.0 release train 이후 다음 minor line을 연다. |
+| P1 | [#225](https://github.com/bluetape4k/bluetape4k-text/issues/225) | 낮음 | PR #226에서 WIP와 CHANGELOG 최신화 및 `Fixed` 용어 표준화를 마무리한다. |
+| P2 | #104, #105, #116, #117, #118, #140 | 중간 | `Backlog` 항목은 구체적인 범위와 실행 근거를 확인한 뒤 일정에 올린다. |
 
 ## WIP Limits
 
 | Lane | 제한 | 현재 다음 작업 |
 |---|---:|---|
-| Correctness / performance | 1 | 다음 assigned issue를 기다린다. |
-| Feature work | 1 | `#67` 이후 새 assigned feature issue를 기다린다. |
-| Build/CI maintenance | 1 | CI/Nightly에서 확인된 구체적인 failure만 처리한다. |
-| Docs/KDoc polish | 1 | 작게 유지하고 tokenizer behavior change와 분리한다. |
+| Correctness / performance | 1 | 구체적인 regression이 생길 때까지 `Backlog`를 유지한다. |
+| Feature work | 1 | #105와 #116의 backend 평가 범위를 먼저 확정한다. |
+| Build/CI maintenance | 1 | #104와 #140은 재현 가능한 release/CI 근거가 있을 때 처리한다. |
+| Docs/KDoc polish | 1 | PR #226의 WIP/CHANGELOG 갱신을 마무리한 뒤 다음 assigned issue를 기다린다. |
