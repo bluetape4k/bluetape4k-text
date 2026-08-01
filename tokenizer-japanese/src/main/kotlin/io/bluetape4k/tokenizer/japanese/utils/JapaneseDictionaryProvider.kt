@@ -3,9 +3,14 @@ package io.bluetape4k.tokenizer.japanese.utils
 import io.bluetape4k.logging.coroutines.KLoggingChannel
 import io.bluetape4k.logging.debug
 import io.bluetape4k.tokenizer.utils.CharArraySet
+import io.bluetape4k.tokenizer.utils.DictionarySnapshot
 import io.bluetape4k.tokenizer.utils.DictionaryProvider
+import io.bluetape4k.tokenizer.utils.DictionaryVersion
+import io.bluetape4k.tokenizer.utils.VersionedDictionary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /**
  * 일본어 토크나이저가 사용하는 금칙어 사전을 로드하고 관리합니다.
@@ -21,6 +26,17 @@ import kotlinx.coroutines.runBlocking
  * ```
  */
 object JapaneseDictionaryProvider: KLoggingChannel() {
+
+    private val dictionaryMutationLock = ReentrantLock()
+
+    private val blockwordVersions by lazy {
+        VersionedDictionary(
+            DictionarySnapshot(
+                DictionaryVersion("japanese-blockwords", 0),
+                snapshotBlockwordValue(),
+            )
+        )
+    }
 
     /** 모든 일본어 사전 리소스의 classpath 루트 접두사입니다(`japanesetext`). */
     const val BASE_PATH = "japanesetext"
@@ -96,7 +112,10 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      */
     fun addBlockwords(words: Collection<String>) {
         log.debug { "금칙어를 추가합니다. count=${words.size}, totalLength=${words.sumOf { it.length }}" }
-        blockWordDictionary.addAll(words)
+        dictionaryMutationLock.withLock {
+            blockWordDictionary.addAll(words)
+            publishBlockwordMutation()
+        }
     }
 
     /**
@@ -113,7 +132,10 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      */
     fun removeBlockwords(words: Collection<String>) {
         log.debug { "금칙어를 제거합니다. count=${words.size}, totalLength=${words.sumOf { it.length }}" }
-        blockWordDictionary.removeAll(words)
+        dictionaryMutationLock.withLock {
+            blockWordDictionary.removeAll(words)
+            publishBlockwordMutation()
+        }
     }
 
     /**
@@ -128,6 +150,50 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      */
     fun clearBlockwords() {
         log.debug { "금칙어 사전을 비웁니다" }
+        dictionaryMutationLock.withLock {
+            blockWordDictionary.clear()
+            publishBlockwordMutation()
+        }
+    }
+
+    /** 현재 일본어 금칙어 snapshot과 버전을 반환합니다. */
+    fun currentBlockwordSnapshot(): DictionarySnapshot<Set<String>> = blockwordVersions.snapshot()
+
+    /**
+     * 일본어 금칙어 사전을 새 버전으로 교체합니다.
+     *
+     * @param version 현재 버전보다 큰 `japanese-blockwords` 버전입니다.
+     * @param words 새 전체 금칙어 목록입니다.
+     * @return 공개된 금칙어 snapshot입니다.
+     */
+    fun reloadBlockwords(
+        version: DictionaryVersion,
+        words: Collection<String>,
+    ): DictionarySnapshot<Set<String>> = dictionaryMutationLock.withLock {
+        require(version.name == "japanese-blockwords") { "Expected japanese-blockwords version" }
+        val replacement = words.toSet()
+        val snapshot = blockwordVersions.reload(version) { replacement }
         blockWordDictionary.clear()
+        blockWordDictionary.addAll(replacement)
+        snapshot
+    }
+
+    /** 지정한 단어가 현재 일본어 금칙어 사전에 있는지 확인합니다. */
+    fun containsBlockword(text: String): Boolean =
+        dictionaryMutationLock.withLock { blockWordDictionary.contains(text) }
+
+    private fun snapshotBlockwordValue(): Set<String> =
+        blockWordDictionary.map { it.asDictionaryWord() }.toSet()
+
+    private fun Any.asDictionaryWord(): String = when (this) {
+        is CharArray -> concatToString()
+        else -> toString()
+    }
+
+    private fun publishBlockwordMutation() {
+        val current = blockwordVersions.snapshot()
+        blockwordVersions.reload(
+            DictionaryVersion(current.version.name, current.version.revision + 1)
+        ) { snapshotBlockwordValue() }
     }
 }
