@@ -1,7 +1,6 @@
 package io.bluetape4k.tokenizer.korean.tokenizer
 
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosTrie
-import java.io.Serializable
 
 /**
  * 현재 분석 지점에서 확장 가능한 품사 트라이 후보입니다.
@@ -18,7 +17,7 @@ import java.io.Serializable
  * @property curTrie 현재 트라이 노드
  * @property words 누적 단어 수
  */
-data class PossibleTrie(
+internal data class PossibleTrie(
     val curTrie: KoreanPosTrie,
     val words: Int,
-): Serializable
+)

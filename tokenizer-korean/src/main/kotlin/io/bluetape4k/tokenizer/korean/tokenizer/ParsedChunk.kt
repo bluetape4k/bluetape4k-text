@@ -16,7 +16,6 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Suffix
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Unknown
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Verb
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.VerbPrefix
-import java.io.Serializable
 
 /**
  * 하나의 어절에 대한 형태소 분석 후보와 점수 계산 로직을 담습니다.
@@ -35,11 +34,11 @@ import java.io.Serializable
  * @property words 트라이 전이 기준 단어 수
  * @property profile 점수 계산 프로필
  */
-data class ParsedChunk(
+internal data class ParsedChunk(
     val posNodes: List<KoreanToken>,
     val words: Int,
     val profile: TokenizerProfile = TokenizerProfile.DefaultProfile,
-): Serializable {
+) {
     companion object: KLogging() {
         /**
          * 접미/어미/조사 계열 품사 집합입니다.

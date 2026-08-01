@@ -2,7 +2,6 @@ package io.bluetape4k.tokenizer.korean.phrase
 
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosTrie
-import java.io.Serializable
 
 /**
  * phrase 접기 과정의 중간 상태를 저장하는 버퍼입니다.
@@ -21,8 +20,8 @@ import java.io.Serializable
  * @property curTrie 현재 트라이 상태 목록
  * @property ending 현재 종결 품사 후보
  */
-data class PhraseBuffer(
+internal data class PhraseBuffer(
     val phrases: List<KoreanPhrase>,
     val curTrie: List<KoreanPosTrie?>,
     val ending: KoreanPos?,
-): Serializable
+)
