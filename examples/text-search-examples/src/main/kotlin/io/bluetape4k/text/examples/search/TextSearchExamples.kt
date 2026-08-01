@@ -97,4 +97,9 @@ private fun flowAlertAutomaton(): AhoCorasickAutomaton<String> =
 
 fun main() = runBlocking {
     println(renderTextSearchExampleReport(runTextSearchExamples()))
+    println(
+        renderStreamingSearchExample(
+            runStreamingSearchExample("password reset before card declined and secret", chunkSize = 5)
+        )
+    )
 }
