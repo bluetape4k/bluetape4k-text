@@ -58,6 +58,8 @@ data class TokenizerProfile(
     val josaUnmatchedPenalty: Float = 3.0f,
 ): Serializable {
     companion object {
+        private const val serialVersionUID: Long = 1L
+
         /**
          * 기본 형태소 분석 프로필입니다.
          *

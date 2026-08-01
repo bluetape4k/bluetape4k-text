@@ -55,6 +55,10 @@ data class TokenizeRequest(
     val text: String,
     val options: TokenizeOptions = TokenizeOptions.DEFAULT,
 ): AbstractMessage() {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+
     init {
         requireTokenizeTextLength(text)
         text.requireNotBlank("text")

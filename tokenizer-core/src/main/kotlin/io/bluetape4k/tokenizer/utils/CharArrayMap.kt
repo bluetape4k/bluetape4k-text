@@ -26,6 +26,7 @@ import java.io.Serializable
 open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serializable {
 
     companion object: KLogging() {
+        private const val serialVersionUID: Long = 1L
         private const val INIT_SIZE = 8
         private val EMPTY_MAP: CharArrayMap<Any> = EmptyCharArrayMap()
 

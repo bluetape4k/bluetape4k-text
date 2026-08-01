@@ -24,6 +24,9 @@ data class KoreanPhrase(
     val tokens: List<KoreanToken>,
     val pos: KoreanPos = KoreanPos.Noun,
 ): Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
 
     /**
      * phrase의 시작 오프셋입니다.

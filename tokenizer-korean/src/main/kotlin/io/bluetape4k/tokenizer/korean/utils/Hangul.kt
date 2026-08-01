@@ -30,6 +30,10 @@ object Hangul: KLogging() {
      * ```
      */
     data class HangulChar(val onset: Char, val vowel: Char, val coda: Char): Serializable {
+        companion object {
+            private const val serialVersionUID: Long = 1L
+        }
+
         /**
          * 종성이 비어 있는지 여부입니다.
          *
@@ -70,7 +74,11 @@ object Hangul: KLogging() {
      * @property first 첫 번째 자음
      * @property second 두 번째 자음
      */
-    data class DoubleCoda(val first: Char, val second: Char): Serializable
+    data class DoubleCoda(val first: Char, val second: Char): Serializable {
+        companion object {
+            private const val serialVersionUID: Long = 1L
+        }
+    }
 
     private const val HANGUL_BASE: Int = 0xAC00
     private const val ONSET_BASE: Int = 21 * 28

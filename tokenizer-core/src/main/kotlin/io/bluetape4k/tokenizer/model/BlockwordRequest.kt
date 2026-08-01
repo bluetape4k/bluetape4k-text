@@ -46,6 +46,10 @@ data class BlockwordRequest(
     val text: String,
     val options: BlockwordOptions = BlockwordOptions.DEFAULT,
 ): AbstractMessage() {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+
     init {
         requireBlockwordTextLength(text)
         text.requireNotBlank("text")

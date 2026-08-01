@@ -23,4 +23,8 @@ data class KoreanChunk(
     val text: String,
     val offset: Int,
     val length: Int,
-): Serializable
+): Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+}
