@@ -16,4 +16,11 @@
 ```
 
 테스트에서는 입력 길이 guard, 원문을 노출하지 않는 오류, processor 라우팅,
-버전별 reload 결과와 실패한 reload 격리를 검증합니다.
+버전별 reload 결과, 실패한 reload 격리와 종단 간 moderation 응답을 검증합니다.
+
+## Moderation service 흐름
+
+`TextModerationService`는 입력 경계를 검증하고 지원 언어 구간을 감지한 뒤,
+한국어·일본어 구간을 각 facade로 라우팅합니다. 하나의 Aho-Corasick
+automaton으로 keyword/blockword를 찾고 마스킹하며, 응답에는 상태 코드,
+감지 언어, 토큰 수, match 요약과 원문을 포함하지 않는 오류를 담습니다.

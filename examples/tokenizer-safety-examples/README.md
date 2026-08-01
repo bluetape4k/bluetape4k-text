@@ -17,4 +17,13 @@ Run the module with:
 ```
 
 The test suite verifies input-length guards, sanitized errors, processor
-routing, versioned reload output, and failed-reload isolation.
+routing, versioned reload output, failed-reload isolation, and the end-to-end
+moderation response.
+
+## Moderation service flow
+
+`TextModerationService` validates the boundary, detects supported language
+segments, routes Korean and Japanese segments to their facades, and uses a
+single Aho-Corasick automaton for keyword/blockword matches and masking. The
+response contains status, detected languages, token count, match summaries,
+and sanitized errors.

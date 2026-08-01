@@ -11,7 +11,7 @@ smoke tests only; they are not published to Maven Central.
 |---|---|
 | [`text-search-examples`](text-search-examples) | Aho-Corasick builder, streaming scanner, replacement, and Flow first-alert search |
 | [`lingua-examples`](lingua-examples) | Lingua detector reuse, mixed-language segmentation, and Korean/Japanese tokenizer routing |
-| [`tokenizer-safety-examples`](tokenizer-safety-examples) | Tokenizer request boundaries, sanitized errors, and versioned dictionary reloads |
+| [`tokenizer-safety-examples`](tokenizer-safety-examples) | Tokenizer request boundaries, versioned dictionary reloads, and end-to-end moderation |
 
 ## Run
 
