@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MaxLineLength:LanguageDetector.kt:if</ID>
+    <ID>MaxLineLength:LanguageDetectorExtensionsTest.kt:LanguageDetectorExtensionsTest$private val mixedText = "Parlez-vous français? Ich spreche nur ein bisschen Deutsch. A little bit is better than nothing."</ID>
+    <ID>ReturnCount:LanguageDetector.kt:fun LanguageDetector.detectAllLanguagesOf: Set&lt;Language></ID>
+    <ID>ReturnCount:LanguageDetector.kt:private fun LanguageDetector.detectLanguageOfToken: Language?</ID>
+    <ID>ReturnCount:UnicodeDetector.kt:UnicodeDetector$fun filterChar: Char?</ID>
+    <ID>TooManyFunctions:LanguageDetector.kt:io.bluetape4k.lingua.LanguageDetector.kt</ID>
+    <ID>TopLevelPropertyNaming:LanguageDetector.kt:private const val preferredLatinCandidateScanDepth = 10</ID>
+    <ID>TopLevelPropertyNaming:LanguageDetector.kt:private const val preferredLatinConfidenceThreshold = 0.80</ID>
+    <ID>TopLevelPropertyNaming:LanguageDetector.kt:private const val shortLatinTokenLength = 5</ID>
+    <ID>UtilityClassWithPublicConstructor:AbstractLinguaTest.kt:AbstractLinguaTest</ID>
+  </CurrentIssues>
+</SmellBaseline>

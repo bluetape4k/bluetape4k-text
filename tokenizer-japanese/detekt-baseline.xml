@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MaxLineLength:JapaneseBlockwordProcessor.kt:JapaneseBlockwordProcessor$"금칙어 후보 토큰입니다. position=${token.position}, length=${token.surface.length}, featureCount=${token.featureCount}"</ID>
+    <ID>TooGenericExceptionCaught:JapaneseBlockwordProcessor.kt:JapaneseBlockwordProcessor$e: Error</ID>
+    <ID>TooGenericExceptionCaught:JapaneseBlockwordProcessor.kt:JapaneseBlockwordProcessor$e: Exception</ID>
+    <ID>UtilityClassWithPublicConstructor:AbstractTokenizerTest.kt:AbstractTokenizerTest</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -64,7 +64,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: detekt-report
-          path: 'build/reports/detekt/*.xml'
+          path: '**/build/reports/detekt/*.xml'
+          if-no-files-found: error
           retention-days: 14
 
   # ── 2. tokenizer-core ─────────────────────────────────────────────────────

@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MagicNumber:CharArrayMap.kt:CharArrayMap$31</ID>
+    <ID>MagicNumber:DictionaryProvider.kt:DictionaryProvider$5_000</ID>
+    <ID>MaxLineLength:BlockMessageTest.kt:BlockMessageTest$val json = mapper.writeAsString(mapOf("text" to rawText, "options" to BlockwordOptions.DEFAULT)).shouldNotBeNull()</ID>
+    <ID>MaxLineLength:TokenizeMessageTest.kt:TokenizeMessageTest$val json = mapper.writeAsString(mapOf("text" to rawText, "options" to TokenizeOptions.DEFAULT)).shouldNotBeNull()</ID>
+    <ID>SerialVersionUIDInSerializableClass:CharArrayMap.kt:CharArrayMap&lt;V> : AbstractMutableMapSerializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:CharArraySet.kt:CharArraySet : AbstractMutableSetSerializable</ID>
+    <ID>TooManyFunctions:CharArrayMap.kt:CharArrayMap&lt;V> : AbstractMutableMapSerializable</ID>
+    <ID>TooManyFunctions:CharArraySet.kt:CharArraySet : AbstractMutableSetSerializable</ID>
+    <ID>UnusedPrivateClass:CharacterUtils.kt:CharacterUtils$Java4CharacterUtils : CharacterUtils</ID>
+    <ID>UtilityClassWithPublicConstructor:AbstractCoreTest.kt:AbstractCoreTest</ID>
+  </CurrentIssues>
+</SmellBaseline>
