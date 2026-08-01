@@ -52,6 +52,53 @@ class LanguageDetectorExtensionsTest: AbstractLinguaTest() {
         detector.detectAllLanguagesOf("🔥🎉🧪") shouldBeEqualTo emptySet()
     }
 
+    @Test
+    fun `혼합 언어의 UTF-16 구간과 신뢰도를 반환한다`() {
+        val text = "Hello 안녕하세요 こんにちは"
+
+        val segments = detector.detectLanguageSegments(text)
+
+        segments.map { text.substring(it.start, it.endExclusive) } shouldBeEqualTo listOf(
+            "Hello",
+            "안녕하세요",
+            "こんにちは",
+        )
+        segments.map { it.language } shouldBeEqualTo listOf(
+            Language.ENGLISH,
+            Language.KOREAN,
+            Language.JAPANESE,
+        )
+        segments.forEach { check(it.confidence in 0.55..1.0) }
+    }
+
+    @Test
+    fun `구두점과 이모지는 언어 구간에 포함하지 않는다`() {
+        val text = "Hello, 안녕! 🔥"
+
+        val segments = detector.detectLanguageSegments(text)
+
+        segments.map { text.substring(it.start, it.endExclusive) } shouldBeEqualTo listOf("Hello", "안녕")
+        segments[0].endExclusive shouldBeEqualTo 5
+        segments[1].start shouldBeEqualTo 7
+    }
+
+    @Test
+    fun `신뢰도 임계값으로 짧은 모델 토큰을 걸러낸다`() {
+        detector.detectLanguageSegments("x", minimumConfidence = 0.99) shouldBeEqualTo emptyList()
+    }
+
+    @Test
+    fun `unknown 문자는 임계값을 낮출 때 확인할 수 있다`() {
+        val segments = detector.detectLanguageSegments("ᚠᚢᚦ", minimumConfidence = 0.0)
+
+        check(segments.singleOrNull()?.language == Language.UNKNOWN || segments.isEmpty())
+    }
+
+    @Test
+    fun `유효하지 않은 신뢰도 임계값은 거부한다`() {
+        check(runCatching { detector.detectLanguageSegments("Hello", minimumConfidence = 1.1) }.isFailure)
+    }
+
 
     @Test
     fun latinPhrasesUsePreferredLatinCandidates() {

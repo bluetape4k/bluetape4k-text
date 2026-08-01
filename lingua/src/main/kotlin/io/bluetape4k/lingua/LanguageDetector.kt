@@ -277,6 +277,125 @@ fun LanguageDetector.detectAllLanguagesOf(text: String): Set<Language> {
         ?: emptySet()
 }
 
+/**
+ * 텍스트를 언어별 연속 구간으로 나누어 반환합니다.
+ *
+ * 입력은 유니코드 문자 토큰으로 나누며 공백·구두점·이모지는 구간에서 제외합니다. 한글, 가나,
+ * 한자는 유니코드 스크립트 힌트를 우선 사용하고 그 밖의 문자 구간은 Lingua 모델과 신뢰도로
+ * 판정합니다. 한자만 있는 구간은 중국어로 분류되며 일본어 문맥 추론은 호출자 책임입니다.
+ * `minimumConfidence`보다 낮은 구간은 반환하지 않습니다. `0.0`을 사용하면 `UNKNOWN` 구간도
+ * 확인할 수 있습니다.
+ *
+ * 반환 구간의 `start`와 `endExclusive`는 UTF-16 인덱스이며, 각 구간은 원문에서
+ * `text.substring(start, endExclusive)`로 복원할 수 있습니다.
+ *
+ * @param text 언어 구간을 찾을 원문입니다.
+ * @param minimumConfidence 결과에 포함할 최소 신뢰도입니다. `0.0..1.0` 범위여야 합니다.
+ * @return 언어별로 정렬된 비중첩 구간 목록입니다.
+ */
+fun LanguageDetector.detectLanguageSegments(
+    text: String,
+    minimumConfidence: Double = 0.55,
+): List<LanguageSegment> {
+    require(minimumConfidence in 0.0..1.0) {
+        "minimumConfidence must be between 0.0 and 1.0: $minimumConfidence"
+    }
+    if (text.isEmpty()) {
+        return emptyList()
+    }
+
+    val segments = mutableListOf<LanguageSegment>()
+    mixedLanguageTokenRegex.findAll(text).forEach { match ->
+        splitLanguageRuns(match.value, match.range.first)
+            .map { run ->
+                val (language, confidence) = detectLanguageRun(run.text)
+                LanguageSegment(run.start, run.endExclusive, language, confidence)
+            }
+            .filter { it.confidence >= minimumConfidence }
+            .forEach { segment ->
+                val previous = segments.lastOrNull()
+                if (previous != null && previous.language == segment.language &&
+                    previous.endExclusive == segment.start
+                ) {
+                    segments[segments.lastIndex] = previous.copy(
+                        endExclusive = segment.endExclusive,
+                        confidence = maxOf(previous.confidence, segment.confidence),
+                    )
+                } else {
+                    segments += segment
+                }
+            }
+    }
+    return segments
+}
+
+private data class LanguageRun(
+    val text: String,
+    val start: Int,
+) {
+    val endExclusive: Int get() = start + text.length
+}
+
+private enum class ScriptHint {
+    KOREAN,
+    JAPANESE,
+    CHINESE,
+    MODEL,
+}
+
+private fun splitLanguageRuns(token: String, start: Int): List<LanguageRun> {
+    if (token.length <= 1) {
+        return listOf(LanguageRun(token, start))
+    }
+
+    val runs = mutableListOf<LanguageRun>()
+    var runStart = 0
+    var previousHint = token[0].scriptHint()
+    token.drop(1).forEachIndexed { index, char ->
+        val hint = char.scriptHint()
+        if (hint != previousHint) {
+            val currentIndex = index + 1
+            runs += LanguageRun(token.substring(runStart, currentIndex), start + runStart)
+            runStart = currentIndex
+            previousHint = hint
+        }
+    }
+    runs += LanguageRun(token.substring(runStart), start + runStart)
+    return runs
+}
+
+private fun Char.scriptHint(): ScriptHint = when {
+    isKorean -> ScriptHint.KOREAN
+    isJapanese -> ScriptHint.JAPANESE
+    isChinese -> ScriptHint.CHINESE
+    else -> ScriptHint.MODEL
+}
+
+private fun LanguageDetector.detectLanguageRun(run: String): Pair<Language, Double> {
+    val hint = run.firstOrNull()?.scriptHint()
+    val hintedLanguage = when (hint) {
+        ScriptHint.KOREAN -> Language.KOREAN
+        ScriptHint.JAPANESE -> Language.JAPANESE
+        ScriptHint.CHINESE -> Language.CHINESE
+        ScriptHint.MODEL, null -> null
+    }
+    return if (hintedLanguage != null) {
+        hintedLanguage to 1.0
+    } else {
+        val language = if (run.isLatinToken()) {
+            detectLanguageOfToken(run)
+        } else {
+            detectLanguageOf(run).takeIf { it != Language.UNKNOWN }
+        }
+        if (language == null) {
+            Language.UNKNOWN to 0.0
+        } else {
+            val confidence = computeLanguageConfidenceValues(run)[language] ?: 0.0
+            language to confidence.coerceIn(0.0, 1.0)
+        }
+    }
+}
+
 private fun LanguageDetector.detectLanguageOfLatinPhrase(phrase: String): Language? {
     val detected = detectLanguageOf(phrase)
     if (detected in preferredLatinLanguages) {
