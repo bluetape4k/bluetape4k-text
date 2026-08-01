@@ -4,12 +4,14 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.tokenizer.korean.TestBase
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Noun
 import io.bluetape4k.tokenizer.utils.CharArraySet
+import io.bluetape4k.tokenizer.utils.DictionaryVersion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import org.junit.jupiter.api.Test
 
@@ -55,5 +57,25 @@ class KoreanDictionaryProviderTest: TestBase() {
 
         val nouns = KoreanDictionaryProvider.koreanDictionary[Noun]!!
         words.forEach { nouns.contains(it).shouldBeTrue() }
+    }
+
+    @Test
+    fun `버전이 있는 사전 snapshot을 reload하고 원본을 복구한다`() {
+        val original = KoreanDictionaryProvider.currentDictionarySnapshot()
+        val updatedWord = "버전갱신명사"
+
+        try {
+            val updated = KoreanDictionaryProvider.reloadDictionaries(
+                DictionaryVersion("korean-dictionary", original.version.revision + 1),
+                mapOf(Noun to listOf(updatedWord)),
+            )
+            updated.value[Noun]!!.contains(updatedWord).shouldBeTrue()
+            KoreanDictionaryProvider.currentDictionarySnapshot().version shouldBeEqualTo updated.version
+        } finally {
+            KoreanDictionaryProvider.reloadDictionaries(
+                DictionaryVersion("korean-dictionary", original.version.revision + 2),
+                original.value,
+            )
+        }
     }
 }

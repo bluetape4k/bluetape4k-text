@@ -273,20 +273,7 @@ object KoreanProcessor: KLogging() {
         severity: Severity,
         action: CharArraySet.() -> Unit,
     ) {
-        when (severity) {
-            LOW    -> {
-                KoreanDictionaryProvider.blockWords[LOW]?.action()
-                KoreanDictionaryProvider.blockWords[MIDDLE]?.action()
-                KoreanDictionaryProvider.blockWords[HIGH]?.action()
-            }
-
-            MIDDLE -> {
-                KoreanDictionaryProvider.blockWords[MIDDLE]?.action()
-                KoreanDictionaryProvider.blockWords[HIGH]?.action()
-            }
-
-            else   -> KoreanDictionaryProvider.blockWords[HIGH]?.action()
-        }
+        KoreanDictionaryProvider.mutateBlockwords(severity, action)
     }
 
     /**

@@ -189,6 +189,6 @@ object KoreanBlockwordProcessor: KLogging() {
         text: String?,
         severity: Severity = Severity.DEFAULT,
     ): Boolean {
-        return text?.run { KoreanDictionaryProvider.blockWords[severity]?.contains(this) } ?: false
+        return text?.let { KoreanDictionaryProvider.containsBlockword(it, severity) } ?: false
     }
 }

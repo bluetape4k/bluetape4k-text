@@ -163,7 +163,7 @@ object JapaneseBlockwordProcessor: KLogging() {
     }
 
     private fun isBlockword(text: String): Boolean {
-        return JapaneseDictionaryProvider.blockWordDictionary.contains(text)
+        return JapaneseDictionaryProvider.containsBlockword(text)
     }
 
     private val Token.featureCount: Int get() = allFeaturesArray.size

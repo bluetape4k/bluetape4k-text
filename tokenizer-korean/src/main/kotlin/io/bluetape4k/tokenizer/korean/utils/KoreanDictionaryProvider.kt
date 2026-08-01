@@ -18,7 +18,10 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Suffix
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Verb
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.VerbPrefix
 import io.bluetape4k.tokenizer.utils.CharArraySet
+import io.bluetape4k.tokenizer.utils.DictionarySnapshot
 import io.bluetape4k.tokenizer.utils.DictionaryProvider
+import io.bluetape4k.tokenizer.utils.DictionaryVersion
+import io.bluetape4k.tokenizer.utils.VersionedDictionary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -38,9 +41,28 @@ import kotlin.concurrent.withLock
  * // nouns != null
  * ```
  */
+@Suppress("TooManyFunctions")
 object KoreanDictionaryProvider: KLogging() {
 
     private val dictionaryMutationLock = ReentrantLock()
+
+    private val koreanDictionaryVersions by lazy {
+        VersionedDictionary(
+            DictionarySnapshot(
+                DictionaryVersion("korean-dictionary", 0),
+                snapshotDictionaryValue(),
+            )
+        )
+    }
+
+    private val blockwordVersions by lazy {
+        VersionedDictionary(
+            DictionarySnapshot(
+                DictionaryVersion("korean-blockwords", 0),
+                snapshotBlockwordValue(),
+            )
+        )
+    }
 
     /**
      * 한국어 사전 리소스의 루트 경로입니다.
@@ -132,6 +154,7 @@ object KoreanDictionaryProvider: KLogging() {
     fun addWordsToDictionary(pos: KoreanPos, words: Collection<String>) {
         dictionaryMutationLock.withLock {
             koreanDictionary[pos]?.addAll(words)
+            publishDictionaryMutation()
         }
     }
 
@@ -155,8 +178,35 @@ object KoreanDictionaryProvider: KLogging() {
         if (words.isNotEmpty()) {
             dictionaryMutationLock.withLock {
                 koreanDictionary[pos]?.addAll(words)
+                publishDictionaryMutation()
             }
         }
+    }
+
+    /** 현재 품사 사전 snapshot과 버전을 반환합니다. */
+    fun currentDictionarySnapshot(): DictionarySnapshot<Map<KoreanPos, Set<String>>> =
+        koreanDictionaryVersions.snapshot()
+
+    /**
+     * 품사별 사전을 새 버전으로 원자적으로 교체합니다.
+     *
+     * `dictionaries`는 전체 품사 사전 snapshot으로 취급합니다. loader 단계에서 값이 만들어진 뒤
+     * 기존 map을 교체하므로 실패한 입력은 현재 사전을 변경하지 않습니다.
+     *
+     * @param version 현재 버전보다 큰 새 사전 버전입니다.
+     * @param dictionaries 품사별 단어 목록입니다.
+     * @return 공개된 사전 snapshot입니다.
+     */
+    fun reloadDictionaries(
+        version: DictionaryVersion,
+        dictionaries: Map<KoreanPos, Collection<String>>,
+    ): DictionarySnapshot<Map<KoreanPos, Set<String>>> = dictionaryMutationLock.withLock {
+        require(version.name == "korean-dictionary") { "Expected korean-dictionary version" }
+        val replacement = dictionaries.mapValues { (_, words) -> words.toSet() }
+        val snapshot = koreanDictionaryVersions.reload(version) { replacement }
+        koreanDictionary.clear()
+        replacement.forEach { (pos, words) -> koreanDictionary[pos] = CharArraySet(words.toList()) }
+        snapshot
     }
 
     /**
@@ -281,6 +331,60 @@ object KoreanDictionaryProvider: KLogging() {
         }
     }
 
+    /** 현재 심각도별 금칙어 snapshot과 버전을 반환합니다. */
+    fun currentBlockwordSnapshot(): DictionarySnapshot<Map<io.bluetape4k.tokenizer.model.Severity, Set<String>>> =
+        blockwordVersions.snapshot()
+
+    /**
+     * 심각도별 금칙어 사전을 새 버전으로 교체합니다.
+     *
+     * @param version 현재 버전보다 큰 `korean-blockwords` 버전입니다.
+     * @param wordsBySeverity 심각도별 전체 금칙어 목록입니다.
+     * @return 공개된 금칙어 snapshot입니다.
+     */
+    fun reloadBlockwords(
+        version: DictionaryVersion,
+        wordsBySeverity: Map<io.bluetape4k.tokenizer.model.Severity, Collection<String>>,
+    ): DictionarySnapshot<Map<io.bluetape4k.tokenizer.model.Severity, Set<String>>> =
+        dictionaryMutationLock.withLock {
+            require(version.name == "korean-blockwords") { "Expected korean-blockwords version" }
+            val replacement = wordsBySeverity.mapValues { (_, words) -> words.toSet() }
+            val snapshot = blockwordVersions.reload(version) { replacement }
+            blockWords.forEach { (severity, words) ->
+                words.clear()
+                words.addAll(replacement[severity].orEmpty())
+            }
+            snapshot
+        }
+
+    /** 지정 심각도에서 금칙어가 존재하는지 확인합니다. */
+    fun containsBlockword(text: String, severity: io.bluetape4k.tokenizer.model.Severity): Boolean =
+        dictionaryMutationLock.withLock { blockWords[severity]?.contains(text) == true }
+
+    /** 기존 가변 금칙어 API가 갱신 버전도 기록하도록 내부 mutation을 감쌉니다. */
+    internal inline fun mutateBlockwords(
+        severity: io.bluetape4k.tokenizer.model.Severity,
+        action: CharArraySet.() -> Unit,
+    ) {
+        dictionaryMutationLock.withLock {
+            when (severity) {
+                io.bluetape4k.tokenizer.model.Severity.LOW -> {
+                    blockWords[io.bluetape4k.tokenizer.model.Severity.LOW]?.action()
+                    blockWords[io.bluetape4k.tokenizer.model.Severity.MIDDLE]?.action()
+                    blockWords[io.bluetape4k.tokenizer.model.Severity.HIGH]?.action()
+                }
+
+                io.bluetape4k.tokenizer.model.Severity.MIDDLE -> {
+                    blockWords[io.bluetape4k.tokenizer.model.Severity.MIDDLE]?.action()
+                    blockWords[io.bluetape4k.tokenizer.model.Severity.HIGH]?.action()
+                }
+
+                else -> blockWords[io.bluetape4k.tokenizer.model.Severity.HIGH]?.action()
+            }
+            publishBlockwordMutation()
+        }
+    }
+
     /**
      * 고유명사 중심 명사 사전입니다.
      *
@@ -399,5 +503,30 @@ object KoreanDictionaryProvider: KLogging() {
                 Adjective to getConjugationMap(adjective.await(), true)
             )
         }
+    }
+
+    private fun snapshotDictionaryValue(): Map<KoreanPos, Set<String>> =
+        koreanDictionary.mapValues { (_, words) -> words.map { it.asDictionaryWord() }.toSet() }
+
+    private fun snapshotBlockwordValue(): Map<io.bluetape4k.tokenizer.model.Severity, Set<String>> =
+        blockWords.mapValues { (_, words) -> words.map { it.asDictionaryWord() }.toSet() }
+
+    private fun Any.asDictionaryWord(): String = when (this) {
+        is CharArray -> concatToString()
+        else -> toString()
+    }
+
+    private fun publishDictionaryMutation() {
+        val current = koreanDictionaryVersions.snapshot()
+        koreanDictionaryVersions.reload(
+            DictionaryVersion(current.version.name, current.version.revision + 1)
+        ) { snapshotDictionaryValue() }
+    }
+
+    private fun publishBlockwordMutation() {
+        val current = blockwordVersions.snapshot()
+        blockwordVersions.reload(
+            DictionaryVersion(current.version.name, current.version.revision + 1)
+        ) { snapshotBlockwordValue() }
     }
 }

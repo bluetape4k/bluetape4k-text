@@ -4,7 +4,9 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.tokenizer.japanese.AbstractTokenizerTest
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.tokenizer.utils.DictionaryVersion
 import org.junit.jupiter.api.Test
 
 class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
@@ -43,5 +45,25 @@ class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
 
         blockwords.contains(newWord).shouldBeFalse()
         blockwords.contains(newWord2).shouldBeFalse()
+    }
+
+    @Test
+    fun `버전이 있는 금칙어 snapshot을 reload하고 원본을 복구한다`() {
+        val original = JapaneseDictionaryProvider.currentBlockwordSnapshot()
+        val updatedWord = "版관리"
+
+        try {
+            val updated = JapaneseDictionaryProvider.reloadBlockwords(
+                DictionaryVersion("japanese-blockwords", original.version.revision + 1),
+                listOf(updatedWord),
+            )
+            JapaneseDictionaryProvider.containsBlockword(updatedWord).shouldBeTrue()
+            updated.value shouldBeEqualTo setOf(updatedWord)
+        } finally {
+            JapaneseDictionaryProvider.reloadBlockwords(
+                DictionaryVersion("japanese-blockwords", original.version.revision + 2),
+                original.value,
+            )
+        }
     }
 }
