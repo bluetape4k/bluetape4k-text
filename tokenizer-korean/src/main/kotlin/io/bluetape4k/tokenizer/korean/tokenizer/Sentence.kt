@@ -23,6 +23,10 @@ data class Sentence(
     val start: Int,
     val end: Int,
 ): Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+
     /**
      * 문장의 문자열 표현을 반환합니다.
      * 형식: "텍스트(시작,끝)"

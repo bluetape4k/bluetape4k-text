@@ -24,6 +24,10 @@ data class BlockwordResponse(
     val maskedText: String,
     val blockWords: List<String> = emptyList(),
 ): AbstractMessage() {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+
     /**
      * 감지한 block word가 하나 이상이면 `true`를 반환합니다.
      *

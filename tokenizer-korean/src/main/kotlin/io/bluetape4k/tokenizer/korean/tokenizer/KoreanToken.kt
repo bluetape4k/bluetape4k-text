@@ -31,6 +31,9 @@ data class KoreanToken(
     val stem: String? = null,
     val unknown: Boolean = false,
 ): Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
 
     override fun toString(): String {
         val unknownStar = if (unknown) "*" else ""

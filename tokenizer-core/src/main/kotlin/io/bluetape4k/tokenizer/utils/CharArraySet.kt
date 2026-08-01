@@ -23,6 +23,7 @@ import java.io.Serializable
 open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), Serializable {
 
     companion object: KLogging() {
+        private const val serialVersionUID: Long = 1L
         private val EMPTY_SET = CharArraySet(CharArrayMap.emptyMap())
         private val PLACEHOLDER = Any()
 

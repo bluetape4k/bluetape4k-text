@@ -20,7 +20,11 @@ package io.bluetape4k.tokenizer.model
 data class TokenizeResponse(
     val text: String,
     val tokens: List<String> = emptyList(),
-): AbstractMessage()
+): AbstractMessage() {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+}
 
 /**
  * 전달한 [text]와 [tokens]로 [TokenizeResponse]를 만듭니다.
