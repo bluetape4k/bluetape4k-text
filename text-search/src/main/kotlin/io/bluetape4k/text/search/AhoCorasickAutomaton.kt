@@ -36,6 +36,8 @@ class AhoCorasickAutomaton<V> internal constructor(
     internal val options: SearchOptions,
 ) {
 
+    internal val maxKeywordLength: Int = values.keys.maxOfOrNull { it.length } ?: 0
+
     companion object: KLogging() {
         /**
          * 새 [Builder] 인스턴스를 만듭니다.
@@ -98,6 +100,12 @@ class AhoCorasickAutomaton<V> internal constructor(
         }
         return matches
     }
+
+    /** 청크 입력을 순차적으로 처리하는 상태 보존 scanner를 생성합니다. */
+    fun scanner(): AhoCorasickScanner<V> = AhoCorasickScanner(this)
+
+    /** 키워드가 등록되지 않은 빈 automaton인지 확인합니다. */
+    internal fun isEmpty(): Boolean = values.isEmpty()
 
     /**
      * Trie를 순회하면서 원시 match를 찾을 때마다 [onMatch]를 호출합니다.
