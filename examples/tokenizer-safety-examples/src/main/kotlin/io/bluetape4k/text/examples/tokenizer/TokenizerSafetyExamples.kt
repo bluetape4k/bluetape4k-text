@@ -84,4 +84,5 @@ fun main() {
     }
     val oversized = "sensitive-input-".repeat((MAX_TOKENIZE_TEXT_LENGTH / "sensitive-input-".length) + 1)
     println(renderTokenizerSafetyReport(oversized))
+    println(renderDictionaryReloadReport(runDictionaryReloadExample()))
 }

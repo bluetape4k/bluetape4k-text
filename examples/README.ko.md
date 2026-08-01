@@ -11,7 +11,7 @@
 |---|---|
 | [`text-search-examples`](text-search-examples) | Aho-Corasick builder, streaming scanner, replacement, Flow 첫 알림 검색 |
 | [`lingua-examples`](lingua-examples) | Lingua detector 재사용, 혼합 언어 구간화, 한국어·일본어 토크나이저 라우팅 |
-| [`tokenizer-safety-examples`](tokenizer-safety-examples) | Tokenizer/blockword 웹 서비스 요청 경계와 400/413/500 매핑 |
+| [`tokenizer-safety-examples`](tokenizer-safety-examples) | Tokenizer 요청 경계, 원문을 숨기는 오류, 버전이 있는 사전 reload |
 
 ## 실행
 
