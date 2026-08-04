@@ -17,8 +17,8 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
 
     // Collections
-    implementation(libs.commons.collections4)
-    implementation(libs.eclipse.collections)
-    implementation(libs.eclipse.collections.forkjoin)
-    testImplementation(libs.eclipse.collections.testutils)
+    implementation(bt4k.commons.collections4)
+    implementation(bt4k.eclipse.collections)
+    implementation(bt4k.eclipse.collections.forkjoin)
+    testImplementation(bt4k.eclipse.collections.testutils)
 }
