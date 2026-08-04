@@ -10,7 +10,7 @@ dependencies {
 
     // twitter-text 의존성 제거: VALID_URL/HASHTAG/MENTION/CASHTAG 패턴은 TwitterCompatPatterns.kt 에서 내부 구현
     // Benchmark 비교를 위해
-    testImplementation("org.openkoreantext:open-korean-text:2.3.1")
+    testImplementation(bt4k.open.korean.text)
 
     // Coroutines
     api(libs.kotlinx.coroutines.core)
