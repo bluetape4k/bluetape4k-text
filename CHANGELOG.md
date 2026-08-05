@@ -7,6 +7,8 @@
 
 ## [미배포]
 
+## [0.3.0] - 2026-08-05
+
 ### 변경
 
 - 한국어 Keep a Changelog에서 `Fixed` 범주를 `버그 수정`으로 표준화했다([#225](https://github.com/bluetape4k/bluetape4k-text/issues/225)).
