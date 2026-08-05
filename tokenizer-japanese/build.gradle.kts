@@ -5,8 +5,8 @@ configurations {
 dependencies {
 
     // 일본어 형태소 분석기 (https://mvnrepository.com/artifact/com.atilika.kuromoji/kuromoji-ipadic)
-    api(libs.kuromoji.ipadic)
-    compileOnly(libs.kuromoji.unidic)
+    api(bt4k.kuromoji.ipadic)
+    compileOnly(bt4k.kuromoji.unidic)
 
     // bluetape4k
     api(project(":tokenizer-core"))

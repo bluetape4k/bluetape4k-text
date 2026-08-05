@@ -4,6 +4,6 @@ configurations {
 
 dependencies {
     api(bt4k.bluetape4k.core)
-    api(libs.lingua)
+    api(bt4k.lingua)
     testImplementation(bt4k.bluetape4k.junit5)
 }
