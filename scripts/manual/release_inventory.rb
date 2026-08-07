@@ -6,8 +6,8 @@ require "set"
 class ReleaseInventory
   class Violation < StandardError; end
 
-  DEFAULT_REF = "0.2.1"
-  DEFAULT_SHA = "2db7671afad20045afdcb5793c0113b8b23b972b"
+  DEFAULT_REF = "0.3.0"
+  DEFAULT_SHA = "aead213d2d25307d7d3684226943a5f95c7411f2"
   MODULES = %w[bom tokenizer-core tokenizer-korean tokenizer-japanese lingua text-search].freeze
   EXAMPLES = %w[
     examples/text-search-examples

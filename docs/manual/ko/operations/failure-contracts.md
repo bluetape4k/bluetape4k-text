@@ -45,6 +45,6 @@
 
 ## 소스 근거
 
-- [Tokenize 요청 계약](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/TokenizeRequest.kt)
-- [Blockword 요청 계약](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/BlockwordRequest.kt)
-- [Safety handler](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/tokenizer-safety-examples/src/main/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamples.kt)
+- [Tokenize 요청 계약](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/TokenizeRequest.kt)
+- [Blockword 요청 계약](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/BlockwordRequest.kt)
+- [Safety handler](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/tokenizer-safety-examples/src/main/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamples.kt)

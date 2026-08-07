@@ -3,12 +3,12 @@ require "minitest/autorun"
 require_relative "release_inventory"
 
 class ReleaseInventoryTest < Minitest::Test
-  RELEASE_SHA = "2db7671afad20045afdcb5793c0113b8b23b972b"
+  RELEASE_SHA = "aead213d2d25307d7d3684226943a5f95c7411f2"
 
   def test_accepts_the_pinned_release_tree
     inventory = ReleaseInventory.new(
       root: Dir.pwd,
-      ref: "0.2.1",
+      ref: "0.3.0",
       expected_sha: RELEASE_SHA,
       git_runner: git_runner(REQUIRED_RELEASE_PATHS),
     ).validate!
@@ -23,7 +23,7 @@ class ReleaseInventoryTest < Minitest::Test
     error = assert_raises(ReleaseInventory::Violation) do
       ReleaseInventory.new(
         root: Dir.pwd,
-        ref: "0.2.1",
+        ref: "0.3.0",
         expected_sha: RELEASE_SHA,
         git_runner: git_runner(paths),
       ).validate!

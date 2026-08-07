@@ -51,10 +51,10 @@ Functional tests answer correctness questions; JMH answers comparative throughpu
 
 ## Release evidence
 
-The 0.2.1 line keeps deterministic tokenizer, detector, and sanitized-failure tests as its quality gate. Review [quality gates](../quality/quality-gates.md) for scope and [Aho-Corasick benchmarks](../quality/aho-corasick-benchmarks.md) for measured search cases.
+The 0.3.0 line keeps deterministic tokenizer, detector, and sanitized-failure tests as its quality gate. Review [quality gates](../quality/quality-gates.md) for scope and [Aho-Corasick benchmarks](../quality/aho-corasick-benchmarks.md) for measured search cases.
 
 ## Source evidence
 
-- [Korean processor tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-korean/src/test/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessorTest.kt)
-- [Japanese processor tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-japanese/src/test/kotlin/io/bluetape4k/tokenizer/japanese/JapaneseProcessorTest.kt)
-- [Safety example tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/tokenizer-safety-examples/src/test/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamplesTest.kt)
+- [Korean processor tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-korean/src/test/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessorTest.kt)
+- [Japanese processor tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-japanese/src/test/kotlin/io/bluetape4k/tokenizer/japanese/JapaneseProcessorTest.kt)
+- [Safety example tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/tokenizer-safety-examples/src/test/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamplesTest.kt)

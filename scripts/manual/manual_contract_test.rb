@@ -6,7 +6,7 @@ require "yaml"
 require_relative "manual_contract"
 
 class ManualContractTest < Minitest::Test
-  RELEASE_COMMIT = "2db7671afad20045afdcb5793c0113b8b23b972b"
+  RELEASE_COMMIT = "aead213d2d25307d7d3684226943a5f95c7411f2"
 
   def test_accepts_matching_locales_documents_links_and_release_sources
     with_fixture do |root, manifest_path|
@@ -81,7 +81,7 @@ class ManualContractTest < Minitest::Test
       error = assert_raises(ManualContract::Violation) do
         ManualContract.new(root: root, manifest: manifest_path).validate!
       end
-      assert_includes error.message, "source link must use releaseRef 0.2.1"
+      assert_includes error.message, "source link must use releaseRef 0.3.0"
     end
   end
 
@@ -171,13 +171,13 @@ class ManualContractTest < Minitest::Test
     manifest = {
       "schemaVersion" => 2,
       "repository" => "bluetape4k-text",
-      "stableVersion" => "0.2.1",
-      "stableMinor" => "0.2",
-      "releaseTag" => "0.2.1",
-      "releaseRef" => "0.2.1",
+      "stableVersion" => "0.3.0",
+      "stableMinor" => "0.3",
+      "releaseTag" => "0.3.0",
+      "releaseRef" => "0.3.0",
       "releaseCommit" => RELEASE_COMMIT,
       "publication" => {
-        "manualVersion" => "0.2",
+        "manualVersion" => "0.3",
         "sourceRoot" => "docs/manual",
         "locales" => %w[en ko],
         "contentStatus" => content_status,
@@ -190,6 +190,6 @@ class ManualContractTest < Minitest::Test
   end
 
   def source_url
-    "https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/README.md"
+    "https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/README.md"
   end
 end

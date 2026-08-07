@@ -58,5 +58,5 @@ Continue with the [Text search module](../modules/text-search.md), [testing guid
 
 ## Source evidence
 
-- [Runnable source](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/text-search-examples/src/main/kotlin/io/bluetape4k/text/examples/search/TextSearchExamples.kt)
-- [Example tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/text-search-examples/src/test/kotlin/io/bluetape4k/text/examples/search/TextSearchExamplesTest.kt)
+- [Runnable source](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/text-search-examples/src/main/kotlin/io/bluetape4k/text/examples/search/TextSearchExamples.kt)
+- [Example tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/text-search-examples/src/test/kotlin/io/bluetape4k/text/examples/search/TextSearchExamplesTest.kt)

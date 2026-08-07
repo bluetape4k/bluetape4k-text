@@ -23,7 +23,7 @@ Text 라이브러리만 사용하거나 전체 생태계 버전을 애플리케�
 
 ```kotlin
 dependencies {
-    implementation(platform("io.github.bluetape4k.text:bluetape4k-text-bom:0.2.1"))
+    implementation(platform("io.github.bluetape4k.text:bluetape4k-text-bom:0.3.0"))
     implementation("io.github.bluetape4k.text:tokenizer-korean")
 }
 ```
@@ -73,6 +73,6 @@ dependencies {
 
 ## 소스 근거
 
-- [KoreanProcessor facade](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-korean/src/main/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessor.kt)
-- [Text BOM README](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/bom/README.md)
-- [루트 설치 예제](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/README.md)
+- [KoreanProcessor facade](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-korean/src/main/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessor.kt)
+- [Text BOM README](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/bom/README.md)
+- [루트 설치 예제](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/README.md)

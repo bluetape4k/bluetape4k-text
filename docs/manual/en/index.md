@@ -1,6 +1,6 @@
 # bluetape4k-text 0.2 Manual
 
-`bluetape4k-text` is a Kotlin/JVM toolkit for Korean and Japanese tokenization, language detection, dictionary-backed filtering, and multi-pattern text search. This manual documents the stable `0.2.1` release and organizes the library by the problem you need to solve rather than by repository directory alone.
+`bluetape4k-text` is a Kotlin/JVM toolkit for Korean and Japanese tokenization, language detection, dictionary-backed filtering, and multi-pattern text search. This manual documents the stable `0.3.0` release and organizes the library by the problem you need to solve rather than by repository directory alone.
 
 ![Repository learning map](../assets/overview/repository-learning-map.png)
 
@@ -44,7 +44,7 @@ The [quality gates](quality/quality-gates.md) page separates deterministic repos
 
 ## Version and source
 
-This manual covers minor line `0.2` and is pinned to stable release `0.2.1` at commit `2db7671afad20045afdcb5793c0113b8b23b972b`. Source links point to that release, so future development does not silently change the contract described here.
+This manual covers minor line `0.2` and is pinned to stable release `0.3.0` at commit `aead213d2d25307d7d3684226943a5f95c7411f2`. Source links point to that release, so future development does not silently change the contract described here.
 
-- [Release README](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/README.md)
-- [Release settings](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/settings.gradle.kts)
+- [Release README](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/README.md)
+- [Release settings](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/settings.gradle.kts)

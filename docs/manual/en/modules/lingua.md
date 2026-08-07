@@ -14,7 +14,7 @@ The `lingua` module is a Kotlin-friendly layer over the Lingua detector plus scr
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.text:lingua:0.2.1")
+    implementation("io.github.bluetape4k.text:lingua:0.3.0")
 }
 ```
 
@@ -69,25 +69,25 @@ Detection is evidence, not certainty. Short input and shared vocabulary can be a
 
 ## Source evidence
 
-- [Detector factories](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/lingua/src/main/kotlin/io/bluetape4k/lingua/LanguageDetector.kt)
-- [UnicodeDetector](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/lingua/src/main/kotlin/io/bluetape4k/lingua/UnicodeDetector.kt)
-- [Lingua example](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/lingua-examples/src/main/kotlin/io/bluetape4k/text/examples/lingua/LinguaExamples.kt)
+- [Detector factories](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/lingua/src/main/kotlin/io/bluetape4k/lingua/LanguageDetector.kt)
+- [UnicodeDetector](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/lingua/src/main/kotlin/io/bluetape4k/lingua/UnicodeDetector.kt)
+- [Lingua example](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/lingua-examples/src/main/kotlin/io/bluetape4k/text/examples/lingua/LinguaExamples.kt)
 
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are loaded directly from README assets published with the `0.2.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
+These diagrams are loaded directly from README assets published with the `0.3.0` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### lingua Architecture diagram
 
-[![lingua Architecture diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/lingua-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/lingua-architecture-01.svg)
+[![lingua Architecture diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/lingua-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/lingua-architecture-01.svg)
 
-_Release README: [`lingua/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/lingua/README.md)_
+_Release README: [`lingua/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/lingua/README.md)_
 
 ### lingua Class Structure 2 diagram
 
-[![lingua Class Structure 2 diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/lingua-class-02.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/lingua-class-02.svg)
+[![lingua Class Structure 2 diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/lingua-class-02.png)](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/lingua-class-02.svg)
 
-_Release README: [`lingua/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/lingua/README.md)_
+_Release README: [`lingua/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/lingua/README.md)_
 
 <!-- release-readme-diagrams:end -->

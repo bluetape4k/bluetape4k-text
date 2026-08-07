@@ -44,6 +44,6 @@ Lingua 감지기는 언어 모델을 읽는다. 미리 로드하면 시작할 �
 
 ## 소스 근거
 
-- [Lingua 모듈 계약](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/lingua/README.md)
-- [일본어 프로세서 계약](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-japanese/README.md)
-- [Text search Flow 확장](https://github.com/bluetape4k/bluetape4k-text/tree/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/flow)
+- [Lingua 모듈 계약](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/lingua/README.md)
+- [일본어 프로세서 계약](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-japanese/README.md)
+- [Text search Flow 확장](https://github.com/bluetape4k/bluetape4k-text/tree/0.3.0/text-search/src/main/kotlin/io/bluetape4k/text/search/flow)

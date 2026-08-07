@@ -1,6 +1,6 @@
 # Aho-Corasick benchmarks
 
-The 0.2.1 baseline records JMH throughput snapshots for large dictionaries, dense matches, no-match text, Flow collection, a naive small-dictionary comparison, and NFKC normalization. Higher `ops/s` is better.
+The 0.3.0 baseline records JMH throughput snapshots for large dictionaries, dense matches, no-match text, Flow collection, a naive small-dictionary comparison, and NFKC normalization. Higher `ops/s` is better.
 
 ## Recorded environment
 
@@ -48,5 +48,5 @@ Continue with the [Text search module](../modules/text-search.md), [search examp
 
 ## Source evidence
 
-- [Raw baseline JSON](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/docs/benchmark/2026-06-04-issue-97-ahocorasick-baselines.json)
-- [Benchmark source](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/benchmark/kotlin/io/bluetape4k/text/search/benchmark/AhoCorasickBenchmark.kt)
+- [Raw baseline JSON](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/docs/benchmark/2026-06-04-issue-97-ahocorasick-baselines.json)
+- [Benchmark source](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/text-search/src/benchmark/kotlin/io/bluetape4k/text/search/benchmark/AhoCorasickBenchmark.kt)

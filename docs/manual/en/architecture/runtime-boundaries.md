@@ -44,6 +44,6 @@ See [startup and memory](../operations/startup-and-memory.md) for a deployment c
 
 ## Source evidence
 
-- [Lingua module contract](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/lingua/README.md)
-- [Japanese processor contract](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-japanese/README.md)
-- [Text search Flow extension](https://github.com/bluetape4k/bluetape4k-text/tree/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/flow)
+- [Lingua module contract](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/lingua/README.md)
+- [Japanese processor contract](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-japanese/README.md)
+- [Text search Flow extension](https://github.com/bluetape4k/bluetape4k-text/tree/0.3.0/text-search/src/main/kotlin/io/bluetape4k/text/search/flow)

@@ -52,5 +52,5 @@ parameter 방식 감지기와 같은 제품 언어 집합을 나타내야 한다
 
 ## 소스 근거
 
-- [실행 소스](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/lingua-examples/src/main/kotlin/io/bluetape4k/text/examples/lingua/LinguaExamples.kt)
-- [예제 테스트](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/lingua-examples/src/test/kotlin/io/bluetape4k/text/examples/lingua/LinguaExamplesTest.kt)
+- [실행 소스](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/lingua-examples/src/main/kotlin/io/bluetape4k/text/examples/lingua/LinguaExamples.kt)
+- [예제 테스트](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/lingua-examples/src/test/kotlin/io/bluetape4k/text/examples/lingua/LinguaExamplesTest.kt)

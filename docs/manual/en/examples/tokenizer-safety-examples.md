@@ -19,7 +19,7 @@ The program runs four accepted Korean/Japanese tokenize and blockword calls, the
 3. processor call succeeds → `200`;
 4. processor throws → sanitized `500`.
 
-The maximum is `MAX_TOKENIZE_TEXT_LENGTH` for tokenization and `MAX_BLOCKWORD_TEXT_LENGTH` for masking. Both are `100_000` in release 0.2.1.
+The maximum is `MAX_TOKENIZE_TEXT_LENGTH` for tokenization and `MAX_BLOCKWORD_TEXT_LENGTH` for masking. Both are `100_000` in release 0.3.0.
 
 ## Injected processor functions
 
@@ -47,5 +47,5 @@ Continue with [input safety](../guides/input-safety.md), [failure contracts](../
 
 ## Source evidence
 
-- [Runnable source](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/tokenizer-safety-examples/src/main/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamples.kt)
-- [Example tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/tokenizer-safety-examples/src/test/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamplesTest.kt)
+- [Runnable source](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/tokenizer-safety-examples/src/main/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamples.kt)
+- [Example tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/tokenizer-safety-examples/src/test/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamplesTest.kt)

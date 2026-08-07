@@ -56,5 +56,5 @@ transform은 최종 선택된 일치를 받는다. 겹침 정책이 달라지면
 
 ## 소스 근거
 
-- [실행 소스](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/text-search-examples/src/main/kotlin/io/bluetape4k/text/examples/search/TextSearchExamples.kt)
-- [예제 테스트](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/text-search-examples/src/test/kotlin/io/bluetape4k/text/examples/search/TextSearchExamplesTest.kt)
+- [실행 소스](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/text-search-examples/src/main/kotlin/io/bluetape4k/text/examples/search/TextSearchExamples.kt)
+- [예제 테스트](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/text-search-examples/src/test/kotlin/io/bluetape4k/text/examples/search/TextSearchExamplesTest.kt)

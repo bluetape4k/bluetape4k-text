@@ -1,6 +1,6 @@
 # bluetape4k-text 0.2 매뉴얼
 
-`bluetape4k-text`는 한국어·일본어 토큰화, 언어 감지, 사전 기반 필터링, 다중 패턴 검색을 제공하는 Kotlin/JVM 라이브러리다. 이 매뉴얼은 안정 배포본 `0.2.1`을 기준으로 하며, 저장소 디렉터리보다 사용자가 해결하려는 문제에서 출발한다.
+`bluetape4k-text`는 한국어·일본어 토큰화, 언어 감지, 사전 기반 필터링, 다중 패턴 검색을 제공하는 Kotlin/JVM 라이브러리다. 이 매뉴얼은 안정 배포본 `0.3.0`을 기준으로 하며, 저장소 디렉터리보다 사용자가 해결하려는 문제에서 출발한다.
 
 ![저장소 학습 지도](../assets/overview/repository-learning-map.png)
 
@@ -44,7 +44,7 @@
 
 ## 버전과 소스
 
-이 매뉴얼은 `0.2` 마이너 계열을 다루며 안정 배포본 `0.2.1`, 커밋 `2db7671afad20045afdcb5793c0113b8b23b972b`에 고정되어 있다. 소스 링크도 같은 배포본을 가리키므로 이후 개발 내용이 현재 설명을 바꾸지 않는다.
+이 매뉴얼은 `0.2` 마이너 계열을 다루며 안정 배포본 `0.3.0`, 커밋 `aead213d2d25307d7d3684226943a5f95c7411f2`에 고정되어 있다. 소스 링크도 같은 배포본을 가리키므로 이후 개발 내용이 현재 설명을 바꾸지 않는다.
 
-- [배포본 README](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/README.md)
-- [배포본 프로젝트 설정](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/settings.gradle.kts)
+- [배포본 README](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/README.md)
+- [배포본 프로젝트 설정](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/settings.gradle.kts)

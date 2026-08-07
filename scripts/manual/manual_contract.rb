@@ -10,10 +10,13 @@ class ManualContract
   EXPECTED_DOCUMENT_COUNT = 24
   EXPECTED_ASSET_COUNT = 12
 
-  def initialize(root:, manifest:)
+  DEFAULT_RELEASE = { "ref" => "0.3.0", "commit" => "aead213d2d25307d7d3684226943a5f95c7411f2" }.freeze
+
+  def initialize(root:, manifest:, expected_release: DEFAULT_RELEASE)
     @root = Pathname(root).expand_path
     @manifest_path = Pathname(manifest).expand_path
     @manual_root = @manifest_path.dirname
+    @expected_release = expected_release
   end
 
   def validate!
@@ -54,20 +57,21 @@ class ManualContract
   def validate_header(manifest, errors)
     errors << "schemaVersion must be #{EXPECTED_SCHEMA}" unless manifest["schemaVersion"] == EXPECTED_SCHEMA
     errors << "repository must be #{EXPECTED_REPOSITORY}" unless manifest["repository"] == EXPECTED_REPOSITORY
-    errors << "stableVersion must be 0.2.1" unless manifest["stableVersion"] == "0.2.1"
-    errors << "stableMinor must be 0.2" unless manifest["stableMinor"] == "0.2"
-    errors << "releaseTag must be 0.2.1" unless manifest["releaseTag"] == "0.2.1"
-    errors << "releaseRef must be 0.2.1" unless manifest["releaseRef"] == "0.2.1"
+    expected_ref = @expected_release.fetch("ref")
+    errors << "stableVersion must be #{expected_ref}" unless manifest["stableVersion"] == expected_ref
+    errors << "stableMinor must be #{expected_ref.split('.')[0, 2].join('.')}" unless manifest["stableMinor"] == expected_ref.split('.')[0, 2].join('.')
+    errors << "releaseTag must be #{expected_ref}" unless manifest["releaseTag"] == expected_ref
+    errors << "releaseRef must be #{expected_ref}" unless manifest["releaseRef"] == expected_ref
 
     release_commit = manifest["releaseCommit"]
-    errors << "releaseCommit must be a 40-character Git SHA" unless release_commit.is_a?(String) && release_commit.match?(/\A[0-9a-f]{40}\z/)
+    errors << "releaseCommit must be #{@expected_release.fetch('commit')}" unless release_commit == @expected_release.fetch("commit")
 
     publication = manifest["publication"]
     unless publication.is_a?(Hash)
       errors << "publication must be a mapping"
       return
     end
-    errors << "manualVersion must be 0.2" unless publication["manualVersion"] == "0.2"
+    errors << "manualVersion must be #{expected_ref.split('.')[0, 2].join('.')}" unless publication["manualVersion"] == expected_ref.split('.')[0, 2].join('.')
     errors << "sourceRoot must be docs/manual" unless publication["sourceRoot"] == "docs/manual"
     errors << "publication locales must be en and ko" unless publication["locales"] == EXPECTED_LOCALES
     unless %w[in-progress complete].include?(publication["contentStatus"])

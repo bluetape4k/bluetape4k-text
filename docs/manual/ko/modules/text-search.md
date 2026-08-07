@@ -17,7 +17,7 @@
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.text:text-search:0.2.1")
+    implementation("io.github.bluetape4k.text:text-search:0.3.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:<compatible-version>") // Flow 사용 시
 }
 ```
@@ -55,7 +55,7 @@ builder는 설정 단계에서만 사용한다. `build()`가 끝나면 불변 sn
 
 ## 경계와 정규화
 
-`LATIN_ALPHA`는 더 긴 영단어 내부의 부분 일치를 막고, `WHITESPACE_SEPARATED`는 공백으로 둘러싸인 구문에 적합하다. Unicode 정규화는 동등한 문자를 찾게 해 주지만 비용이 크다. 0.2.1의 NFKC 벤치마크가 일반 no-match 경로보다 훨씬 느린 이유다.
+`LATIN_ALPHA`는 더 긴 영단어 내부의 부분 일치를 막고, `WHITESPACE_SEPARATED`는 공백으로 둘러싸인 구문에 적합하다. Unicode 정규화는 동등한 문자를 찾게 해 주지만 비용이 크다. 0.3.0의 NFKC 벤치마크가 일반 no-match 경로보다 훨씬 느린 이유다.
 
 ## Flow 수집
 
@@ -79,31 +79,31 @@ Flow 확장은 `channelFlow`와 `Dispatchers.Default`를 사용한다. 제한 �
 
 ## 소스 근거
 
-- [AhoCorasickAutomaton](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/AhoCorasickAutomaton.kt)
-- [SearchOptions](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/SearchOptions.kt)
-- [Flow 확장](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/flow/AhoCorasickFlowExtensions.kt)
+- [AhoCorasickAutomaton](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/text-search/src/main/kotlin/io/bluetape4k/text/search/AhoCorasickAutomaton.kt)
+- [SearchOptions](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/text-search/src/main/kotlin/io/bluetape4k/text/search/SearchOptions.kt)
+- [Flow 확장](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/text-search/src/main/kotlin/io/bluetape4k/text/search/flow/AhoCorasickFlowExtensions.kt)
 
 <!-- release-readme-diagrams:start -->
 ## 배포본 다이어그램 {#release-diagrams}
 
-아래 그림은 `0.2.1` 배포본의 README 자산을 해당 배포 커밋에서 직접 불러옵니다. 이후 SNAPSHOT이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 같은 배포 커밋의 SVG 원본이 열립니다.
+아래 그림은 `0.3.0` 배포본의 README 자산을 해당 배포 커밋에서 직접 불러옵니다. 이후 SNAPSHOT이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 같은 배포 커밋의 SVG 원본이 열립니다.
 
 ### 처리 흐름
 
-[![처리 흐름](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-architecture-03.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-architecture-03.svg)
+[![처리 흐름](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/text-search-architecture-03.png)](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/text-search-architecture-03.svg)
 
-_배포본 README: [`text-search/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.ko.md)_
+_배포본 README: [`text-search/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/text-search/README.ko.md)_
 
 ### 텍스트 검색 클래스 구조도
 
-[![텍스트 검색 클래스 구조도](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-class-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-class-01.svg)
+[![텍스트 검색 클래스 구조도](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/text-search-class-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/text-search-class-01.svg)
 
-_배포본 README: [`text-search/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.ko.md)_
+_배포본 README: [`text-search/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/text-search/README.ko.md)_
 
 ### 검색 파이프라인
 
-[![검색 파이프라인](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-sequence-02.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-sequence-02.svg)
+[![검색 파이프라인](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/text-search-sequence-02.png)](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/text-search-sequence-02.svg)
 
-_배포본 README: [`text-search/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.ko.md)_
+_배포본 README: [`text-search/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/text-search/README.ko.md)_
 
 <!-- release-readme-diagrams:end -->

@@ -49,5 +49,5 @@ See [testing](../guides/testing.md) for application coverage and [Aho-Corasick b
 
 ## Source evidence
 
-- [Quality report](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/docs/superpowers/research/2026-05-27-issue-86-quality-report.md)
-- [Quality benchmark specification](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/docs/superpowers/specs/2026-05-27-issue-83-text-quality-benchmark-spec.md)
+- [Quality report](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/docs/superpowers/research/2026-05-27-issue-86-quality-report.md)
+- [Quality benchmark specification](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/docs/superpowers/specs/2026-05-27-issue-83-text-quality-benchmark-spec.md)

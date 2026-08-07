@@ -49,5 +49,5 @@ fixture는 사용자에게 보이는 token surface에 집중한다. 내부 형�
 
 ## 소스 근거
 
-- [품질 보고서](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/docs/superpowers/research/2026-05-27-issue-86-quality-report.md)
-- [품질 벤치마크 명세](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/docs/superpowers/specs/2026-05-27-issue-83-text-quality-benchmark-spec.md)
+- [품질 보고서](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/docs/superpowers/research/2026-05-27-issue-86-quality-report.md)
+- [품질 벤치마크 명세](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/docs/superpowers/specs/2026-05-27-issue-83-text-quality-benchmark-spec.md)

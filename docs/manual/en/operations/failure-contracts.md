@@ -45,6 +45,6 @@ Continue with [input safety](../guides/input-safety.md), the [safety example](..
 
 ## Source evidence
 
-- [Tokenize request contract](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/TokenizeRequest.kt)
-- [Blockword request contract](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/BlockwordRequest.kt)
-- [Safety handler](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/tokenizer-safety-examples/src/main/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamples.kt)
+- [Tokenize request contract](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/TokenizeRequest.kt)
+- [Blockword request contract](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/BlockwordRequest.kt)
+- [Safety handler](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/tokenizer-safety-examples/src/main/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamples.kt)
