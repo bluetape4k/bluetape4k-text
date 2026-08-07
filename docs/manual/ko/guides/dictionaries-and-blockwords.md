@@ -69,6 +69,6 @@ JapaneseProcessor.removeBlockwords(listOf("東京"))
 
 ## 소스 근거
 
-- [DictionaryProvider](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/utils/DictionaryProvider.kt)
-- [KoreanProcessor](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-korean/src/main/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessor.kt)
-- [JapaneseProcessor](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-japanese/src/main/kotlin/io/bluetape4k/tokenizer/japanese/JapaneseProcessor.kt)
+- [DictionaryProvider](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/utils/DictionaryProvider.kt)
+- [KoreanProcessor](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-korean/src/main/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessor.kt)
+- [JapaneseProcessor](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-japanese/src/main/kotlin/io/bluetape4k/tokenizer/japanese/JapaneseProcessor.kt)

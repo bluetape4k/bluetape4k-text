@@ -17,7 +17,7 @@
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.text:text-search:0.2.1")
+    implementation("io.github.bluetape4k.text:text-search:0.3.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:<compatible-version>") // Flow calls only
 }
 ```
@@ -56,7 +56,7 @@ The builder is the configuration phase. After `build()`, share the automaton as 
 
 ## Boundaries and normalization
 
-`LATIN_ALPHA` avoids matching a keyword inside a larger alphabetic word. `WHITESPACE_SEPARATED` is useful for phrases that must be surrounded by whitespace. Unicode normalization enables canonically or compatibility-equivalent input, but it adds measurable work; the 0.2.1 NFKC benchmark is much slower than the raw no-match path.
+`LATIN_ALPHA` avoids matching a keyword inside a larger alphabetic word. `WHITESPACE_SEPARATED` is useful for phrases that must be surrounded by whitespace. Unicode normalization enables canonically or compatibility-equivalent input, but it adds measurable work; the 0.3.0 NFKC benchmark is much slower than the raw no-match path.
 
 ## Flow collection
 
@@ -84,31 +84,31 @@ Define the keyword snapshot and option policy before publication. Rebuilding on 
 
 ## Source evidence
 
-- [AhoCorasickAutomaton](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/AhoCorasickAutomaton.kt)
-- [SearchOptions](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/SearchOptions.kt)
-- [Flow extension](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/flow/AhoCorasickFlowExtensions.kt)
+- [AhoCorasickAutomaton](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/text-search/src/main/kotlin/io/bluetape4k/text/search/AhoCorasickAutomaton.kt)
+- [SearchOptions](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/text-search/src/main/kotlin/io/bluetape4k/text/search/SearchOptions.kt)
+- [Flow extension](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/text-search/src/main/kotlin/io/bluetape4k/text/search/flow/AhoCorasickFlowExtensions.kt)
 
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are loaded directly from README assets published with the `0.2.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
+These diagrams are loaded directly from README assets published with the `0.3.0` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### Processing Flow diagram
 
-[![Processing Flow diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-architecture-03.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-architecture-03.svg)
+[![Processing Flow diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/text-search-architecture-03.png)](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/text-search-architecture-03.svg)
 
-_Release README: [`text-search/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.md)_
+_Release README: [`text-search/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/text-search/README.md)_
 
 ### text search Class Structure diagram
 
-[![text search Class Structure diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-class-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-class-01.svg)
+[![text search Class Structure diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/text-search-class-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/text-search-class-01.svg)
 
-_Release README: [`text-search/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.md)_
+_Release README: [`text-search/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/text-search/README.md)_
 
 ### Search Pipeline diagram
 
-[![Search Pipeline diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-sequence-02.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/text-search-sequence-02.svg)
+[![Search Pipeline diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/text-search-sequence-02.png)](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/text-search-sequence-02.svg)
 
-_Release README: [`text-search/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/text-search/README.md)_
+_Release README: [`text-search/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/text-search/README.md)_
 
 <!-- release-readme-diagrams:end -->

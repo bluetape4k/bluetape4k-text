@@ -47,6 +47,6 @@ val values = automaton.parseText("hers").map { it.value }
 
 ## 소스 근거
 
-- [한국어 프로세서 테스트](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-korean/src/test/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessorTest.kt)
-- [일본어 프로세서 테스트](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-japanese/src/test/kotlin/io/bluetape4k/tokenizer/japanese/JapaneseProcessorTest.kt)
-- [안전 예제 테스트](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/tokenizer-safety-examples/src/test/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamplesTest.kt)
+- [한국어 프로세서 테스트](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-korean/src/test/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessorTest.kt)
+- [일본어 프로세서 테스트](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-japanese/src/test/kotlin/io/bluetape4k/tokenizer/japanese/JapaneseProcessorTest.kt)
+- [안전 예제 테스트](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/tokenizer-safety-examples/src/test/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamplesTest.kt)

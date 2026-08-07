@@ -19,7 +19,7 @@
 3. 프로세서가 성공하면 `200`
 4. 프로세서가 예외를 던지면 정제된 `500`
 
-토큰화는 `MAX_TOKENIZE_TEXT_LENGTH`, 마스킹은 `MAX_BLOCKWORD_TEXT_LENGTH`를 사용한다. 0.2.1에서는 둘 다 `100_000`이다.
+토큰화는 `MAX_TOKENIZE_TEXT_LENGTH`, 마스킹은 `MAX_BLOCKWORD_TEXT_LENGTH`를 사용한다. 0.3.0에서는 둘 다 `100_000`이다.
 
 ## 주입할 수 있는 프로세서 함수
 
@@ -47,5 +47,5 @@ handler 생성자는 한국어·일본어 함수를 받는다. 테스트에서�
 
 ## 소스 근거
 
-- [실행 소스](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/tokenizer-safety-examples/src/main/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamples.kt)
-- [예제 테스트](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/tokenizer-safety-examples/src/test/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamplesTest.kt)
+- [실행 소스](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/tokenizer-safety-examples/src/main/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamples.kt)
+- [예제 테스트](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/tokenizer-safety-examples/src/test/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamplesTest.kt)

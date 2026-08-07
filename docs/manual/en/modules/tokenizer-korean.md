@@ -16,7 +16,7 @@
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.text:tokenizer-korean:0.2.1")
+    implementation("io.github.bluetape4k.text:tokenizer-korean:0.3.0")
 }
 ```
 
@@ -81,19 +81,19 @@ The facade rejects oversized inputs using the core limits. It is safe for concur
 
 ## Source evidence
 
-- [KoreanProcessor](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-korean/src/main/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessor.kt)
-- [Korean module README](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-korean/README.md)
-- [Korean processor tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-korean/src/test/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessorTest.kt)
+- [KoreanProcessor](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-korean/src/main/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessor.kt)
+- [Korean module README](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-korean/README.md)
+- [Korean processor tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-korean/src/test/kotlin/io/bluetape4k/tokenizer/korean/KoreanProcessorTest.kt)
 
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are loaded directly from README assets published with the `0.2.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
+These diagrams are loaded directly from README assets published with the `0.3.0` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### tokenizer korean Class Structure diagram
 
-[![tokenizer korean Class Structure diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/tokenizer-korean-class-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/tokenizer-korean-class-01.svg)
+[![tokenizer korean Class Structure diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/tokenizer-korean-class-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/tokenizer-korean-class-01.svg)
 
-_Release README: [`tokenizer-korean/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/tokenizer-korean/README.md)_
+_Release README: [`tokenizer-korean/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/tokenizer-korean/README.md)_
 
 <!-- release-readme-diagrams:end -->

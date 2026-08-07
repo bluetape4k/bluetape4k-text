@@ -6,7 +6,7 @@
 
 - `TokenizeRequest`, `TokenizeResponse`, `BlockwordRequest`, `BlockwordResponse`
 - locale·마스킹 옵션과 `Severity.LOW`, `MIDDLE`, `HIGH`
-- 0.2.1에서 모두 `100_000`인 `MAX_TOKENIZE_TEXT_LENGTH`, `MAX_BLOCKWORD_TEXT_LENGTH`
+- 0.3.0에서 모두 `100_000`인 `MAX_TOKENIZE_TEXT_LENGTH`, `MAX_BLOCKWORD_TEXT_LENGTH`
 - 일반 텍스트·gzip classpath 사전을 읽는 `DictionaryProvider`
 - 문자 시퀀스를 반복 조회하기 위한 `CharArraySet`, `CharArrayMap`
 - `TokenizerException`, `InvalidTokenizeRequestException`
@@ -15,7 +15,7 @@
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.text:tokenizer-core:0.2.1")
+    implementation("io.github.bluetape4k.text:tokenizer-core:0.3.0")
 }
 ```
 
@@ -66,19 +66,19 @@ HTTP나 메시지 요청 모델, 공통 사전 도구, 자체 프로세서가 �
 
 ## 소스 근거
 
-- [TokenizeRequest](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/TokenizeRequest.kt)
-- [BlockwordRequest](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/BlockwordRequest.kt)
-- [DictionaryProvider](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/utils/DictionaryProvider.kt)
+- [TokenizeRequest](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/TokenizeRequest.kt)
+- [BlockwordRequest](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/BlockwordRequest.kt)
+- [DictionaryProvider](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/utils/DictionaryProvider.kt)
 
 <!-- release-readme-diagrams:start -->
 ## 배포본 다이어그램 {#release-diagrams}
 
-아래 그림은 `0.2.1` 배포본의 README 자산을 해당 배포 커밋에서 직접 불러옵니다. 이후 SNAPSHOT이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 같은 배포 커밋의 SVG 원본이 열립니다.
+아래 그림은 `0.3.0` 배포본의 README 자산을 해당 배포 커밋에서 직접 불러옵니다. 이후 SNAPSHOT이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 같은 배포 커밋의 SVG 원본이 열립니다.
 
 ### tokenizer core 클래스 구조도
 
-[![tokenizer core 클래스 구조도](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/tokenizer-core-class-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/tokenizer-core-class-01.svg)
+[![tokenizer core 클래스 구조도](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/tokenizer-core-class-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/tokenizer-core-class-01.svg)
 
-_배포본 README: [`tokenizer-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/tokenizer-core/README.ko.md)_
+_배포본 README: [`tokenizer-core/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/tokenizer-core/README.ko.md)_
 
 <!-- release-readme-diagrams:end -->

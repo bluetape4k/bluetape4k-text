@@ -5,17 +5,17 @@ require "yaml"
 require_relative "release_contract"
 
 class ReleaseContractTest < Minitest::Test
-  RELEASE_SHA = "2db7671afad20045afdcb5793c0113b8b23b972b"
+  RELEASE_SHA = "aead213d2d25307d7d3684226943a5f95c7411f2"
 
   def test_accepts_annotated_tag_at_expected_commit
     runner = git_runner(type: "tag\n", sha: "#{RELEASE_SHA}\n")
-    assert ReleaseContract.new(root: Dir.pwd, tag: "0.2.1", expected_sha: RELEASE_SHA, git_runner: runner).validate!
+    assert ReleaseContract.new(root: Dir.pwd, tag: "0.3.0", expected_sha: RELEASE_SHA, git_runner: runner).validate!
   end
 
   def test_rejects_lightweight_tag
     runner = git_runner(type: "commit\n", sha: "#{RELEASE_SHA}\n")
     error = assert_raises(ReleaseContract::Violation) do
-      ReleaseContract.new(root: Dir.pwd, tag: "0.2.1", expected_sha: RELEASE_SHA, git_runner: runner).validate!
+      ReleaseContract.new(root: Dir.pwd, tag: "0.3.0", expected_sha: RELEASE_SHA, git_runner: runner).validate!
     end
     assert_includes error.message, "must be annotated"
   end
@@ -23,7 +23,7 @@ class ReleaseContractTest < Minitest::Test
   def test_rejects_release_commit_that_does_not_match_tag
     runner = git_runner(type: "tag\n", sha: "#{'0' * 40}\n")
     error = assert_raises(ReleaseContract::Violation) do
-      ReleaseContract.new(root: Dir.pwd, tag: "0.2.1", expected_sha: RELEASE_SHA, git_runner: runner).validate!
+      ReleaseContract.new(root: Dir.pwd, tag: "0.3.0", expected_sha: RELEASE_SHA, git_runner: runner).validate!
     end
     assert_includes error.message, "releaseCommit"
   end

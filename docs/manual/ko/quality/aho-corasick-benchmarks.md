@@ -1,6 +1,6 @@
 # Aho-Corasick 벤치마크
 
-0.2.1 baseline은 대용량 사전, 조밀한 일치, no-match, Flow 수집, 단순 순차 검색, NFKC 정규화의 JMH throughput을 기록한다. `ops/s`가 높을수록 빠르다.
+0.3.0 baseline은 대용량 사전, 조밀한 일치, no-match, Flow 수집, 단순 순차 검색, NFKC 정규화의 JMH throughput을 기록한다. `ops/s`가 높을수록 빠르다.
 
 ## 측정 환경
 
@@ -46,5 +46,5 @@ NFKC 결과는 정규화를 기본으로 켜지 말고 실제 요구로 선택�
 
 ## 소스 근거
 
-- [원본 baseline JSON](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/docs/benchmark/2026-06-04-issue-97-ahocorasick-baselines.json)
-- [벤치마크 소스](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/benchmark/kotlin/io/bluetape4k/text/search/benchmark/AhoCorasickBenchmark.kt)
+- [원본 baseline JSON](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/docs/benchmark/2026-06-04-issue-97-ahocorasick-baselines.json)
+- [벤치마크 소스](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/text-search/src/benchmark/kotlin/io/bluetape4k/text/search/benchmark/AhoCorasickBenchmark.kt)

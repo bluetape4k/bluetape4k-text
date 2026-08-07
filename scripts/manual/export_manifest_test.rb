@@ -10,7 +10,7 @@ class ManifestExporterTest < Minitest::Test
       source = File.join(root, "manifest.yaml")
       output = File.join(root, "manifest.json")
       File.write(source, <<~YAML)
-        stableMinor: '0.2'
+        stableMinor: '0.3'
         overview:
           documents:
             en:
@@ -25,7 +25,7 @@ class ManifestExporterTest < Minitest::Test
       rendered = File.binread(output)
       parsed = JSON.parse(rendered)
 
-      assert_equal "0.2", parsed.fetch("stableMinor")
+      assert_equal "0.3", parsed.fetch("stableMinor")
       assert_equal %w[en/index.md en/getting-started.md], parsed.dig("overview", "documents", "en")
       assert_equal %w[bluetape4k-text-bom tokenizer-core], parsed.fetch("modules").map { |entry| entry.fetch("id") }
       assert rendered.end_with?("\n")

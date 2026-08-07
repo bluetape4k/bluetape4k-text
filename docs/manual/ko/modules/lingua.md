@@ -14,7 +14,7 @@
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.text:lingua:0.2.1")
+    implementation("io.github.bluetape4k.text:lingua:0.3.0")
 }
 ```
 
@@ -68,25 +68,25 @@ Unicode 필터는 문자 범위를 결정적으로 판정하지만 자연어를 
 
 ## 소스 근거
 
-- [감지기 factory](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/lingua/src/main/kotlin/io/bluetape4k/lingua/LanguageDetector.kt)
-- [UnicodeDetector](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/lingua/src/main/kotlin/io/bluetape4k/lingua/UnicodeDetector.kt)
-- [Lingua 예제](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/lingua-examples/src/main/kotlin/io/bluetape4k/text/examples/lingua/LinguaExamples.kt)
+- [감지기 factory](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/lingua/src/main/kotlin/io/bluetape4k/lingua/LanguageDetector.kt)
+- [UnicodeDetector](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/lingua/src/main/kotlin/io/bluetape4k/lingua/UnicodeDetector.kt)
+- [Lingua 예제](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/lingua-examples/src/main/kotlin/io/bluetape4k/text/examples/lingua/LinguaExamples.kt)
 
 <!-- release-readme-diagrams:start -->
 ## 배포본 다이어그램 {#release-diagrams}
 
-아래 그림은 `0.2.1` 배포본의 README 자산을 해당 배포 커밋에서 직접 불러옵니다. 이후 SNAPSHOT이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 같은 배포 커밋의 SVG 원본이 열립니다.
+아래 그림은 `0.3.0` 배포본의 README 자산을 해당 배포 커밋에서 직접 불러옵니다. 이후 SNAPSHOT이 아니라 이 매뉴얼 버전의 구조와 실행 흐름을 보여 줍니다. 미리보기를 누르면 같은 배포 커밋의 SVG 원본이 열립니다.
 
 ### lingua 아키텍처
 
-[![lingua 아키텍처](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/lingua-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/lingua-architecture-01.svg)
+[![lingua 아키텍처](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/lingua-architecture-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/lingua-architecture-01.svg)
 
-_배포본 README: [`lingua/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/lingua/README.ko.md)_
+_배포본 README: [`lingua/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/lingua/README.ko.md)_
 
 ### lingua 클래스 구조도
 
-[![lingua 클래스 구조도](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/lingua-class-02.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/lingua-class-02.svg)
+[![lingua 클래스 구조도](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/lingua-class-02.png)](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/lingua-class-02.svg)
 
-_배포본 README: [`lingua/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/lingua/README.ko.md)_
+_배포본 README: [`lingua/README.ko.md`](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/lingua/README.ko.md)_
 
 <!-- release-readme-diagrams:end -->

@@ -1,13 +1,13 @@
 ---
 schemaVersion: 2
 repository: bluetape4k-text
-stableVersion: 0.2.1
-stableMinor: '0.2'
-releaseTag: 0.2.1
-releaseRef: 0.2.1
-releaseCommit: 2db7671afad20045afdcb5793c0113b8b23b972b
+stableVersion: 0.3.0
+stableMinor: '0.3'
+releaseTag: 0.3.0
+releaseRef: 0.3.0
+releaseCommit: aead213d2d25307d7d3684226943a5f95c7411f2
 publication:
-  manualVersion: '0.2'
+  manualVersion: '0.3'
   sourceRoot: docs/manual
   locales:
   - en

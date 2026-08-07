@@ -1,6 +1,6 @@
 # Input safety
 
-Validate untrusted text before tokenizer, dictionary, or model work. The 0.2.1 request models cap tokenizer and blockword text at `100_000` characters and reject blank input.
+Validate untrusted text before tokenizer, dictionary, or model work. The 0.3.0 request models cap tokenizer and blockword text at `100_000` characters and reject blank input.
 
 ![Request safety boundary](../../assets/operations/request-safety-boundary.png)
 
@@ -46,7 +46,7 @@ Do not collapse these into one retryable error. A caller can correct 400/413 inp
 
 ## Coroutines and cancellation
 
-If the application calls processing inside a suspend boundary, rethrow `CancellationException` before broad exception handling. The runnable 0.2.1 safety example is synchronous around processors and uses `runCatching`; coroutine services should not copy that pattern around suspend calls because cancellation must propagate.
+If the application calls processing inside a suspend boundary, rethrow `CancellationException` before broad exception handling. The runnable 0.3.0 safety example is synchronous around processors and uses `runCatching`; coroutine services should not copy that pattern around suspend calls because cancellation must propagate.
 
 ## Add application limits when needed
 
@@ -58,6 +58,6 @@ Test blank, whitespace-only, exactly-at-limit, one-over-limit, processor excepti
 
 ## Source evidence
 
-- [TokenizeRequest limits](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/TokenizeRequest.kt)
-- [BlockwordRequest limits](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/BlockwordRequest.kt)
-- [Safety example](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/tokenizer-safety-examples/src/main/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamples.kt)
+- [TokenizeRequest limits](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/TokenizeRequest.kt)
+- [BlockwordRequest limits](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/BlockwordRequest.kt)
+- [Safety example](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/tokenizer-safety-examples/src/main/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamples.kt)

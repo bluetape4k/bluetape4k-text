@@ -54,5 +54,5 @@ Continue with [mixed-language processing](../guides/mixed-language-processing.md
 
 ## Source evidence
 
-- [Runnable source](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/lingua-examples/src/main/kotlin/io/bluetape4k/text/examples/lingua/LinguaExamples.kt)
-- [Example tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/lingua-examples/src/test/kotlin/io/bluetape4k/text/examples/lingua/LinguaExamplesTest.kt)
+- [Runnable source](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/lingua-examples/src/main/kotlin/io/bluetape4k/text/examples/lingua/LinguaExamples.kt)
+- [Example tests](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/lingua-examples/src/test/kotlin/io/bluetape4k/text/examples/lingua/LinguaExamplesTest.kt)

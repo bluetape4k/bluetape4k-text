@@ -6,7 +6,7 @@
 
 - `TokenizeRequest`, `TokenizeResponse`, `BlockwordRequest`, and `BlockwordResponse`;
 - locale and masking options plus `Severity.LOW`, `MIDDLE`, and `HIGH`;
-- `MAX_TOKENIZE_TEXT_LENGTH` and `MAX_BLOCKWORD_TEXT_LENGTH`, both `100_000` in 0.2.1;
+- `MAX_TOKENIZE_TEXT_LENGTH` and `MAX_BLOCKWORD_TEXT_LENGTH`, both `100_000` in 0.3.0;
 - `DictionaryProvider` for plain or gzip classpath dictionaries;
 - `CharArraySet` and `CharArrayMap` for repeated character-sequence lookup;
 - `TokenizerException` and `InvalidTokenizeRequestException`.
@@ -15,7 +15,7 @@
 
 ```kotlin
 dependencies {
-    implementation("io.github.bluetape4k.text:tokenizer-core:0.2.1")
+    implementation("io.github.bluetape4k.text:tokenizer-core:0.3.0")
 }
 ```
 
@@ -66,19 +66,19 @@ Blank text and text longer than `100_000` characters are rejected before process
 
 ## Source evidence
 
-- [TokenizeRequest](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/TokenizeRequest.kt)
-- [BlockwordRequest](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/BlockwordRequest.kt)
-- [DictionaryProvider](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/utils/DictionaryProvider.kt)
+- [TokenizeRequest](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/TokenizeRequest.kt)
+- [BlockwordRequest](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/BlockwordRequest.kt)
+- [DictionaryProvider](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/utils/DictionaryProvider.kt)
 
 <!-- release-readme-diagrams:start -->
 ## Release diagrams {#release-diagrams}
 
-These diagrams are loaded directly from README assets published with the `0.2.1` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
+These diagrams are loaded directly from README assets published with the `0.3.0` release and pinned to its immutable commit. They describe this manual's released structure and runtime flows, not later Snapshot changes. Select a preview to open the SVG at the same release commit.
 
 ### tokenizer core Class Structure diagram
 
-[![tokenizer core Class Structure diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/tokenizer-core-class-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/docs/images/readme-diagrams/tokenizer-core-class-01.svg)
+[![tokenizer core Class Structure diagram](https://raw.githubusercontent.com/bluetape4k/bluetape4k-text/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/tokenizer-core-class-01.png)](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/docs/images/readme-diagrams/tokenizer-core-class-01.svg)
 
-_Release README: [`tokenizer-core/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/2db7671afad20045afdcb5793c0113b8b23b972b/tokenizer-core/README.md)_
+_Release README: [`tokenizer-core/README.md`](https://github.com/bluetape4k/bluetape4k-text/blob/aead213d2d25307d7d3684226943a5f95c7411f2/tokenizer-core/README.md)_
 
 <!-- release-readme-diagrams:end -->

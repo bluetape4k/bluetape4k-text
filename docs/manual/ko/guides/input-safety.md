@@ -1,6 +1,6 @@
 # 입력 안전성
 
-신뢰할 수 없는 텍스트는 토크나이저, 사전, 언어 모델을 호출하기 전에 검증한다. 0.2.1 요청 모델은 토큰화와 금칙어 텍스트를 `100_000`자로 제한하고 빈 입력을 거부한다.
+신뢰할 수 없는 텍스트는 토크나이저, 사전, 언어 모델을 호출하기 전에 검증한다. 0.3.0 요청 모델은 토큰화와 금칙어 텍스트를 `100_000`자로 제한하고 빈 입력을 거부한다.
 
 ![요청 안전 경계](../../assets/operations/request-safety-boundary.png)
 
@@ -46,7 +46,7 @@ adapter는 모델과 같은 공개 상수를 사용한다. adapter를 거치지 
 
 ## Coroutine과 취소
 
-suspend 경계에서 처리한다면 넓은 예외 처리보다 먼저 `CancellationException`을 다시 던진다. 0.2.1 실행 예제는 동기 프로세서를 `runCatching`으로 감싸지만 suspend 호출에 그대로 복사하면 취소 신호를 삼킬 수 있다.
+suspend 경계에서 처리한다면 넓은 예외 처리보다 먼저 `CancellationException`을 다시 던진다. 0.3.0 실행 예제는 동기 프로세서를 `runCatching`으로 감싸지만 suspend 호출에 그대로 복사하면 취소 신호를 삼킬 수 있다.
 
 ## 애플리케이션 제한을 더 작게 둘 때
 
@@ -58,6 +58,6 @@ suspend 경계에서 처리한다면 넓은 예외 처리보다 먼저 `Cancella
 
 ## 소스 근거
 
-- [TokenizeRequest 제한](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/TokenizeRequest.kt)
-- [BlockwordRequest 제한](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/BlockwordRequest.kt)
-- [안전 예제](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/examples/tokenizer-safety-examples/src/main/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamples.kt)
+- [TokenizeRequest 제한](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/TokenizeRequest.kt)
+- [BlockwordRequest 제한](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model/BlockwordRequest.kt)
+- [안전 예제](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/examples/tokenizer-safety-examples/src/main/kotlin/io/bluetape4k/text/examples/tokenizer/TokenizerSafetyExamples.kt)

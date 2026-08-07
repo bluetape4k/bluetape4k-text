@@ -46,6 +46,6 @@ Aho-Corasick 검색 전에 반드시 형태소 분석을 할 필요는 없다. �
 
 ## 소스 근거
 
-- [토크나이저 요청 모델](https://github.com/bluetape4k/bluetape4k-text/tree/0.2.1/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model)
-- [Lingua 소스](https://github.com/bluetape4k/bluetape4k-text/tree/0.2.1/lingua/src/main/kotlin/io/bluetape4k/lingua)
-- [Aho-Corasick 구현](https://github.com/bluetape4k/bluetape4k-text/blob/0.2.1/text-search/src/main/kotlin/io/bluetape4k/text/search/AhoCorasickAutomaton.kt)
+- [토크나이저 요청 모델](https://github.com/bluetape4k/bluetape4k-text/tree/0.3.0/tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/model)
+- [Lingua 소스](https://github.com/bluetape4k/bluetape4k-text/tree/0.3.0/lingua/src/main/kotlin/io/bluetape4k/lingua)
+- [Aho-Corasick 구현](https://github.com/bluetape4k/bluetape4k-text/blob/0.3.0/text-search/src/main/kotlin/io/bluetape4k/text/search/AhoCorasickAutomaton.kt)
