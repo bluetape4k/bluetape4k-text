@@ -4,8 +4,8 @@ This page takes you from dependency management to a first tokenization result. I
 
 ## Requirements
 
-- JDK 21 or newer
-- Kotlin 2.3-compatible build
+- JDK 25 or newer
+- Kotlin 2.4-compatible build
 - a repository that can resolve Maven Central
 
 ## Prefer the ecosystem BOM
