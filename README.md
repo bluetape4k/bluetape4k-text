@@ -2,8 +2,8 @@
 
 [![CI](https://github.com/bluetape4k/bluetape4k-text/actions/workflows/ci.yml/badge.svg)](https://github.com/bluetape4k/bluetape4k-text/actions/workflows/ci.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.bluetape4k.text/tokenizer-core)](https://central.sonatype.com/namespace/io.github.bluetape4k.text)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.3-7F52FF?logo=kotlin)](https://kotlinlang.org)
-[![JVM](https://img.shields.io/badge/JVM-21-ED8B00?logo=openjdk)](https://openjdk.org)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin)](https://kotlinlang.org)
+[![JVM](https://img.shields.io/badge/JVM-25-ED8B00?logo=openjdk)](https://openjdk.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 [한국어](./README.ko.md) | English
@@ -273,9 +273,9 @@ fun tokenizeHttp(text: String): Int =
 
 ## Requirements
 
-- **JDK**: 21+
-- **Kotlin**: 2.3+
-- **Gradle**: 8.x
+- **JDK**: 25+
+- **Kotlin**: 2.4+
+- **Gradle**: 9.7.0 (checked-in Wrapper)
 
 ## License
 
