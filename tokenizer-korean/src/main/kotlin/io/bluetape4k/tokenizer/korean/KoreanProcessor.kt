@@ -246,7 +246,7 @@ object KoreanProcessor: KLogging() {
         withBlockwordDictionary(severity) {
             removeAll(words)
         }
-        KoreanDictionaryProvider.koreanDictionary[KoreanPos.Noun]?.removeAll(words)
+        KoreanDictionaryProvider.removeWordsFromDictionary(KoreanPos.Noun, words)
         KoreanDictionaryProvider.properNouns.removeAll(words)
     }
 
@@ -265,13 +265,15 @@ object KoreanProcessor: KLogging() {
      */
     fun clearBlockwords(severity: Severity = Severity.DEFAULT) {
         withBlockwordDictionary(severity) {
+            val changed = isNotEmpty()
             clear()
+            changed
         }
     }
 
     private inline fun withBlockwordDictionary(
         severity: Severity,
-        action: CharArraySet.() -> Unit,
+        action: CharArraySet.() -> Boolean,
     ) {
         KoreanDictionaryProvider.mutateBlockwords(severity, action)
     }

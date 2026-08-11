@@ -201,10 +201,34 @@ console 예제가 있습니다.
 > 이 수치는 로컬 비교용 snapshot이며 production ranking 이 아닙니다. 이후 비교는
 > 같은 명령과 같은 metric direction 을 기준으로 수행하세요.
 
+#### VersionedDictionary mutation benchmark (Issue #239)
+
+dictionary benchmark는 Korean production provider를 직접 호출해 변경 entry
+copy-on-write 경로와 full replacement 경로를 비교합니다. 각 invocation은
+Noun 규모 사전에 단어를 추가한 뒤 제거하는 pair를 수행해 동일 cardinality를
+복원하고, 두 mutation을 기준으로 처리량을 정규화합니다.
+
+실행 조건:
+
+- 명령: `./gradlew :text-search:dictionaryBenchmark`
+- 호스트/JVM: Apple M4 Pro, GraalVM JDK 25.0.4, JMH thread 1개, fork 1개
+- raw 결과: [`docs/benchmark/2026-08-11-issue-239-versioned-dictionary-baselines.json`](../docs/benchmark/2026-08-11-issue-239-versioned-dictionary-baselines.json)
+
+| 벤치마크 | Ops/s | 비고 |
+|----------|-------|------|
+| `addRemoveWithCopyOnWrite` | 63.85 ± 29.30 | production 변경 entry COW 경로 |
+| `addRemoveWithFullReplacement` | 43.00 ± 36.52 | production full replacement 경로 |
+
+두 결과의 신뢰구간이 겹치므로 이 실행만으로 통계적으로 유의한 처리량
+개선을 확정하지 않습니다. raw JSON에는 `gc.alloc.rate.norm` secondary metric이
+없으므로 이 실행에서 allocation/heap-retention 개선도 주장하지 않습니다.
+retention 경계는 결정적 bounded-history 테스트로 증명합니다.
+
 로컬 벤치마크 실행:
 
 ```bash
 ./gradlew :text-search:benchmark
+./gradlew :text-search:dictionaryBenchmark
 ```
 
 ## 의존성

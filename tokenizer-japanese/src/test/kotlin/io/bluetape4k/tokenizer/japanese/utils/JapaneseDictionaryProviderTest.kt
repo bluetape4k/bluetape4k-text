@@ -8,7 +8,9 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.tokenizer.utils.DictionaryVersion
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.ResourceLock
 
+@ResourceLock("JapaneseDictionaryProvider")
 class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
 
     companion object: KLogging()
@@ -62,6 +64,41 @@ class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
         } finally {
             JapaneseDictionaryProvider.reloadBlockwords(
                 DictionaryVersion("japanese-blockwords", original.version.revision + 2),
+                original.value,
+            )
+        }
+    }
+
+    @Test
+    fun `반복 mutation은 revision과 visibility를 함께 갱신한다`() {
+        val original = JapaneseDictionaryProvider.currentBlockwordSnapshot()
+        val newWord = "版관리반복"
+
+        try {
+            repeat(3) { index ->
+                val before = JapaneseDictionaryProvider.currentBlockwordSnapshot()
+                JapaneseDictionaryProvider.addBlockwords(listOf(newWord))
+                val added = JapaneseDictionaryProvider.currentBlockwordSnapshot()
+
+                (added.version.revision > before.version.revision).shouldBeTrue()
+                JapaneseDictionaryProvider.containsBlockword(newWord).shouldBeTrue()
+
+                JapaneseDictionaryProvider.removeBlockwords(listOf(newWord))
+                val removed = JapaneseDictionaryProvider.currentBlockwordSnapshot()
+                (removed.version.revision > added.version.revision).shouldBeTrue()
+                JapaneseDictionaryProvider.containsBlockword(newWord).shouldBeFalse()
+                removed.value.contains(newWord).shouldBeFalse()
+
+                if (index == 2) {
+                    removed.version.revision shouldBeEqualTo before.version.revision + 2
+                }
+            }
+        } finally {
+            JapaneseDictionaryProvider.reloadBlockwords(
+                DictionaryVersion(
+                    "japanese-blockwords",
+                    JapaneseDictionaryProvider.currentBlockwordSnapshot().version.revision + 1,
+                ),
                 original.value,
             )
         }

@@ -18,7 +18,9 @@ import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotContain
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.ResourceLock
 
+@ResourceLock("JapaneseDictionaryProvider")
 class JapaneseProcessorTest: AbstractTokenizerTest() {
 
     companion object: KLogging()

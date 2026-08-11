@@ -2,7 +2,10 @@ package io.bluetape4k.tokenizer.korean.utils
 
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.tokenizer.korean.TestBase
+import io.bluetape4k.tokenizer.korean.KoreanProcessor
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Noun
+import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Verb
+import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.tokenizer.utils.CharArraySet
 import io.bluetape4k.tokenizer.utils.DictionaryVersion
 import kotlinx.coroutines.Dispatchers
@@ -10,11 +13,14 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeSameInstanceAs
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.ResourceLock
 
+@ResourceLock("KoreanDictionaryProvider")
 class KoreanDictionaryProviderTest: TestBase() {
 
     companion object: KLogging()
@@ -76,6 +82,147 @@ class KoreanDictionaryProviderTest: TestBase() {
                 DictionaryVersion("korean-dictionary", original.version.revision + 2),
                 original.value,
             )
+        }
+    }
+
+    @Test
+    fun `품사 mutation은 변경 entry만 새로 복사한다`() {
+        val original = KoreanDictionaryProvider.currentDictionarySnapshot()
+        val addedWord = "COW품사단어"
+
+        try {
+            val before = KoreanDictionaryProvider.currentDictionarySnapshot()
+            KoreanDictionaryProvider.addWordsToDictionary(Noun, listOf(addedWord))
+            val after = KoreanDictionaryProvider.currentDictionarySnapshot()
+
+            (before.value[Noun] !== after.value[Noun]).shouldBeTrue()
+            before.value[Verb] shouldBeSameInstanceAs after.value[Verb]
+            after.value[Noun]!!.contains(addedWord).shouldBeTrue()
+        } finally {
+            KoreanDictionaryProvider.reloadDictionaries(
+                DictionaryVersion(
+                    "korean-dictionary",
+                    KoreanDictionaryProvider.currentDictionarySnapshot().version.revision + 1,
+                ),
+                original.value,
+            )
+        }
+    }
+
+    @Test
+    fun `semantic no-op은 revision만 증가시키고 snapshot map과 entry를 재사용한다`() {
+        val before = KoreanDictionaryProvider.currentDictionarySnapshot()
+
+        KoreanDictionaryProvider.addWordsToDictionary(Noun, listOf("각광"))
+
+        val after = KoreanDictionaryProvider.currentDictionarySnapshot()
+        before.version.revision.inc() shouldBeEqualTo after.version.revision
+        before.value shouldBeSameInstanceAs after.value
+        before.value[Noun] shouldBeSameInstanceAs after.value[Noun]
+    }
+
+    @Test
+    fun `severity fan-out은 실제 변경 entry만 복사한다`() {
+        Severity.values().forEach { severity ->
+            val original = KoreanDictionaryProvider.currentBlockwordSnapshot()
+            val addedWord = "COW금칙어_${severity.name}"
+            val affected = when (severity) {
+                Severity.LOW -> setOf(Severity.LOW, Severity.MIDDLE, Severity.HIGH)
+                Severity.MIDDLE -> setOf(Severity.MIDDLE, Severity.HIGH)
+                Severity.HIGH -> setOf(Severity.HIGH)
+            }
+
+            try {
+                KoreanDictionaryProvider.mutateBlockwords(severity) {
+                    add(addedWord)
+                }
+                val after = KoreanDictionaryProvider.currentBlockwordSnapshot()
+
+                Severity.values().forEach { candidate ->
+                    if (candidate in affected) {
+                        (original.value[candidate] !== after.value[candidate]).shouldBeTrue()
+                        after.value[candidate]!!.contains(addedWord).shouldBeTrue()
+                    } else {
+                        original.value[candidate] shouldBeSameInstanceAs after.value[candidate]
+                    }
+                }
+            } finally {
+                KoreanDictionaryProvider.reloadBlockwords(
+                    DictionaryVersion(
+                        "korean-blockwords",
+                        KoreanDictionaryProvider.currentBlockwordSnapshot().version.revision + 1,
+                    ),
+                    original.value,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `blockword semantic no-op은 snapshot map과 entry를 재사용한다`() {
+        val before = KoreanDictionaryProvider.currentBlockwordSnapshot()
+
+        KoreanDictionaryProvider.mutateBlockwords(Severity.HIGH) {
+            remove("__missing_issue239_blockword__")
+        }
+
+        val after = KoreanDictionaryProvider.currentBlockwordSnapshot()
+        before.version.revision.inc() shouldBeEqualTo after.version.revision
+        before.value shouldBeSameInstanceAs after.value
+        before.value[Severity.HIGH] shouldBeSameInstanceAs after.value[Severity.HIGH]
+    }
+
+    @Test
+    fun `facade의 noun 제거도 versioned snapshot을 갱신한다`() {
+        val original = KoreanDictionaryProvider.currentDictionarySnapshot()
+        val originalBlockwords = KoreanDictionaryProvider.currentBlockwordSnapshot()
+        val addedWord = "facade제거금칙어"
+
+        try {
+            KoreanProcessor.addBlockwords(listOf(addedWord), Severity.HIGH)
+            val added = KoreanDictionaryProvider.currentDictionarySnapshot()
+
+            KoreanProcessor.removeBlockwords(listOf(addedWord), Severity.HIGH)
+            val removed = KoreanDictionaryProvider.currentDictionarySnapshot()
+
+            (removed.version.revision > added.version.revision).shouldBeTrue()
+            removed.value[Noun]!!.contains(addedWord).shouldBeFalse()
+        } finally {
+            KoreanDictionaryProvider.reloadDictionaries(
+                DictionaryVersion(
+                    "korean-dictionary",
+                    KoreanDictionaryProvider.currentDictionarySnapshot().version.revision + 1,
+                ),
+                original.value,
+            )
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion(
+                    "korean-blockwords",
+                    KoreanDictionaryProvider.currentBlockwordSnapshot().version.revision + 1,
+                ),
+                originalBlockwords.value,
+            )
+        }
+    }
+
+    @Test
+    fun `public mutable entry 직접 변경은 versioned snapshot contract에 포함되지 않는다`() {
+        val directWord = "직접가변사전단어"
+        val addedWord = "provider발행단어"
+        val adverbs = KoreanDictionaryProvider.koreanDictionary[KoreanPos.Adverb]!!
+        KoreanDictionaryProvider.currentDictionarySnapshot()
+
+        try {
+            adverbs.add(directWord)
+            KoreanDictionaryProvider.addWordsToDictionary(Noun, listOf(addedWord))
+
+            KoreanDictionaryProvider.currentDictionarySnapshot()
+                .value[KoreanPos.Adverb]!!
+                .contains(directWord)
+                .shouldBeFalse()
+        } finally {
+            adverbs.remove(directWord)
+            KoreanDictionaryProvider.removeWordsFromDictionary(Noun, listOf(addedWord))
         }
     }
 }
