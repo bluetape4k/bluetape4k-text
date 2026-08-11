@@ -16,9 +16,14 @@ import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeSameInstanceAs
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.junit5.concurrency.MultithreadingTester
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.ResourceLock
+import java.util.Collections
+import java.util.concurrent.atomic.AtomicLong
 
 @ResourceLock("KoreanDictionaryProvider")
 class KoreanDictionaryProviderTest: TestBase() {
@@ -41,7 +46,7 @@ class KoreanDictionaryProviderTest: TestBase() {
         nouns.contains("각광").shouldBeTrue()
 
         KoreanDictionaryProvider.addWordsToDictionary(Noun, listOf(nonExistentWord))
-        nouns.contains(nonExistentWord).shouldBeTrue()
+        KoreanDictionaryProvider.koreanDictionary.getValue(Noun).contains(nonExistentWord).shouldBeTrue()
     }
 
     @Test
@@ -206,23 +211,79 @@ class KoreanDictionaryProviderTest: TestBase() {
     }
 
     @Test
-    fun `public mutable entry 직접 변경은 versioned snapshot contract에 포함되지 않는다`() {
+    fun `public dictionary view는 read-only이고 직접 변경을 snapshot에 기록하지 않는다`() {
         val directWord = "직접가변사전단어"
-        val addedWord = "provider발행단어"
-        val adverbs = KoreanDictionaryProvider.koreanDictionary[KoreanPos.Adverb]!!
+        val adverbs = KoreanDictionaryProvider.koreanDictionary.getValue(KoreanPos.Adverb)
+        val highBlockwords = KoreanDictionaryProvider.blockWords.getValue(Severity.HIGH)
+
+        assertFailsWith<UnsupportedOperationException> { adverbs.add(directWord) }
+        assertFailsWith<UnsupportedOperationException> { highBlockwords.add(directWord) }
         KoreanDictionaryProvider.currentDictionarySnapshot()
+            .value[KoreanPos.Adverb]
+            ?.contains(directWord)
+            .shouldBeFalse()
+    }
+
+    @Test
+    fun `동시 reload 중 public dictionary view는 완전한 snapshot만 노출한다`() {
+        val original = KoreanDictionaryProvider.currentDictionarySnapshot()
+        val stateA = KoreanPos.values().associateWith { pos ->
+            (0 until 128).map { index -> "atomic-a-${pos.name}-$index" }
+        }
+        val stateB = KoreanPos.values().associateWith { pos ->
+            (0 until 128).map { index -> "atomic-b-${pos.name}-$index" }
+        }
+        val expectedStates = setOf(
+            stateA.mapValues { (_, words) -> words.toSet() },
+            stateB.mapValues { (_, words) -> words.toSet() },
+        )
+        val violations = Collections.synchronizedList(mutableListOf<String>())
+        val revision = AtomicLong(original.version.revision)
 
         try {
-            adverbs.add(directWord)
-            KoreanDictionaryProvider.addWordsToDictionary(Noun, listOf(addedWord))
+            KoreanDictionaryProvider.reloadDictionaries(
+                DictionaryVersion("korean-dictionary", revision.incrementAndGet()),
+                stateA,
+            )
 
-            KoreanDictionaryProvider.currentDictionarySnapshot()
-                .value[KoreanPos.Adverb]!!
-                .contains(directWord)
-                .shouldBeFalse()
+            MultithreadingTester()
+                .workers(8)
+                .rounds(500)
+                .add {
+                    synchronized(revision) {
+                        val nextRevision = revision.incrementAndGet()
+                        KoreanDictionaryProvider.reloadDictionaries(
+                            DictionaryVersion("korean-dictionary", nextRevision),
+                            if (nextRevision % 2L == 0L) stateA else stateB,
+                        )
+                    }
+                }
+                .add {
+                    try {
+                        val observed = KoreanDictionaryProvider.koreanDictionary
+                            .mapValues { (_, words) ->
+                                words.map { word ->
+                                    when (word) {
+                                        is CharArray -> word.concatToString()
+                                        else -> word.toString()
+                                    }
+                                }.toSet()
+                            }
+                        if (observed !in expectedStates) {
+                            violations.add("partial dictionary state observed: entries=${observed.size}")
+                        }
+                    } catch (e: RuntimeException) {
+                        violations.add("dictionary read failed: ${e::class.simpleName}")
+                    }
+                }
+                .run()
         } finally {
-            adverbs.remove(directWord)
-            KoreanDictionaryProvider.removeWordsFromDictionary(Noun, listOf(addedWord))
+            KoreanDictionaryProvider.reloadDictionaries(
+                DictionaryVersion("korean-dictionary", revision.incrementAndGet()),
+                original.value,
+            )
         }
+
+        violations.shouldBeEmpty()
     }
 }

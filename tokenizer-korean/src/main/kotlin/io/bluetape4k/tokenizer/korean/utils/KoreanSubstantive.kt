@@ -123,7 +123,7 @@ object KoreanSubstantive: KLogging() {
      * @return `ㅇ` 초성 복원 후 이름 사전 규칙에 맞으면 `true`입니다.
      */
     fun isKoreanNameVariation(chunk: CharSequence): Boolean {
-        // val nounDict = KoreanDictionaryProvider.koreanDictionary[Noun]!!
+        // val nounDict = KoreanDictionaryProvider.koreanDictionary.getValue(Noun)
 
         if (isName(chunk)) return true
 

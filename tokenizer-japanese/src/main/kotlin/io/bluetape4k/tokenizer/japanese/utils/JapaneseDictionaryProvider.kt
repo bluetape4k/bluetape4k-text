@@ -9,6 +9,7 @@ import io.bluetape4k.tokenizer.utils.DictionaryVersion
 import io.bluetape4k.tokenizer.utils.VersionedDictionary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import java.util.Collections
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -17,7 +18,7 @@ import kotlin.concurrent.withLock
  *
  * 사전 파일은 [BASE_PATH](`japanesetext`) 기준 상대 경로로 해석하고
  * [io.bluetape4k.tokenizer.utils.DictionaryProvider]로 로드합니다.
- * [blockWordDictionary]는 최초 접근 시 lazy 초기화한 뒤 객체 수명 동안 재사용합니다.
+ * [blockWordDictionary]는 현재 immutable snapshot의 read-only 호환 view를 반환합니다.
  *
  * ```kotlin
  * val hasWord = JapaneseDictionaryProvider.blockWordDictionary.contains("性器")
@@ -30,10 +31,13 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     private val dictionaryMutationLock = ReentrantLock()
 
     private val blockwordVersions by lazy {
+        val dictionary = runBlocking(Dispatchers.IO) {
+            readWords("block/blocks.txt")
+        }
         VersionedDictionary(
             DictionarySnapshot(
                 DictionaryVersion("japanese-blockwords", 0),
-                snapshotBlockwordValue(),
+                snapshotBlockwordValue(dictionary),
             ),
             historyCapacity = 0,
         )
@@ -85,8 +89,9 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     /**
      * 최초 접근 시 `block/blocks.txt`에서 lazy 로드하는 인메모리 금칙어 사전입니다.
      *
-     * [addBlockwords], [removeBlockwords], [clearBlockwords]로 수행한 변경은 즉시 반영됩니다.
-     * 반환된 mutable collection에 직접 쓰는 변경은 versioned snapshot에 기록되지 않습니다.
+     * [addBlockwords], [removeBlockwords], [clearBlockwords]로 수행한 변경은 다음 조회부터
+     * 새 immutable snapshot에 반영됩니다. 반환값은 read-only 호환 view이며 직접 쓰기를
+     * 시도하면 `UnsupportedOperationException`이 발생합니다.
      *
      * ```kotlin
      * val dictionary = JapaneseDictionaryProvider.blockWordDictionary
@@ -94,11 +99,10 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      * // dictionary.contains("性器") == true
      * ```
      */
-    val blockWordDictionary: CharArraySet by lazy {
-        runBlocking(Dispatchers.IO) {
-            readWords("block/blocks.txt")
-        }
-    }
+    val blockWordDictionary: CharArraySet
+        get() = CharArraySet.unmodifiableSet(
+            CharArraySet(blockwordVersions.snapshot().value.toList())
+        )
 
     /**
      * 인메모리 금칙어 사전에 단어를 추가합니다. 중복 단어는 무시됩니다.
@@ -115,8 +119,14 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     fun addBlockwords(words: Collection<String>) {
         log.debug { "금칙어를 추가합니다. count=${words.size}, totalLength=${words.sumOf { it.length }}" }
         dictionaryMutationLock.withLock {
-            blockWordDictionary.addAll(words)
-            publishBlockwordMutation()
+            val current = blockwordVersions.snapshot()
+            val changed = words.any { it !in current.value }
+            val next = if (changed) {
+                immutableSet(current.value + words)
+            } else {
+                current.value
+            }
+            publishBlockwordMutation(next)
         }
     }
 
@@ -135,8 +145,14 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     fun removeBlockwords(words: Collection<String>) {
         log.debug { "금칙어를 제거합니다. count=${words.size}, totalLength=${words.sumOf { it.length }}" }
         dictionaryMutationLock.withLock {
-            blockWordDictionary.removeAll(words)
-            publishBlockwordMutation()
+            val current = blockwordVersions.snapshot()
+            val changed = words.any { it in current.value }
+            val next = if (changed) {
+                immutableSet(current.value - words.toSet())
+            } else {
+                current.value
+            }
+            publishBlockwordMutation(next)
         }
     }
 
@@ -153,8 +169,8 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     fun clearBlockwords() {
         log.debug { "금칙어 사전을 비웁니다" }
         dictionaryMutationLock.withLock {
-            blockWordDictionary.clear()
-            publishBlockwordMutation()
+            val current = blockwordVersions.snapshot()
+            publishBlockwordMutation(if (current.value.isEmpty()) current.value else emptySet())
         }
     }
 
@@ -173,29 +189,29 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
         words: Collection<String>,
     ): DictionarySnapshot<Set<String>> = dictionaryMutationLock.withLock {
         require(version.name == "japanese-blockwords") { "Expected japanese-blockwords version" }
-        val replacement = words.toSet()
-        val snapshot = blockwordVersions.reload(version) { replacement }
-        blockWordDictionary.clear()
-        blockWordDictionary.addAll(replacement)
-        snapshot
+        val replacement = immutableSet(words)
+        blockwordVersions.reload(version) { replacement }
     }
 
     /** 지정한 단어가 현재 일본어 금칙어 사전에 있는지 확인합니다. */
     fun containsBlockword(text: String): Boolean =
-        dictionaryMutationLock.withLock { blockWordDictionary.contains(text) }
+        blockwordVersions.snapshot().value.contains(text)
 
-    private fun snapshotBlockwordValue(): Set<String> =
-        blockWordDictionary.map { it.asDictionaryWord() }.toSet()
+    private fun snapshotBlockwordValue(dictionary: CharArraySet): Set<String> =
+        immutableSet(dictionary.map { it.asDictionaryWord() })
 
     private fun Any.asDictionaryWord(): String = when (this) {
         is CharArray -> concatToString()
         else -> toString()
     }
 
-    private fun publishBlockwordMutation() {
+    private fun publishBlockwordMutation(value: Set<String>) {
         val current = blockwordVersions.snapshot()
         blockwordVersions.reload(
             DictionaryVersion(current.version.name, current.version.revision + 1)
-        ) { snapshotBlockwordValue() }
+        ) { value }
     }
+
 }
+
+private fun immutableSet(value: Collection<String>): Set<String> = Collections.unmodifiableSet(value.toSet())

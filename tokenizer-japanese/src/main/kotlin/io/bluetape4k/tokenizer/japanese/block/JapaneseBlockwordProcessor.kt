@@ -52,6 +52,7 @@ object JapaneseBlockwordProcessor: KLogging() {
         if (text.isBlank()) {
             return emptyList()
         }
+        val blockwordDictionary = JapaneseDictionaryProvider.currentBlockwordSnapshot().value
         val tokens = JapaneseTokenizer.tokenize(text)
         val blockwords = tokens
             .onEach { token ->
@@ -60,11 +61,11 @@ object JapaneseBlockwordProcessor: KLogging() {
                 }
             }
             .filter { it.isNounOrVerb() }
-            .filter { isBlockword(it.surface) }
+            .filter { isBlockword(it.surface, blockwordDictionary) }
             .toMutableList()
 
         if (blockwords.isEmpty() && tokens.size > 1) {
-            blockwords.addAll(processCompositBlockWords(tokens))
+            blockwords.addAll(processCompositBlockWords(tokens, blockwordDictionary))
         }
 
         return blockwords
@@ -85,7 +86,10 @@ object JapaneseBlockwordProcessor: KLogging() {
      * @param tokens 복합어 후보를 만들 Kuromoji 토큰 목록입니다.
      * @return 복합어 금칙어에 매치된 첫 번째 토큰 목록입니다.
      */
-    private fun processCompositBlockWords(tokens: List<Token>): List<Token> {
+    private fun processCompositBlockWords(
+        tokens: List<Token>,
+        blockwordDictionary: Set<String>,
+    ): List<Token> {
         if (tokens.size < 2) {
             return emptyList()
         }
@@ -93,7 +97,7 @@ object JapaneseBlockwordProcessor: KLogging() {
             if (t1.isNoun() && t2.isNounOrVerb()) {
                 val composite = t1.surface + t2.surface
                 log.debug { "금칙어 복합어 후보를 확인합니다. length=${composite.length}" }
-                if (isBlockword(composite)) t1 else null
+                if (isBlockword(composite, blockwordDictionary)) t1 else null
             } else {
                 null
             }
@@ -124,7 +128,7 @@ object JapaneseBlockwordProcessor: KLogging() {
         }
 
         try {
-
+            val blockwordDictionary = JapaneseDictionaryProvider.currentBlockwordSnapshot().value
             val tokens = JapaneseTokenizer.tokenize(request.text)
             var maskedText = request.text
             val maskStr = request.options.mask
@@ -139,7 +143,7 @@ object JapaneseBlockwordProcessor: KLogging() {
                 .filter { it.isNounOrVerb() }
                 .sortedByDescending { it.position }
                 .forEach { token ->
-                    if (canMask(token)) {
+                    if (canMask(token, blockwordDictionary)) {
                         log.trace { "금칙어를 마스킹합니다. position=${token.position}, length=${token.surface.length}" }
                         maskedText = maskedText.replaceRange(
                             token.position,
@@ -158,13 +162,12 @@ object JapaneseBlockwordProcessor: KLogging() {
         }
     }
 
-    private fun canMask(token: Token): Boolean {
-        return isBlockword(token.surface)
+    private fun canMask(token: Token, blockwordDictionary: Set<String>): Boolean {
+        return isBlockword(token.surface, blockwordDictionary)
     }
 
-    private fun isBlockword(text: String): Boolean {
-        return JapaneseDictionaryProvider.containsBlockword(text)
-    }
+    private fun isBlockword(text: String, blockwordDictionary: Set<String>): Boolean =
+        blockwordDictionary.contains(text)
 
     private val Token.featureCount: Int get() = allFeaturesArray.size
 }

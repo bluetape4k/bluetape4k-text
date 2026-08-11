@@ -73,6 +73,7 @@ object KoreanBlockwordProcessor: KLogging() {
         }
         try {
             val punctuationRemoved = punctuationProcessor.removePunctuation(text)
+            val blockwordDictionary = KoreanDictionaryProvider.currentBlockwordSnapshot().value
             val tokens = KoreanTokenizer.tokenize(punctuationRemoved)
             val blockWords = mutableListOf<KoreanToken>()
             tokens
@@ -88,7 +89,7 @@ object KoreanBlockwordProcessor: KLogging() {
                     }
                 }
                 .forEach { token ->
-                    if (canMask(token)) {
+                    if (canMask(token, blockwordDictionary)) {
                         log.trace { "mask block word. offset=${token.offset}, length=${token.length}" }
                         blockWords.add(token)
                     }
@@ -131,6 +132,7 @@ object KoreanBlockwordProcessor: KLogging() {
         }
         try {
             val punctuationRemoved = punctuationProcessor.removePunctuation(request.text)
+            val blockwordDictionary = KoreanDictionaryProvider.currentBlockwordSnapshot().value
             val tokens = KoreanTokenizer.tokenize(punctuationRemoved)
 
             val maskStr = request.options.mask
@@ -143,7 +145,7 @@ object KoreanBlockwordProcessor: KLogging() {
                         "try to mask block word. offset=${token.offset}, length=${token.length}, pos=${token.pos}"
                     }
                 }
-                .filter { canMask(it, request.options.severity) }
+                .filter { canMask(it, blockwordDictionary, request.options.severity) }
 
             val result = StringBuilder(punctuationRemoved).apply {
                 // 멀티 문자 마스크에서도 토큰 offset이 틀어지지 않도록 뒤에서부터 치환한다.
@@ -179,16 +181,19 @@ object KoreanBlockwordProcessor: KLogging() {
      */
     private fun canMask(
         token: KoreanToken,
+        blockwordDictionary: Map<Severity, Set<String>>,
         severity: Severity = Severity.DEFAULT,
     ): Boolean {
         return token.pos in blockedPos &&
-                (containsBlockWord(token.text, severity) || containsBlockWord(token.stem, severity))
+                (containsBlockWord(token.text, blockwordDictionary, severity) ||
+                        containsBlockWord(token.stem, blockwordDictionary, severity))
     }
 
     private fun containsBlockWord(
         text: String?,
+        blockwordDictionary: Map<Severity, Set<String>>,
         severity: Severity = Severity.DEFAULT,
     ): Boolean {
-        return text?.let { KoreanDictionaryProvider.containsBlockword(it, severity) } ?: false
+        return text?.let { blockwordDictionary[severity]?.contains(it) == true } ?: false
     }
 }

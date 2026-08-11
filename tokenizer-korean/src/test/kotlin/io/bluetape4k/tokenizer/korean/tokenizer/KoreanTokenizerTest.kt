@@ -248,8 +248,8 @@ class KoreanTokenizerTest: TestBase() {
         // "뇬뇨", "츄쵸" 를 명사 사전에 추가했을 때
         KoreanDictionaryProvider.addWordsToDictionary(Noun, listOf("뇬뇨", "츄쵸"))
 
-        koreanDictionary[Noun]!!.contains("뇬뇨").shouldBeTrue()
-        koreanDictionary[Noun]!!.contains("츄쵸").shouldBeTrue()
+        KoreanDictionaryProvider.koreanDictionary.getValue(Noun).contains("뇬뇨").shouldBeTrue()
+        KoreanDictionaryProvider.koreanDictionary.getValue(Noun).contains("츄쵸").shouldBeTrue()
 
         tokenize("뇬뇨뇬뇨뇬뇨뇬뇨츄쵸") shouldBeEqualTo listOf(
             KoreanToken("뇬뇨", Noun, 0, 2),

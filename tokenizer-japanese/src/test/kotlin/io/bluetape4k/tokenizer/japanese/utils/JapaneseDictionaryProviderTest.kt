@@ -2,13 +2,18 @@ package io.bluetape4k.tokenizer.japanese.utils
 
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.tokenizer.japanese.AbstractTokenizerTest
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.junit5.concurrency.MultithreadingTester
 import io.bluetape4k.tokenizer.utils.DictionaryVersion
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.ResourceLock
+import java.util.Collections
+import java.util.concurrent.atomic.AtomicLong
 
 @ResourceLock("JapaneseDictionaryProvider")
 class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
@@ -39,14 +44,14 @@ class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
         blockwords.contains(newWord).shouldBeFalse()
         blockwords.contains(newWord2).shouldBeFalse()
         JapaneseDictionaryProvider.addBlockwords(listOf(newWord, newWord2))
-        blockwords.contains(newWord).shouldBeTrue()
-        blockwords.contains(newWord2).shouldBeTrue()
+        JapaneseDictionaryProvider.blockWordDictionary.contains(newWord).shouldBeTrue()
+        JapaneseDictionaryProvider.blockWordDictionary.contains(newWord2).shouldBeTrue()
 
         // 금칙어를 사전에서 제거합니다.
         JapaneseDictionaryProvider.removeBlockwords(listOf(newWord, newWord2))
 
-        blockwords.contains(newWord).shouldBeFalse()
-        blockwords.contains(newWord2).shouldBeFalse()
+        JapaneseDictionaryProvider.blockWordDictionary.contains(newWord).shouldBeFalse()
+        JapaneseDictionaryProvider.blockWordDictionary.contains(newWord2).shouldBeFalse()
     }
 
     @Test
@@ -102,5 +107,68 @@ class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
                 original.value,
             )
         }
+    }
+
+    @Test
+    fun `public blockword view는 read-only다`() {
+        val blockwords = JapaneseDictionaryProvider.blockWordDictionary
+
+        assertFailsWith<UnsupportedOperationException> {
+            blockwords.add("직접변경은허용하지않음")
+        }
+    }
+
+    @Test
+    fun `동시 reload 중 public blockword view는 완전한 snapshot만 노출한다`() {
+        val original = JapaneseDictionaryProvider.currentBlockwordSnapshot()
+        val stateA = listOf("jp-atomic-a-1", "jp-atomic-a-2")
+        val stateB = listOf("jp-atomic-b-1", "jp-atomic-b-2")
+        val expectedStates = setOf(stateA.toSet(), stateB.toSet())
+        val violations = Collections.synchronizedList(mutableListOf<String>())
+        val revision = AtomicLong(original.version.revision)
+
+        try {
+            JapaneseDictionaryProvider.reloadBlockwords(
+                DictionaryVersion("japanese-blockwords", revision.incrementAndGet()),
+                stateA,
+            )
+
+            MultithreadingTester()
+                .workers(8)
+                .rounds(500)
+                .add {
+                    synchronized(revision) {
+                        val nextRevision = revision.incrementAndGet()
+                        JapaneseDictionaryProvider.reloadBlockwords(
+                            DictionaryVersion("japanese-blockwords", nextRevision),
+                            if (nextRevision % 2L == 0L) stateA else stateB,
+                        )
+                    }
+                }
+                .add {
+                    try {
+                        val observed = JapaneseDictionaryProvider.blockWordDictionary
+                            .map { word ->
+                                when (word) {
+                                    is CharArray -> word.concatToString()
+                                    else -> word.toString()
+                                }
+                            }.toSet()
+                        if (observed !in expectedStates) {
+                            violations.add("partial blockword state observed: size=${observed.size}")
+                        }
+                    } catch (e: RuntimeException) {
+                        violations.add("blockword read failed: ${e::class.simpleName}")
+                    }
+                }
+                .run()
+        } finally {
+            JapaneseDictionaryProvider.reloadBlockwords(
+                DictionaryVersion("japanese-blockwords", revision.incrementAndGet()),
+                original.value,
+            )
+        }
+
+        violations.shouldBeEmpty()
     }
 }

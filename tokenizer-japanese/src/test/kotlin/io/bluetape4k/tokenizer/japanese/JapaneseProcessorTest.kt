@@ -165,7 +165,9 @@ class JapaneseProcessorTest: AbstractTokenizerTest() {
         try {
             // 커스텀 금칙어 추가
             JapaneseProcessor.addBlockwords(listOf(customWord))
-            dictionary.contains(customWord).shouldBeTrue()
+            io.bluetape4k.tokenizer.japanese.utils.JapaneseDictionaryProvider.blockWordDictionary
+                .contains(customWord)
+                .shouldBeTrue()
 
             val blockwords = JapaneseProcessor.findBlockwords("これは${customWord}です")
             blockwords.shouldNotBeEmpty()
@@ -173,7 +175,9 @@ class JapaneseProcessorTest: AbstractTokenizerTest() {
 
             // 금칙어 제거
             JapaneseProcessor.removeBlockwords(listOf(customWord))
-            dictionary.contains(customWord).shouldBeFalse()
+            io.bluetape4k.tokenizer.japanese.utils.JapaneseDictionaryProvider.blockWordDictionary
+                .contains(customWord)
+                .shouldBeFalse()
         } finally {
             if (!wasBlockword) {
                 JapaneseProcessor.removeBlockwords(listOf(customWord))
