@@ -7,7 +7,7 @@ import io.bluetape4k.logging.error
 import io.bluetape4k.logging.trace
 import io.bluetape4k.tokenizer.exceptions.TokenizerException
 import io.bluetape4k.tokenizer.korean.stemmer.KoreanStemmer
-import io.bluetape4k.tokenizer.korean.utils.KoreanDictionaryProvider.koreanDictionary
+import io.bluetape4k.tokenizer.korean.utils.KoreanDictionaryProvider
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Adjective
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Adverb
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Conjunction
@@ -17,6 +17,7 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Korean
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Noun
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Unknown
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Verb
+import io.bluetape4k.tokenizer.korean.utils.KoreanPos
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosx
 import io.bluetape4k.tokenizer.korean.utils.KoreanSubstantive
 import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
@@ -133,11 +134,12 @@ object KoreanTokenizer: KLogging() {
         require(topN >= 1) { "topN must be greater than or equal to 1. topN=$topN" }
 
         try {
+            val dictionary = KoreanDictionaryProvider.currentDictionarySnapshot().value
             return KoreanChunker.chunk(text).map {
                 when (it.pos) {
                     Korean -> {
                         // 각 청크의 최적 분석 후보를 구합니다.
-                        val parsed = parseKoreanChunk(it, profile, topN)
+                        val parsed = parseKoreanChunk(it, profile, topN, dictionary)
 
                         // 한 글자 명사가 이어진 구간을 하나의 unknown 명사로 접습니다: (가Noun 회Noun -> 가회Noun*)
                         parsed.map(KoreanSubstantive::collapseNouns)
@@ -158,22 +160,25 @@ object KoreanTokenizer: KLogging() {
      * @param chunk 전체가 `Korean` 품사인 입력 청크입니다. 호출자가 청크 유효성을 보장하므로 성능을 위해 반복 검증하지 않습니다.
      * @param profile 토큰 점수 계산과 `spaceGuide` 적용 방식을 제어하는 프로필입니다.
      * @param topN 반환할 상위 후보 개수입니다.
+     * @param dictionary 이번 tokenize 호출 전체에서 사용할 immutable 사전 snapshot입니다.
      * @return 점수순으로 고른 상위 후보별 토큰 경로 목록입니다.
      */
     private fun parseKoreanChunk(
         chunk: KoreanToken,
         profile: TokenizerProfile = TokenizerProfile.DefaultProfile,
         topN: Int = 1,
+        dictionary: Map<KoreanPos, Set<String>>,
     ): List<List<KoreanToken>> {
-        return findTopCandidates(chunk, profile).take(topN)
+        return findTopCandidates(chunk, profile, dictionary).take(topN)
     }
 
     private fun findTopCandidates(
         chunk: KoreanToken,
         profile: TokenizerProfile,
+        dictionary: Map<KoreanPos, Set<String>>,
     ): List<List<KoreanToken>> {
-        val directMatch = findDirectMatch(chunk)
-        val nounDictionary = koreanDictionary[Noun]
+        val directMatch = findDirectMatch(chunk, dictionary)
+        val nounDictionary = dictionary[Noun]
 
         // 위치별 후보 해석을 저장하는 버퍼입니다.
         val candidateParse = CandidateParse(
@@ -209,7 +214,7 @@ object KoreanTokenizer: KLogging() {
                     possiblePoses
                         .filter {
                             it.curTrie.curPos == Noun ||
-                                    (koreanDictionary[it.curTrie.curPos]?.contains(word) == true)
+                                    (dictionary[it.curTrie.curPos]?.contains(word) == true)
                         }
                         .map { t: PossibleTrie ->
                             val candidateToAdd =
@@ -275,9 +280,12 @@ object KoreanTokenizer: KLogging() {
         return solutions
     }
 
-    private fun findDirectMatch(chunk: KoreanToken): List<List<KoreanToken>> {
+    private fun findDirectMatch(
+        chunk: KoreanToken,
+        dictionary: Map<KoreanPos, Set<String>>,
+    ): List<List<KoreanToken>> {
         log.trace { "직접 매치 탐색. offset=${chunk.offset}, length=${chunk.length}, pos=${chunk.pos}" }
-        return koreanDictionary.entries
+        return dictionary.entries
             .firstOrNull { (_, dict) ->
                 dict.contains(chunk.text)
             }

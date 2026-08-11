@@ -26,6 +26,7 @@ import io.bluetape4k.tokenizer.utils.VersionedDictionary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import java.util.Collections
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -38,8 +39,8 @@ import kotlin.concurrent.withLock
  * - `addWordsToDictionary`로 런타임 단어를 추가하면 해당 품사 사전에 즉시 반영된다.
  *
  * ```kotlin
- * val nouns = KoreanDictionaryProvider.koreanDictionary[KoreanPos.Noun]
- * // nouns != null
+ * val nouns = KoreanDictionaryProvider.koreanDictionary.getValue(KoreanPos.Noun)
+ * // nouns.isNotEmpty() == true
  * ```
  */
 @Suppress("TooManyFunctions")
@@ -51,7 +52,7 @@ object KoreanDictionaryProvider: KLogging() {
         VersionedDictionary(
             DictionarySnapshot(
                 DictionaryVersion("korean-dictionary", 0),
-                snapshotDictionaryValue(),
+                snapshotDictionaryValue(loadKoreanDictionary()),
             ),
             historyCapacity = 0,
         )
@@ -61,7 +62,7 @@ object KoreanDictionaryProvider: KLogging() {
         VersionedDictionary(
             DictionarySnapshot(
                 DictionaryVersion("korean-blockwords", 0),
-                snapshotBlockwordValue(),
+                snapshotBlockwordValue(loadBlockWords()),
             ),
             historyCapacity = 0,
         )
@@ -148,7 +149,7 @@ object KoreanDictionaryProvider: KLogging() {
      *
      * ```kotlin
      * KoreanDictionaryProvider.addWordsToDictionary(KoreanPos.Noun, listOf("없는명사다"))
-     * // KoreanDictionaryProvider.koreanDictionary[KoreanPos.Noun]!!.contains("없는명사다") == true
+     * // KoreanDictionaryProvider.koreanDictionary.getValue(KoreanPos.Noun).contains("없는명사다") == true
      * ```
      *
      * @param pos 단어를 추가할 대상 품사입니다.
@@ -156,8 +157,15 @@ object KoreanDictionaryProvider: KLogging() {
      */
     fun addWordsToDictionary(pos: KoreanPos, words: Collection<String>) {
         dictionaryMutationLock.withLock {
-            val changed = koreanDictionary[pos]?.addAll(words) == true
-            publishDictionaryMutation(pos.takeIf { changed })
+            val current = koreanDictionaryVersions.snapshot()
+            val currentWords = current.value[pos]
+            val changed = currentWords != null && words.any { it !in currentWords }
+            val next = if (changed) {
+                immutableMap(current.value + (pos to immutableSet(currentWords + words)))
+            } else {
+                current.value
+            }
+            publishDictionaryMutation(next)
         }
     }
 
@@ -171,7 +179,7 @@ object KoreanDictionaryProvider: KLogging() {
      *
      * ```kotlin
      * KoreanDictionaryProvider.addWordsToDictionary(KoreanPos.Noun, "주말특가", "주말행사")
-     * // KoreanDictionaryProvider.koreanDictionary[KoreanPos.Noun]!!.contains("주말특가") == true
+     * // KoreanDictionaryProvider.koreanDictionary.getValue(KoreanPos.Noun).contains("주말특가") == true
      * ```
      *
      * @param pos 단어를 추가할 대상 품사입니다.
@@ -179,18 +187,22 @@ object KoreanDictionaryProvider: KLogging() {
      */
     fun addWordsToDictionary(pos: KoreanPos, vararg words: String) {
         if (words.isNotEmpty()) {
-            dictionaryMutationLock.withLock {
-                val changed = koreanDictionary[pos]?.addAll(words) == true
-                publishDictionaryMutation(pos.takeIf { changed })
-            }
+            addWordsToDictionary(pos, words.toList())
         }
     }
 
     /** 지정 품사 사전에서 단어 컬렉션을 제거하고 새 snapshot revision을 기록합니다. */
     fun removeWordsFromDictionary(pos: KoreanPos, words: Collection<String>) {
         dictionaryMutationLock.withLock {
-            val changed = koreanDictionary[pos]?.removeAll(words) == true
-            publishDictionaryMutation(pos.takeIf { changed })
+            val current = koreanDictionaryVersions.snapshot()
+            val currentWords = current.value[pos]
+            val changed = currentWords != null && words.any { it in currentWords }
+            val next = if (changed) {
+                immutableMap(current.value + (pos to immutableSet(currentWords - words.toSet())))
+            } else {
+                current.value
+            }
+            publishDictionaryMutation(next)
         }
     }
 
@@ -214,10 +226,7 @@ object KoreanDictionaryProvider: KLogging() {
     ): DictionarySnapshot<Map<KoreanPos, Set<String>>> = dictionaryMutationLock.withLock {
         require(version.name == "korean-dictionary") { "Expected korean-dictionary version" }
         val replacement = dictionaries.mapValues { (_, words) -> words.toSet() }
-        val snapshot = koreanDictionaryVersions.reload(version) { replacement }
-        koreanDictionary.clear()
-        replacement.forEach { (pos, words) -> koreanDictionary[pos] = CharArraySet(words.toList()) }
-        snapshot
+        koreanDictionaryVersions.reload(version) { immutableMap(replacement) }
     }
 
     /**
@@ -227,15 +236,19 @@ object KoreanDictionaryProvider: KLogging() {
      * - `Noun`은 다수 noun 파일을 합쳐 로드한다.
      * - `Verb`/`Adjective`는 기본형 파일을 읽은 뒤 활용형 사전으로 확장한다.
      * - `KoreanDictionaryProviderTest`의 `사전 로드하기` 케이스에서 `Noun` 사전 비어 있지 않음을 검증한다.
-     * - 반환된 mutable collection에 직접 쓰는 변경은 versioned snapshot에 기록되지 않으므로
-     *   snapshot revision이 필요하면 `addWordsToDictionary`/`removeWordsFromDictionary`를 사용한다.
+     * - 반환값은 현재 immutable snapshot의 read-only 호환 view다.
+     * - view에 직접 쓰기를 시도하면 `UnsupportedOperationException`이 발생하므로
+     *   사전 변경에는 `addWordsToDictionary`/`removeWordsFromDictionary`를 사용한다.
      *
      * ```kotlin
-     * val nouns = KoreanDictionaryProvider.koreanDictionary[KoreanPos.Noun]
-     * // nouns!!.isNotEmpty() == true
+     * val nouns = KoreanDictionaryProvider.koreanDictionary.getValue(KoreanPos.Noun)
+     * // nouns.isNotEmpty() == true
      * ```
      */
-    val koreanDictionary: MutableMap<KoreanPos, CharArraySet> by lazy {
+    val koreanDictionary: Map<KoreanPos, CharArraySet>
+        get() = publicDictionaryView(koreanDictionaryVersions.snapshot().value)
+
+    private fun loadKoreanDictionary(): Map<KoreanPos, CharArraySet> =
         runBlocking(Dispatchers.IO) {
             mutableMapOf<KoreanPos, CharArraySet>()
                 .apply {
@@ -293,7 +306,6 @@ object KoreanDictionaryProvider: KLogging() {
                     put(Suffix, suffix.await())
                 }
         }
-    }
 
     /**
      * 스팸/욕설/비속어 명사 사전입니다.
@@ -324,14 +336,19 @@ object KoreanDictionaryProvider: KLogging() {
      * - `LOW`는 low/middle/high 파일 전체를 포함한다.
      * - `MIDDLE`은 middle/high를 포함하고, `HIGH`는 high만 포함한다.
      * - `KoreanBlockwordProcessor`에서 severity별 마스킹 판정에 사용된다.
-     * - 반환된 mutable collection에 직접 쓰는 변경은 versioned snapshot에 기록되지 않는다.
+     * - 반환값은 현재 immutable snapshot의 read-only 호환 view다.
+     * - view에 직접 쓰기를 시도하면 `UnsupportedOperationException`이 발생하므로
+     *   사전 변경에는 `KoreanProcessor.addBlockwords`/`KoreanProcessor.removeBlockwords`를 사용한다.
      *
      * ```kotlin
      * val high = KoreanDictionaryProvider.blockWords[io.bluetape4k.tokenizer.model.Severity.HIGH]
-     * // high != null
+     * // high.isNotEmpty() == true
      * ```
      */
-    val blockWords by publicLazy {
+    val blockWords: Map<Severity, CharArraySet>
+        get() = publicBlockwordView(blockwordVersions.snapshot().value)
+
+    private fun loadBlockWords(): Map<Severity, CharArraySet> =
         runBlocking(Dispatchers.IO) {
             val low = async { readWords("block/block_low.txt", "block/block_middle.txt", "block/block_high.txt") }
             val middle = async { readWords("block/block_middle.txt", "block/block_high.txt") }
@@ -343,7 +360,6 @@ object KoreanDictionaryProvider: KLogging() {
                 Severity.HIGH to high.await(),
             )
         }
-    }
 
     /** 현재 심각도별 금칙어 snapshot과 버전을 반환합니다. */
     fun currentBlockwordSnapshot(): DictionarySnapshot<Map<Severity, Set<String>>> =
@@ -363,17 +379,12 @@ object KoreanDictionaryProvider: KLogging() {
         dictionaryMutationLock.withLock {
             require(version.name == "korean-blockwords") { "Expected korean-blockwords version" }
             val replacement = wordsBySeverity.mapValues { (_, words) -> words.toSet() }
-            val snapshot = blockwordVersions.reload(version) { replacement }
-            blockWords.forEach { (severity, words) ->
-                words.clear()
-                words.addAll(replacement[severity].orEmpty())
-            }
-            snapshot
+            blockwordVersions.reload(version) { immutableMap(replacement) }
         }
 
     /** 지정 심각도에서 금칙어가 존재하는지 확인합니다. */
     fun containsBlockword(text: String, severity: Severity): Boolean =
-        dictionaryMutationLock.withLock { blockWords[severity]?.contains(text) == true }
+        blockwordVersions.snapshot().value[severity]?.contains(text) == true
 
     /** 기존 가변 금칙어 API가 갱신 버전도 기록하도록 내부 mutation을 감쌉니다. */
     internal inline fun mutateBlockwords(
@@ -381,14 +392,17 @@ object KoreanDictionaryProvider: KLogging() {
         action: CharArraySet.() -> Boolean,
     ) {
         dictionaryMutationLock.withLock {
+            val current = blockwordVersions.snapshot()
             val affectedSeverities = affectedSeverities(severity)
-            var changed = false
+            val replacements = mutableMapOf<Severity, Set<String>>()
             affectedSeverities.forEach { affectedSeverity ->
-                if (blockWords[affectedSeverity]?.action() == true) {
-                    changed = true
+                val words = CharArraySet(current.value[affectedSeverity].orEmpty().toList())
+                if (words.action()) {
+                    replacements[affectedSeverity] = immutableSet(words.map { it.asDictionaryWord() })
                 }
             }
-            publishBlockwordMutation(affectedSeverities.takeIf { changed })
+            val next = if (replacements.isEmpty()) current.value else immutableMap(current.value + replacements)
+            publishBlockwordMutation(next)
         }
     }
 
@@ -435,7 +449,7 @@ object KoreanDictionaryProvider: KLogging() {
      * - `KoreanSubstantive.isName`이 이름 판별 시 이 맵을 조회한다.
      *
      * ```kotlin
-     * val hasKim = KoreanDictionaryProvider.nameDictionary["family_name"]!!.contains("김")
+     * val hasKim = KoreanDictionaryProvider.nameDictionary.getValue("family_name").contains("김")
      * // hasKim == true 또는 false
      * ```
      */
@@ -512,59 +526,48 @@ object KoreanDictionaryProvider: KLogging() {
         }
     }
 
-    private fun snapshotDictionaryValue(): Map<KoreanPos, Set<String>> =
-        koreanDictionary.mapValues { (_, words) -> words.map { it.asDictionaryWord() }.toSet() }
+    private fun snapshotDictionaryValue(dictionary: Map<KoreanPos, CharArraySet>): Map<KoreanPos, Set<String>> =
+        immutableMap(dictionary.mapValues { (_, words) -> immutableSet(words.map { it.asDictionaryWord() }) })
 
-    private fun snapshotDictionaryValue(
-        currentValue: Map<KoreanPos, Set<String>>,
-        changedPos: KoreanPos?,
-    ): Map<KoreanPos, Set<String>> {
-        val pos = changedPos
-        val words = pos?.let { koreanDictionary[it] }
-        return if (pos == null || words == null) {
-            currentValue
-        } else {
-            currentValue + (pos to words.map { it.asDictionaryWord() }.toSet())
-        }
-    }
+    private fun snapshotBlockwordValue(wordsBySeverity: Map<Severity, CharArraySet>): Map<Severity, Set<String>> =
+        immutableMap(wordsBySeverity.mapValues { (_, words) -> immutableSet(words.map { it.asDictionaryWord() }) })
 
-    private fun snapshotBlockwordValue(): Map<Severity, Set<String>> =
-        blockWords.mapValues { (_, words) -> words.map { it.asDictionaryWord() }.toSet() }
-
-    private fun snapshotBlockwordValue(
-        currentValue: Map<Severity, Set<String>>,
-        changedSeverities: Set<Severity>?,
-    ): Map<Severity, Set<String>> {
-        if (changedSeverities == null) {
-            return currentValue
-        }
-        return currentValue.mapValues { (severity, previous) ->
-            if (severity in changedSeverities) {
-                blockWords[severity]?.map { it.asDictionaryWord() }?.toSet() ?: previous
-            } else {
-                previous
+    private fun publicDictionaryView(value: Map<KoreanPos, Set<String>>): Map<KoreanPos, CharArraySet> =
+        Collections.unmodifiableMap(
+            value.mapValues { (_, words) ->
+                CharArraySet.unmodifiableSet(CharArraySet(words.toList()))
             }
-        }
-    }
+        )
+
+    private fun publicBlockwordView(value: Map<Severity, Set<String>>): Map<Severity, CharArraySet> =
+        Collections.unmodifiableMap(
+            value.mapValues { (_, words) ->
+                CharArraySet.unmodifiableSet(CharArraySet(words.toList()))
+            }
+        )
 
     private fun Any.asDictionaryWord(): String = when (this) {
         is CharArray -> concatToString()
         else -> toString()
     }
 
-    private fun publishDictionaryMutation(changedPos: KoreanPos? = null) {
+    private fun publishDictionaryMutation(value: Map<KoreanPos, Set<String>>) {
         val current = koreanDictionaryVersions.snapshot()
         koreanDictionaryVersions.reload(
             DictionaryVersion(current.version.name, current.version.revision + 1)
-        ) { snapshotDictionaryValue(current.value, changedPos) }
+        ) { value }
     }
 
-    private fun publishBlockwordMutation(changedSeverities: Set<Severity>? = null) {
+    private fun publishBlockwordMutation(value: Map<Severity, Set<String>>) {
         val current = blockwordVersions.snapshot()
         blockwordVersions.reload(
             DictionaryVersion(current.version.name, current.version.revision + 1)
-        ) { snapshotBlockwordValue(current.value, changedSeverities) }
+        ) { value }
     }
+
+    private fun <K, V> immutableMap(value: Map<K, V>): Map<K, V> = Collections.unmodifiableMap(value.toMap())
+
+    private fun immutableSet(value: Collection<String>): Set<String> = Collections.unmodifiableSet(value.toSet())
 
     private fun affectedSeverities(severity: Severity): Set<Severity> = when (severity) {
         Severity.LOW -> setOf(Severity.LOW, Severity.MIDDLE, Severity.HIGH)

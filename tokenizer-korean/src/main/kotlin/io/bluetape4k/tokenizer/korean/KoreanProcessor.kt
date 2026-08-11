@@ -145,7 +145,7 @@ object KoreanProcessor: KLogging() {
      *
      * ```kotlin
      * KoreanProcessor.addNounsToDictionary(listOf("후랴오교"))
-     * // KoreanDictionaryProvider.koreanDictionary[KoreanPos.Noun]!!.contains("후랴오교") == true
+     * // KoreanDictionaryProvider.koreanDictionary.getValue(KoreanPos.Noun).contains("후랴오교") == true
      * ```
      *
      * @param words 런타임 명사 사전에 추가할 단어 목록입니다.
@@ -162,7 +162,7 @@ object KoreanProcessor: KLogging() {
      *
      * ```kotlin
      * KoreanProcessor.addNounsToDictionary("주말특가")
-     * // KoreanDictionaryProvider.koreanDictionary[KoreanPos.Noun]!!.contains("주말특가") == true
+     * // KoreanDictionaryProvider.koreanDictionary.getValue(KoreanPos.Noun).contains("주말특가") == true
      * ```
      *
      * @param words 런타임 명사 사전에 추가할 단어들입니다.
@@ -181,7 +181,7 @@ object KoreanProcessor: KLogging() {
      *
      * ```kotlin
      * KoreanProcessor.addBlockwords(listOf("분수쑈"), Severity.HIGH)
-     * // KoreanDictionaryProvider.blockWords[Severity.HIGH]!!.contains("분수쑈") == true
+     * // KoreanDictionaryProvider.blockWords.getValue(Severity.HIGH).contains("분수쑈") == true
      * ```
      *
      * @param words 금칙어 사전에 추가할 단어 목록입니다.

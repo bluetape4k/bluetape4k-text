@@ -224,7 +224,7 @@ class KoreanTextProcessorTest: TestBase() {
         dictionary.contains("후랴오교").shouldBeFalse()
 
         addNounsToDictionary("후랴오교")
-        dictionary.contains("후랴오교").shouldBeTrue()
+        KoreanDictionaryProvider.koreanDictionary.getValue(Noun).contains("후랴오교").shouldBeTrue()
     }
 
     @Test

@@ -3,13 +3,15 @@ package io.bluetape4k.tokenizer.korean.tokenizer
 import io.bluetape4k.collections.eclipse.multi.listMultimapOf
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.error
+import io.bluetape4k.support.requireNotNull
 import io.bluetape4k.tokenizer.exceptions.TokenizerException
 import io.bluetape4k.tokenizer.korean.stemmer.KoreanStemmer
-import io.bluetape4k.tokenizer.korean.utils.KoreanDictionaryProvider.koreanDictionary
+import io.bluetape4k.tokenizer.korean.utils.KoreanDictionaryProvider
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Conjunction
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Korean
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Noun
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Unknown
+import io.bluetape4k.tokenizer.korean.utils.KoreanPos
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosTrie
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosx
 import io.bluetape4k.tokenizer.korean.utils.KoreanSubstantive
@@ -140,12 +142,13 @@ object NounTokenizer: KLogging() {
         require(topN >= 1) { "topN must be greater than or equal to 1. topN=$topN" }
 
         try {
+            val dictionary = KoreanDictionaryProvider.currentDictionarySnapshot().value
             return KoreanChunker.chunk(text)
                 .map {
                     when (it.pos) {
                         Korean -> {
                             // 각 청크의 최적 분석 후보를 구합니다.
-                            val parsed = parseKoreanChunk(it, profile, topN)
+                            val parsed = parseKoreanChunk(it, profile, topN, dictionary)
 
                             // 한 글자 명사가 이어진 구간을 하나의 unknown 명사로 접습니다: (가Noun 회Noun -> 가회Noun*)
                             parsed.map(KoreanSubstantive::collapseNouns)
@@ -166,19 +169,25 @@ object NounTokenizer: KLogging() {
      * @param chunk 전체가 `Korean` 품사인 입력 청크입니다. 호출자가 청크 유효성을 보장하므로 성능을 위해 반복 검증하지 않습니다.
      * @param profile 토큰 점수 계산과 `spaceGuide` 적용 방식을 제어하는 프로필입니다.
      * @param topN 반환할 상위 후보 개수입니다.
+     * @param dictionary 이번 tokenize 호출 전체에서 사용할 immutable 사전 snapshot입니다.
      * @return 점수순으로 고른 상위 후보별 토큰 경로 목록입니다.
      */
     private fun parseKoreanChunk(
         chunk: KoreanToken,
         profile: TokenizerProfile = TokenizerProfile.DefaultProfile,
         topN: Int = 1,
+        dictionary: Map<KoreanPos, Set<String>>,
     ): List<List<KoreanToken>> {
-        return findTopCandidates(chunk, profile).take(topN)
+        return findTopCandidates(chunk, profile, dictionary).take(topN)
     }
 
-    private fun findTopCandidates(chunk: KoreanToken, profile: TokenizerProfile): List<List<KoreanToken>> {
-        val directMatch: List<List<KoreanToken>> = findDirectMatch(chunk)
-        val nounDictionary = koreanDictionary[Noun]
+    private fun findTopCandidates(
+        chunk: KoreanToken,
+        profile: TokenizerProfile,
+        dictionary: Map<KoreanPos, Set<String>>,
+    ): List<List<KoreanToken>> {
+        val directMatch: List<List<KoreanToken>> = findDirectMatch(chunk, dictionary)
+        val nounDictionary = dictionary[Noun]
 
         // 위치별 후보 해석을 저장하는 버퍼입니다.
         val solutions = listMultimapOf<Int, CandidateParse>()
@@ -195,7 +204,7 @@ object NounTokenizer: KLogging() {
         for (end in 1..chunk.length) {
             for (start in end - 1 downTo (end - MAX_TRACE_BACK).coerceAtLeast(0)) {
                 val word = chunk.text.slice(start until end)
-                val curSolutions = solutions[start]!!
+                val curSolutions = solutions[start].requireNotNull("solutions[start=$start]")
                 val candidates: List<CandidateParse> = curSolutions.flatMap { candateParse: CandidateParse ->
 
                     val possiblePoses: List<PossibleTrie> = candateParse.ending?.let {
@@ -205,7 +214,7 @@ object NounTokenizer: KLogging() {
                     possiblePoses
                         .filter {
                             it.curTrie.curPos == Noun ||
-                                    (koreanDictionary[it.curTrie.curPos]?.contains(word) ?: false)
+                                    (dictionary[it.curTrie.curPos]?.contains(word) ?: false)
                         }
                         .map { t: PossibleTrie ->
                             val candidateToAdd =
@@ -254,19 +263,22 @@ object NounTokenizer: KLogging() {
             }
         }
 
-        val topCandidates = if (solutions[chunk.length]!!.isEmpty()) {
+        val finalSolutions = solutions[chunk.length].requireNotNull("solutions[chunk.length=${chunk.length}]")
+        val topCandidates = if (finalSolutions.isEmpty()) {
             listOf(listOf(KoreanToken(chunk.text, Noun, chunk.offset, chunk.length, unknown = true)))
         } else {
-            solutions[chunk.length]!!
-                .sortedBy { it.parse.score }
+            finalSolutions.sortedBy { it.parse.score }
                 .map { it.parse.posNodes }
         }
 
         return (directMatch + topCandidates).distinct()
     }
 
-    private fun findDirectMatch(chunk: KoreanToken): List<List<KoreanToken>> {
-        for ((pos, dict) in koreanDictionary.entries) {
+    private fun findDirectMatch(
+        chunk: KoreanToken,
+        dictionary: Map<KoreanPos, Set<String>>,
+    ): List<List<KoreanToken>> {
+        for ((pos, dict) in dictionary.entries) {
             if (dict.contains(chunk.text)) {
                 return listOf(listOf(chunk.copy(pos = pos)))
             }

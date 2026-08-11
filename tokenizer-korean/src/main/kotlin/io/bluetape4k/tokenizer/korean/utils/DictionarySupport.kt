@@ -5,7 +5,7 @@ package io.bluetape4k.tokenizer.korean.utils
  *
  * ## 동작/계약
  * - `KoreanDictionaryProvider.nameDictionary[key]`가 없으면 `false`를 반환한다.
- * - 사전이 있으면 `CharArraySet.contains(CharSequence)` 결과를 그대로 반환한다.
+ * - 사전이 있으면 [cs]를 문자열로 변환해 immutable snapshot과 비교한다.
  *
  * ```kotlin
  * val exists = nameDictionaryContains("family_name", "김")
@@ -55,4 +55,4 @@ fun nameDictionaryContains(key: String, str: String): Boolean =
  * @return 해당 품사 사전에 후보가 포함되면 `true`입니다.
  */
 fun koreanContains(pos: KoreanPos, cs: CharSequence): Boolean =
-    KoreanDictionaryProvider.koreanDictionary[pos]?.contains(cs) ?: false
+    KoreanDictionaryProvider.currentDictionarySnapshot().value[pos]?.contains(cs.toString()) == true

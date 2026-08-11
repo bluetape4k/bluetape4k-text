@@ -253,7 +253,10 @@ object NounPhraseExtractor: KLogging() {
         return KoreanPhrase(tokens, phrase.pos)
     }
 
-    private fun isProperPhraseChunk(phraseChunk: KoreanPhraseChunk): Boolean {
+    private fun isProperPhraseChunk(
+        phraseChunk: KoreanPhraseChunk,
+        dictionary: Map<KoreanPos, Set<String>>,
+    ): Boolean {
         fun notEndingInNonPhrasesSuffix(): Boolean {
             val lastToken = phraseChunk.last().tokens.last()
             return !(lastToken.pos == Suffix && lastToken.text == "적")
@@ -279,7 +282,7 @@ object NounPhraseExtractor: KLogging() {
             fun checkNoneDictionary(): Boolean {
                 if (phraseChunk.size == 1 && phraseChunk.all { it.tokens.size == 1 }) {
                     val singleTokenTest = phraseChunk[0].tokens[0].text
-                    return KoreanDictionaryProvider.koreanDictionary[Noun].requireNotNull("koreanDictionary[Noun]").contains(singleTokenTest)
+                    return dictionary[Noun].requireNotNull("koreanDictionary[Noun]").contains(singleTokenTest)
                 }
                 return false
             }
@@ -493,9 +496,10 @@ object NounPhraseExtractor: KLogging() {
      */
     fun extractPhrases(tokens: Collection<KoreanToken>): List<KoreanPhrase> {
 
+        val dictionary = KoreanDictionaryProvider.currentDictionarySnapshot().value
         val collapsed = collapsePos(tokens)
         val candidates = getCandidatePhraseChunks(collapsed)
-        val permutatedCandidates = permutateCandidates(candidates)
+        val permutatedCandidates = permutateCandidates(candidates, dictionary)
 
         return permutatedCandidates
             .map { chunk ->
@@ -503,6 +507,8 @@ object NounPhraseExtractor: KLogging() {
             }
     }
 
-    private fun permutateCandidates(candidates: List<KoreanPhraseChunk>): List<KoreanPhraseChunk> =
-        distinctPhrases(candidates.filter { isProperPhraseChunk(it) })
+    private fun permutateCandidates(
+        candidates: List<KoreanPhraseChunk>,
+        dictionary: Map<KoreanPos, Set<String>>,
+    ): List<KoreanPhraseChunk> = distinctPhrases(candidates.filter { isProperPhraseChunk(it, dictionary) })
 }
