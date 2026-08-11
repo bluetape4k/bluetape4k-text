@@ -493,6 +493,7 @@ jobs:
       - test-text-search
     if: >
       always() && (
+        github.event_name == 'workflow_dispatch' ||
         needs.changes.outputs.tokenizer-core == 'true' ||
         needs.changes.outputs.tokenizer-japanese == 'true' ||
         needs.changes.outputs.tokenizer-korean == 'true' ||
@@ -516,16 +517,32 @@ jobs:
 
       - name: Validate coverage artifacts
         shell: bash
+        env:
+          CORE_EXPECTED: ${{ needs.changes.outputs['tokenizer-core'] }}
+          JAPANESE_EXPECTED: ${{ needs.changes.outputs['tokenizer-japanese'] }}
+          KOREAN_EXPECTED: ${{ needs.changes.outputs['tokenizer-korean'] }}
+          LINGUA_EXPECTED: ${{ needs.changes.outputs.lingua }}
+          TEXT_SEARCH_EXPECTED: ${{ needs.changes.outputs['text-search'] }}
+          WORKFLOW_EVENT: ${{ github.event_name }}
         run: |
           set -euo pipefail
 
-          expected_artifacts=(
-            coverage-tokenizer-core
-            coverage-tokenizer-japanese
-            coverage-tokenizer-korean
-            coverage-lingua
-            coverage-text-search
-          )
+          expected_artifacts=()
+          if [[ "$CORE_EXPECTED" == "true" || "$WORKFLOW_EVENT" == "workflow_dispatch" ]]; then
+            expected_artifacts+=(coverage-tokenizer-core)
+          fi
+          if [[ "$JAPANESE_EXPECTED" == "true" || "$WORKFLOW_EVENT" == "workflow_dispatch" ]]; then
+            expected_artifacts+=(coverage-tokenizer-japanese)
+          fi
+          if [[ "$KOREAN_EXPECTED" == "true" || "$WORKFLOW_EVENT" == "workflow_dispatch" ]]; then
+            expected_artifacts+=(coverage-tokenizer-korean)
+          fi
+          if [[ "$LINGUA_EXPECTED" == "true" || "$WORKFLOW_EVENT" == "workflow_dispatch" ]]; then
+            expected_artifacts+=(coverage-lingua)
+          fi
+          if [[ "$TEXT_SEARCH_EXPECTED" == "true" || "$WORKFLOW_EVENT" == "workflow_dispatch" ]]; then
+            expected_artifacts+=(coverage-text-search)
+          fi
 
           missing_artifacts=()
           empty_artifacts=()
