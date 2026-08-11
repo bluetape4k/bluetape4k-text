@@ -369,7 +369,8 @@ object KoreanDictionaryProvider: KLogging() {
      * 심각도별 금칙어 사전을 새 버전으로 교체합니다.
      *
      * @param version 현재 버전보다 큰 `korean-blockwords` 버전입니다.
-     * @param wordsBySeverity 심각도별 전체 금칙어 목록입니다.
+     * @param wordsBySeverity 심각도별 금칙어 목록입니다. exact-tier 입력과 기존 cumulative threshold
+     *   view 입력을 모두 허용하며, 공개 snapshot은 항상 cumulative threshold view로 정규화됩니다.
      * @return 공개된 금칙어 snapshot입니다.
      */
     fun reloadBlockwords(
@@ -378,7 +379,7 @@ object KoreanDictionaryProvider: KLogging() {
     ): DictionarySnapshot<Map<Severity, Set<String>>> =
         dictionaryMutationLock.withLock {
             require(version.name == "korean-blockwords") { "Expected korean-blockwords version" }
-            val replacement = wordsBySeverity.mapValues { (_, words) -> words.toSet() }
+            val replacement = canonicalBlockwordValue(wordsBySeverity)
             blockwordVersions.reload(version) { immutableMap(replacement) }
         }
 
@@ -393,16 +394,14 @@ object KoreanDictionaryProvider: KLogging() {
     ) {
         dictionaryMutationLock.withLock {
             val current = blockwordVersions.snapshot()
-            val affectedSeverities = affectedSeverities(severity)
-            val replacements = mutableMapOf<Severity, Set<String>>()
-            affectedSeverities.forEach { affectedSeverity ->
-                val words = CharArraySet(current.value[affectedSeverity].orEmpty().toList())
-                if (words.action()) {
-                    replacements[affectedSeverity] = immutableSet(words.map { it.asDictionaryWord() })
-                }
+            val exactTiers = exactBlockwordValue(current.value).toMutableMap()
+            val words = CharArraySet(exactTiers.getValue(severity).toList())
+            if (words.action()) {
+                exactTiers[severity] = immutableSet(words.map { it.asDictionaryWord() })
+                publishBlockwordMutation(canonicalBlockwordValue(exactTiers, current.value))
+            } else {
+                publishBlockwordMutation(current.value)
             }
-            val next = if (replacements.isEmpty()) current.value else immutableMap(current.value + replacements)
-            publishBlockwordMutation(next)
         }
     }
 
@@ -530,7 +529,7 @@ object KoreanDictionaryProvider: KLogging() {
         immutableMap(dictionary.mapValues { (_, words) -> immutableSet(words.map { it.asDictionaryWord() }) })
 
     private fun snapshotBlockwordValue(wordsBySeverity: Map<Severity, CharArraySet>): Map<Severity, Set<String>> =
-        immutableMap(wordsBySeverity.mapValues { (_, words) -> immutableSet(words.map { it.asDictionaryWord() }) })
+        canonicalBlockwordValue(wordsBySeverity.mapValues { (_, words) -> words.map { it.asDictionaryWord() } })
 
     private fun publicDictionaryView(value: Map<KoreanPos, Set<String>>): Map<KoreanPos, CharArraySet> =
         Collections.unmodifiableMap(
@@ -569,9 +568,44 @@ object KoreanDictionaryProvider: KLogging() {
 
     private fun immutableSet(value: Collection<String>): Set<String> = Collections.unmodifiableSet(value.toSet())
 
-    private fun affectedSeverities(severity: Severity): Set<Severity> = when (severity) {
-        Severity.LOW -> setOf(Severity.LOW, Severity.MIDDLE, Severity.HIGH)
-        Severity.MIDDLE -> setOf(Severity.MIDDLE, Severity.HIGH)
-        Severity.HIGH -> setOf(Severity.HIGH)
+    /**
+     * exact-tier 입력을 threshold 조회용 cumulative view로 정규화합니다.
+     *
+     * `LOW` 조회에는 모든 tier, `MIDDLE` 조회에는 middle/high, `HIGH` 조회에는 high만 포함합니다.
+     * 따라서 기존 cumulative view를 다시 입력해도 같은 결과가 유지됩니다.
+     */
+    private fun canonicalBlockwordValue(
+        wordsBySeverity: Map<Severity, Collection<String>>,
+        current: Map<Severity, Set<String>>? = null,
+    ): Map<Severity, Set<String>> {
+        val exactTiers = Severity.values().associateWith { severity ->
+            wordsBySeverity[severity].orEmpty().toSet()
+        }
+        val desired = mapOf(
+            Severity.LOW to exactTiers.getValue(Severity.LOW) +
+                    exactTiers.getValue(Severity.MIDDLE) + exactTiers.getValue(Severity.HIGH),
+            Severity.MIDDLE to exactTiers.getValue(Severity.MIDDLE) + exactTiers.getValue(Severity.HIGH),
+            Severity.HIGH to exactTiers.getValue(Severity.HIGH),
+        )
+        val next = desired.mapValues { (severity, words) ->
+            current?.get(severity)?.takeIf { it == words } ?: immutableSet(words)
+        }
+        return if (current != null && Severity.values().all { current[it] === next[it] }) {
+            current
+        } else {
+            immutableMap(next)
+        }
+    }
+
+    /** 현재 cumulative threshold view를 mutation 가능한 exact-tier 집합으로 분해합니다. */
+    private fun exactBlockwordValue(value: Map<Severity, Set<String>>): Map<Severity, Set<String>> {
+        val high = value[Severity.HIGH].orEmpty().toSet()
+        val middle = value[Severity.MIDDLE].orEmpty().toSet() - high
+        val low = value[Severity.LOW].orEmpty().toSet() - middle - high
+        return mapOf(
+            Severity.LOW to immutableSet(low),
+            Severity.MIDDLE to immutableSet(middle),
+            Severity.HIGH to immutableSet(high),
+        )
     }
 }
