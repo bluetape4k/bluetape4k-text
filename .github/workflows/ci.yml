@@ -84,29 +84,68 @@ jobs:
           filters: |
             tokenizer-core:
               - 'tokenizer-core/**'
+              - 'settings.gradle.kts'
+              - 'build.gradle.kts'
+              - 'buildSrc/**'
+              - 'gradle/**'
+              - 'gradle.properties'
+              - 'gradlew'
+              - 'gradlew.bat'
               - '.github/workflows/ci.yml'
               - '.github/scripts/**'
             tokenizer-japanese:
               - 'tokenizer-japanese/**'
+              - 'settings.gradle.kts'
+              - 'build.gradle.kts'
+              - 'buildSrc/**'
+              - 'gradle/**'
+              - 'gradle.properties'
+              - 'gradlew'
+              - 'gradlew.bat'
               - '.github/workflows/ci.yml'
               - '.github/scripts/**'
             tokenizer-korean:
               - 'tokenizer-korean/**'
+              - 'settings.gradle.kts'
+              - 'build.gradle.kts'
+              - 'buildSrc/**'
+              - 'gradle/**'
+              - 'gradle.properties'
+              - 'gradlew'
+              - 'gradlew.bat'
               - '.github/workflows/ci.yml'
               - '.github/scripts/**'
             lingua:
               - 'lingua/**'
+              - 'settings.gradle.kts'
+              - 'build.gradle.kts'
+              - 'buildSrc/**'
+              - 'gradle/**'
+              - 'gradle.properties'
+              - 'gradlew'
+              - 'gradlew.bat'
               - '.github/workflows/ci.yml'
               - '.github/scripts/**'
             text-search:
               - 'text-search/**'
+              - 'settings.gradle.kts'
+              - 'build.gradle.kts'
+              - 'buildSrc/**'
+              - 'gradle/**'
+              - 'gradle.properties'
+              - 'gradlew'
+              - 'gradlew.bat'
               - '.github/workflows/ci.yml'
               - '.github/scripts/**'
             examples:
               - 'examples/**'
               - 'settings.gradle.kts'
               - 'build.gradle.kts'
+              - 'buildSrc/**'
               - 'gradle/**'
+              - 'gradle.properties'
+              - 'gradlew'
+              - 'gradlew.bat'
               - '.github/workflows/ci.yml'
               - '.github/workflows/nightly-tests.yml'
               - 'text-search/**'
@@ -114,6 +153,8 @@ jobs:
               - 'tokenizer-core/**'
               - 'tokenizer-korean/**'
               - 'tokenizer-japanese/**'
+      - name: Validate CI path-filter policy
+        run: python3 .github/scripts/validate-ci-path-filters.py
 
   catalog-governance:
     name: Central Catalog Governance
@@ -553,10 +594,40 @@ jobs:
       - name: Check all jobs
         env:
           RESULTS: ${{ join(needs.*.result, ',') }}
+          CORE_EXPECTED: ${{ needs.changes.outputs['tokenizer-core'] }}
+          CORE_RESULT: ${{ needs.test-tokenizer-core.result }}
+          JAPANESE_EXPECTED: ${{ needs.changes.outputs['tokenizer-japanese'] }}
+          JAPANESE_RESULT: ${{ needs.test-tokenizer-japanese.result }}
+          KOREAN_EXPECTED: ${{ needs.changes.outputs['tokenizer-korean'] }}
+          KOREAN_RESULT: ${{ needs.test-tokenizer-korean.result }}
+          LINGUA_EXPECTED: ${{ needs.changes.outputs.lingua }}
+          LINGUA_RESULT: ${{ needs.test-lingua.result }}
+          TEXT_SEARCH_EXPECTED: ${{ needs.changes.outputs['text-search'] }}
+          TEXT_SEARCH_RESULT: ${{ needs.test-text-search.result }}
+          EXAMPLES_EXPECTED: ${{ needs.changes.outputs.examples }}
+          EXAMPLES_RESULT: ${{ needs.test-examples.result }}
         run: |
           echo "Job results: $RESULTS"
           if echo "$RESULTS" | grep -qE "failure|cancelled"; then
             echo "CI failed"
             exit 1
           fi
-          echo "CI passed (skipped jobs treated as success)"
+
+          # Expected test-job policy: a true path filter must not resolve to skipped.
+          expected_tests=(
+            "tokenizer-core:$CORE_EXPECTED:$CORE_RESULT"
+            "tokenizer-japanese:$JAPANESE_EXPECTED:$JAPANESE_RESULT"
+            "tokenizer-korean:$KOREAN_EXPECTED:$KOREAN_RESULT"
+            "lingua:$LINGUA_EXPECTED:$LINGUA_RESULT"
+            "text-search:$TEXT_SEARCH_EXPECTED:$TEXT_SEARCH_RESULT"
+            "examples:$EXAMPLES_EXPECTED:$EXAMPLES_RESULT"
+          )
+          for entry in "${expected_tests[@]}"; do
+            IFS=: read -r module expected result <<< "$entry"
+            if [[ "$expected" == "true" && "$result" == "skipped" ]]; then
+              echo "::error title=Unexpected skipped test::${module} was expected to run but resolved to skipped."
+              exit 1
+            fi
+          done
+
+          echo "CI passed (test jobs may skip only when their path filter is false)"
