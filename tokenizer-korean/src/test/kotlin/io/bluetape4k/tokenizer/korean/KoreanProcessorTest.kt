@@ -48,9 +48,10 @@ import io.bluetape4k.assertions.shouldContainSame
 import io.bluetape4k.assertions.shouldNotContain
 import io.bluetape4k.assertions.shouldNotBeEqualTo
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.ResourceLock
 import kotlin.system.measureTimeMillis
 
-
+@ResourceLock("KoreanDictionaryProvider")
 class KoreanTextProcessorTest: TestBase() {
 
     companion object: KLogging()

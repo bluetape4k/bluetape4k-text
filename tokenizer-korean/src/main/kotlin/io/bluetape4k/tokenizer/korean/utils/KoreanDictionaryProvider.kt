@@ -2,6 +2,7 @@ package io.bluetape4k.tokenizer.korean.utils
 
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.support.publicLazy
+import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.tokenizer.korean.utils.KoreanConjugation.conjugatePredicated
 import io.bluetape4k.tokenizer.korean.utils.KoreanConjugation.conjugatePredicatesToCharArraySet
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Adjective
@@ -51,7 +52,8 @@ object KoreanDictionaryProvider: KLogging() {
             DictionarySnapshot(
                 DictionaryVersion("korean-dictionary", 0),
                 snapshotDictionaryValue(),
-            )
+            ),
+            historyCapacity = 0,
         )
     }
 
@@ -60,7 +62,8 @@ object KoreanDictionaryProvider: KLogging() {
             DictionarySnapshot(
                 DictionaryVersion("korean-blockwords", 0),
                 snapshotBlockwordValue(),
-            )
+            ),
+            historyCapacity = 0,
         )
     }
 
@@ -153,8 +156,8 @@ object KoreanDictionaryProvider: KLogging() {
      */
     fun addWordsToDictionary(pos: KoreanPos, words: Collection<String>) {
         dictionaryMutationLock.withLock {
-            koreanDictionary[pos]?.addAll(words)
-            publishDictionaryMutation()
+            val changed = koreanDictionary[pos]?.addAll(words) == true
+            publishDictionaryMutation(pos.takeIf { changed })
         }
     }
 
@@ -177,9 +180,17 @@ object KoreanDictionaryProvider: KLogging() {
     fun addWordsToDictionary(pos: KoreanPos, vararg words: String) {
         if (words.isNotEmpty()) {
             dictionaryMutationLock.withLock {
-                koreanDictionary[pos]?.addAll(words)
-                publishDictionaryMutation()
+                val changed = koreanDictionary[pos]?.addAll(words) == true
+                publishDictionaryMutation(pos.takeIf { changed })
             }
+        }
+    }
+
+    /** 지정 품사 사전에서 단어 컬렉션을 제거하고 새 snapshot revision을 기록합니다. */
+    fun removeWordsFromDictionary(pos: KoreanPos, words: Collection<String>) {
+        dictionaryMutationLock.withLock {
+            val changed = koreanDictionary[pos]?.removeAll(words) == true
+            publishDictionaryMutation(pos.takeIf { changed })
         }
     }
 
@@ -216,6 +227,8 @@ object KoreanDictionaryProvider: KLogging() {
      * - `Noun`은 다수 noun 파일을 합쳐 로드한다.
      * - `Verb`/`Adjective`는 기본형 파일을 읽은 뒤 활용형 사전으로 확장한다.
      * - `KoreanDictionaryProviderTest`의 `사전 로드하기` 케이스에서 `Noun` 사전 비어 있지 않음을 검증한다.
+     * - 반환된 mutable collection에 직접 쓰는 변경은 versioned snapshot에 기록되지 않으므로
+     *   snapshot revision이 필요하면 `addWordsToDictionary`/`removeWordsFromDictionary`를 사용한다.
      *
      * ```kotlin
      * val nouns = KoreanDictionaryProvider.koreanDictionary[KoreanPos.Noun]
@@ -311,6 +324,7 @@ object KoreanDictionaryProvider: KLogging() {
      * - `LOW`는 low/middle/high 파일 전체를 포함한다.
      * - `MIDDLE`은 middle/high를 포함하고, `HIGH`는 high만 포함한다.
      * - `KoreanBlockwordProcessor`에서 severity별 마스킹 판정에 사용된다.
+     * - 반환된 mutable collection에 직접 쓰는 변경은 versioned snapshot에 기록되지 않는다.
      *
      * ```kotlin
      * val high = KoreanDictionaryProvider.blockWords[io.bluetape4k.tokenizer.model.Severity.HIGH]
@@ -324,15 +338,15 @@ object KoreanDictionaryProvider: KLogging() {
             val high = async { readWords("block/block_high.txt") }
 
             mapOf(
-                io.bluetape4k.tokenizer.model.Severity.LOW to low.await(),
-                io.bluetape4k.tokenizer.model.Severity.MIDDLE to middle.await(),
-                io.bluetape4k.tokenizer.model.Severity.HIGH to high.await(),
+                Severity.LOW to low.await(),
+                Severity.MIDDLE to middle.await(),
+                Severity.HIGH to high.await(),
             )
         }
     }
 
     /** 현재 심각도별 금칙어 snapshot과 버전을 반환합니다. */
-    fun currentBlockwordSnapshot(): DictionarySnapshot<Map<io.bluetape4k.tokenizer.model.Severity, Set<String>>> =
+    fun currentBlockwordSnapshot(): DictionarySnapshot<Map<Severity, Set<String>>> =
         blockwordVersions.snapshot()
 
     /**
@@ -344,8 +358,8 @@ object KoreanDictionaryProvider: KLogging() {
      */
     fun reloadBlockwords(
         version: DictionaryVersion,
-        wordsBySeverity: Map<io.bluetape4k.tokenizer.model.Severity, Collection<String>>,
-    ): DictionarySnapshot<Map<io.bluetape4k.tokenizer.model.Severity, Set<String>>> =
+        wordsBySeverity: Map<Severity, Collection<String>>,
+    ): DictionarySnapshot<Map<Severity, Set<String>>> =
         dictionaryMutationLock.withLock {
             require(version.name == "korean-blockwords") { "Expected korean-blockwords version" }
             val replacement = wordsBySeverity.mapValues { (_, words) -> words.toSet() }
@@ -358,30 +372,23 @@ object KoreanDictionaryProvider: KLogging() {
         }
 
     /** 지정 심각도에서 금칙어가 존재하는지 확인합니다. */
-    fun containsBlockword(text: String, severity: io.bluetape4k.tokenizer.model.Severity): Boolean =
+    fun containsBlockword(text: String, severity: Severity): Boolean =
         dictionaryMutationLock.withLock { blockWords[severity]?.contains(text) == true }
 
     /** 기존 가변 금칙어 API가 갱신 버전도 기록하도록 내부 mutation을 감쌉니다. */
     internal inline fun mutateBlockwords(
-        severity: io.bluetape4k.tokenizer.model.Severity,
-        action: CharArraySet.() -> Unit,
+        severity: Severity,
+        action: CharArraySet.() -> Boolean,
     ) {
         dictionaryMutationLock.withLock {
-            when (severity) {
-                io.bluetape4k.tokenizer.model.Severity.LOW -> {
-                    blockWords[io.bluetape4k.tokenizer.model.Severity.LOW]?.action()
-                    blockWords[io.bluetape4k.tokenizer.model.Severity.MIDDLE]?.action()
-                    blockWords[io.bluetape4k.tokenizer.model.Severity.HIGH]?.action()
+            val affectedSeverities = affectedSeverities(severity)
+            var changed = false
+            affectedSeverities.forEach { affectedSeverity ->
+                if (blockWords[affectedSeverity]?.action() == true) {
+                    changed = true
                 }
-
-                io.bluetape4k.tokenizer.model.Severity.MIDDLE -> {
-                    blockWords[io.bluetape4k.tokenizer.model.Severity.MIDDLE]?.action()
-                    blockWords[io.bluetape4k.tokenizer.model.Severity.HIGH]?.action()
-                }
-
-                else -> blockWords[io.bluetape4k.tokenizer.model.Severity.HIGH]?.action()
             }
-            publishBlockwordMutation()
+            publishBlockwordMutation(affectedSeverities.takeIf { changed })
         }
     }
 
@@ -508,25 +515,60 @@ object KoreanDictionaryProvider: KLogging() {
     private fun snapshotDictionaryValue(): Map<KoreanPos, Set<String>> =
         koreanDictionary.mapValues { (_, words) -> words.map { it.asDictionaryWord() }.toSet() }
 
-    private fun snapshotBlockwordValue(): Map<io.bluetape4k.tokenizer.model.Severity, Set<String>> =
+    private fun snapshotDictionaryValue(
+        currentValue: Map<KoreanPos, Set<String>>,
+        changedPos: KoreanPos?,
+    ): Map<KoreanPos, Set<String>> {
+        val pos = changedPos
+        val words = pos?.let { koreanDictionary[it] }
+        return if (pos == null || words == null) {
+            currentValue
+        } else {
+            currentValue + (pos to words.map { it.asDictionaryWord() }.toSet())
+        }
+    }
+
+    private fun snapshotBlockwordValue(): Map<Severity, Set<String>> =
         blockWords.mapValues { (_, words) -> words.map { it.asDictionaryWord() }.toSet() }
+
+    private fun snapshotBlockwordValue(
+        currentValue: Map<Severity, Set<String>>,
+        changedSeverities: Set<Severity>?,
+    ): Map<Severity, Set<String>> {
+        if (changedSeverities == null) {
+            return currentValue
+        }
+        return currentValue.mapValues { (severity, previous) ->
+            if (severity in changedSeverities) {
+                blockWords[severity]?.map { it.asDictionaryWord() }?.toSet() ?: previous
+            } else {
+                previous
+            }
+        }
+    }
 
     private fun Any.asDictionaryWord(): String = when (this) {
         is CharArray -> concatToString()
         else -> toString()
     }
 
-    private fun publishDictionaryMutation() {
+    private fun publishDictionaryMutation(changedPos: KoreanPos? = null) {
         val current = koreanDictionaryVersions.snapshot()
         koreanDictionaryVersions.reload(
             DictionaryVersion(current.version.name, current.version.revision + 1)
-        ) { snapshotDictionaryValue() }
+        ) { snapshotDictionaryValue(current.value, changedPos) }
     }
 
-    private fun publishBlockwordMutation() {
+    private fun publishBlockwordMutation(changedSeverities: Set<Severity>? = null) {
         val current = blockwordVersions.snapshot()
         blockwordVersions.reload(
             DictionaryVersion(current.version.name, current.version.revision + 1)
-        ) { snapshotBlockwordValue() }
+        ) { snapshotBlockwordValue(current.value, changedSeverities) }
+    }
+
+    private fun affectedSeverities(severity: Severity): Set<Severity> = when (severity) {
+        Severity.LOW -> setOf(Severity.LOW, Severity.MIDDLE, Severity.HIGH)
+        Severity.MIDDLE -> setOf(Severity.MIDDLE, Severity.HIGH)
+        Severity.HIGH -> setOf(Severity.HIGH)
     }
 }

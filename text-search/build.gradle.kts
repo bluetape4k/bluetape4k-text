@@ -65,6 +65,16 @@ benchmark {
             outputTimeUnit = "s"
             reportFormat = "json"
         }
+        register("dictionary") {
+            include("io.bluetape4k.text.search.benchmark.VersionedDictionaryBenchmark")
+            warmups = 1
+            iterations = 3
+            iterationTime = 1
+            iterationTimeUnit = "s"
+            mode = "thrpt"
+            outputTimeUnit = "s"
+            reportFormat = "json"
+        }
     }
 }
 
@@ -81,4 +91,5 @@ dependencies {
     add("benchmarkImplementation", bt4k.kotlinx.benchmark.runtime)
     add("benchmarkImplementation", bt4k.kotlinx.benchmark.runtime.jvm)
     add("benchmarkImplementation", bt4k.jmh.core)
+    add("benchmarkImplementation", project(":tokenizer-korean"))
 }

@@ -38,19 +38,34 @@ data class DictionarySnapshot<out T>(
     val value: T,
 )
 
+private const val DEFAULT_HISTORY_CAPACITY: Int = 1
+
 /**
  * 실패한 로드가 현재 값을 훼손하지 않도록 원자적으로 사전을 교체하는 저장소입니다.
  *
  * `reload`는 loader를 lock 밖에서 실행하지 않고 lock 안에서 평가하므로 같은 저장소에 대한
  * 여러 갱신이 순서대로 검증된다. loader가 예외를 던지거나 revision이 현재보다 높지 않으면
- * 현재 snapshot은 그대로 유지된다. 성공한 이전 snapshot은 [rollback]으로 되돌릴 수 있다.
+ * 현재 snapshot은 그대로 유지된다. 성공한 이전 snapshot은 제한된 journal 범위에서
+ * [rollback]으로 되돌릴 수 있다.
  * 값 객체의 내부 mutable state까지 복제하지는 않으므로 loader는 독립적이고 읽기 전용인 값을
  * 반환해야 한다.
  *
  * @param T 사전 값의 타입입니다.
  * @property initial 처음 공개할 사전 snapshot입니다.
+ * @property historyCapacity 현재 snapshot을 제외하고 보존할 이전 snapshot 수입니다.
+ * 음이 아닌 값이어야 하며 기본값 1은 one-step rollback을 보존합니다. 0이면 journal을
+ * 비활성화하고, 기본값에서는 기존 무제한 multi-step rollback을 제공하지 않습니다.
  */
-class VersionedDictionary<T>(initial: DictionarySnapshot<T>) {
+class VersionedDictionary<T> @JvmOverloads constructor(
+    initial: DictionarySnapshot<T>,
+    private val historyCapacity: Int = DEFAULT_HISTORY_CAPACITY,
+) {
+    init {
+        require(historyCapacity >= 0) {
+            "Dictionary history capacity must not be negative: $historyCapacity"
+        }
+    }
+
     private val current = AtomicReference(initial)
     private val mutationLock = ReentrantLock()
     private val history = ArrayDeque<DictionarySnapshot<T>>()
@@ -75,7 +90,12 @@ class VersionedDictionary<T>(initial: DictionarySnapshot<T>) {
         }
 
         val next = DictionarySnapshot(version, loader())
-        history.addLast(previous)
+        if (historyCapacity > 0) {
+            history.addLast(previous)
+            while (history.size > historyCapacity) {
+                history.removeFirst()
+            }
+        }
         current.set(next)
         next
     }

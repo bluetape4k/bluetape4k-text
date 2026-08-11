@@ -25,8 +25,9 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Suffix
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Verb
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.VerbPrefix
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.ResourceLock
 
-
+@ResourceLock("KoreanDictionaryProvider")
 class KoreanTokenizerTest: TestBase() {
 
     companion object: KLogging() {

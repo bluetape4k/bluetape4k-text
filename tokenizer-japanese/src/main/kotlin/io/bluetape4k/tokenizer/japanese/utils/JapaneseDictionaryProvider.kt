@@ -34,7 +34,8 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
             DictionarySnapshot(
                 DictionaryVersion("japanese-blockwords", 0),
                 snapshotBlockwordValue(),
-            )
+            ),
+            historyCapacity = 0,
         )
     }
 
@@ -85,6 +86,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      * 최초 접근 시 `block/blocks.txt`에서 lazy 로드하는 인메모리 금칙어 사전입니다.
      *
      * [addBlockwords], [removeBlockwords], [clearBlockwords]로 수행한 변경은 즉시 반영됩니다.
+     * 반환된 mutable collection에 직접 쓰는 변경은 versioned snapshot에 기록되지 않습니다.
      *
      * ```kotlin
      * val dictionary = JapaneseDictionaryProvider.blockWordDictionary

@@ -200,10 +200,35 @@ Run condition:
 > These are local comparable snapshots, not production rankings. Keep future
 > runs on the same command and metric direction before comparing deltas.
 
+#### VersionedDictionary mutation benchmark (Issue #239)
+
+The dictionary benchmark calls the Korean production provider directly and
+compares the changed-entry copy-on-write path with full replacement. Each
+invocation performs an add/remove pair on the Noun-sized dictionary, restores
+the same cardinality, and normalizes throughput over two mutations.
+
+Run condition:
+
+- Command: `./gradlew :text-search:dictionaryBenchmark`
+- Host/JVM: Apple M4 Pro, GraalVM JDK 25.0.4, one JMH thread, one fork
+- Raw result: [`docs/benchmark/2026-08-11-issue-239-versioned-dictionary-baselines.json`](../docs/benchmark/2026-08-11-issue-239-versioned-dictionary-baselines.json)
+
+| Benchmark | Ops/s | Notes |
+|-----------|-------|-------|
+| `addRemoveWithCopyOnWrite` | 63.85 ± 29.30 | Production changed-entry COW path |
+| `addRemoveWithFullReplacement` | 43.00 ± 36.52 | Production full-replacement path |
+
+The confidence intervals overlap, so this run does not establish a
+statistically conclusive throughput improvement. The raw JSON contains no
+`gc.alloc.rate.norm` secondary metric; allocation/heap-retention improvement
+is therefore not claimed from this run. The deterministic bounded-history
+tests remain the retention proof.
+
 Run benchmarks locally:
 
 ```bash
 ./gradlew :text-search:benchmark
+./gradlew :text-search:dictionaryBenchmark
 ```
 
 ## Dependencies
