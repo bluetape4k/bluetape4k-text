@@ -20,14 +20,14 @@ env:
 jobs:
   dependency-submission:
     name: Dependency Submission
-    if: github.event_name == 'push' || github.ref == 'refs/heads/develop'
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Checkout sources
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: refs/heads/develop
+          ref: ${{ github.sha }}
 
       - name: Setup Java
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
