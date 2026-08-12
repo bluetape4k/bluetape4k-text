@@ -224,6 +224,24 @@ statistically conclusive throughput improvement. The raw JSON contains no
 is therefore not claimed from this run. The deterministic bounded-history
 tests remain the retention proof.
 
+#### Dictionary preload timing diagnostic (Issue #262)
+
+The preload timing diagnostic runs in a separate `JavaExec` JVM. For each
+provider, the first `preload()` call is recorded as `coldMs` and the second
+call in the same process as `warmMs`. It is a reproducible observation task,
+not a JMH throughput benchmark or a performance acceptance threshold.
+
+Run it with:
+
+```bash
+./gradlew :text-search:preloadTimingDiagnostic --no-build-cache --rerun-tasks --console=plain
+```
+
+The local raw result and environment are preserved in
+[`docs/benchmark/2026-08-12-issue-262-preload-timing.json`](../docs/benchmark/2026-08-12-issue-262-preload-timing.json).
+Compare cold/warm observations only when the command, JVM, host class, and
+metric direction remain compatible.
+
 Run benchmarks locally:
 
 ```bash

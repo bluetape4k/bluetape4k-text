@@ -1,0 +1,31 @@
+{
+  "issue": 262,
+  "generatedAt": "2026-08-12",
+  "command": "./gradlew :text-search:preloadTimingDiagnostic --no-build-cache --rerun-tasks --console=plain",
+  "task": ":text-search:preloadTimingDiagnostic",
+  "executionModel": "JavaExec fresh JVM; first preload call is cold and second call is warm within the same process",
+  "metric": "elapsed milliseconds; lower is faster, but no acceptance threshold is defined",
+  "environment": {
+    "hostModel": "Mac16,11",
+    "os": "Mac OS X 26.6.1 aarch64",
+    "java": "Oracle GraalVM 25.2.4+7.1, Java 25.0.4",
+    "gradle": "9.7.0"
+  },
+  "results": [
+    {
+      "provider": "korean",
+      "coldMs": 302,
+      "warmMs": 1
+    },
+    {
+      "provider": "japanese",
+      "coldMs": 7,
+      "warmMs": 0
+    }
+  ],
+  "caveats": [
+    "This is a local diagnostic snapshot, not a production performance ranking.",
+    "The diagnostic intentionally does not define a regression threshold.",
+    "Run the task in a fresh JVM when comparing cold/warm observations."
+  ]
+}

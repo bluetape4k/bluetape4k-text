@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.JavaExec
+
 plugins {
     kotlin("plugin.allopen")
     alias(bt4k.plugins.kotlinx.benchmark)
@@ -92,4 +94,12 @@ dependencies {
     add("benchmarkImplementation", bt4k.kotlinx.benchmark.runtime.jvm)
     add("benchmarkImplementation", bt4k.jmh.core)
     add("benchmarkImplementation", project(":tokenizer-korean"))
+    add("benchmarkImplementation", project(":tokenizer-japanese"))
+}
+
+tasks.register<JavaExec>("preloadTimingDiagnostic") {
+    group = "benchmark"
+    description = "Measure Korean/Japanese dictionary preload cold and warm durations in a fresh JVM."
+    classpath = sourceSets["benchmark"].runtimeClasspath
+    mainClass.set("io.bluetape4k.text.search.benchmark.DictionaryPreloadTimingDiagnostic")
 }
