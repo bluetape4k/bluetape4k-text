@@ -22,6 +22,7 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.ScreenName
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Space
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.URL
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
 import org.junit.jupiter.api.Test
 import java.util.regex.Matcher
 
@@ -119,6 +120,30 @@ class KoreanChunkerTest: TestBase() {
             ChunkMatch(17, 20, "...", Punctuation),
             ChunkMatch(6, 9, "...", Punctuation)
         )
+    }
+
+    @Test
+    fun `ChunkMatch range uses exclusive end without including the next character`() {
+        // Given
+        val match = ChunkMatch(start = 0, end = 2, text = "ab", pos = Alpha)
+
+        // When
+        val range = match.range
+
+        // Then
+        range shouldBeEqualTo (0 until 2)
+        "abX".substring(range) shouldBeEqualTo "ab"
+    }
+
+    @Test
+    fun `ChunkMatch treats touching ranges as disjoint`() {
+        // Given
+        val left = ChunkMatch(start = 0, end = 2, text = "ab", pos = Alpha)
+        val right = ChunkMatch(start = 2, end = 3, text = "c", pos = Alpha)
+
+        // When / Then
+        left.disjoint(right).shouldBeTrue()
+        right.disjoint(left).shouldBeTrue()
     }
 
     @Test
