@@ -4,9 +4,11 @@ import io.bluetape4k.tokenizer.japanese.JapaneseProcessor
 import io.bluetape4k.tokenizer.korean.KoreanProcessor
 import io.bluetape4k.tokenizer.model.MAX_BLOCKWORD_TEXT_LENGTH
 import io.bluetape4k.tokenizer.model.MAX_TOKENIZE_TEXT_LENGTH
+import io.bluetape4k.tokenizer.model.blockwordOptionsOf
 import io.bluetape4k.tokenizer.model.blockwordRequestOf
 import java.io.Serial
 import java.io.Serializable
+import java.util.Locale
 
 internal enum class TokenizerLanguage {
     KOREAN,
@@ -27,7 +29,11 @@ internal class TokenizerSafetyHandler(
     private val koreanTokenize: (String) -> Int = { KoreanProcessor.tokenize(it).size },
     private val japaneseTokenize: (String) -> Int = { JapaneseProcessor.tokenize(it).size },
     private val koreanBlockword: (String) -> String = { KoreanProcessor.maskBlockwords(blockwordRequestOf(it)).maskedText },
-    private val japaneseBlockword: (String) -> String = { JapaneseProcessor.maskBlockwords(blockwordRequestOf(it)).maskedText },
+    private val japaneseBlockword: (String) -> String = {
+        JapaneseProcessor.maskBlockwords(
+            blockwordRequestOf(it, blockwordOptionsOf(locale = Locale.JAPANESE))
+        ).maskedText
+    },
 ) {
 
     fun handleTokenize(language: TokenizerLanguage, text: String): SafetyResponse =

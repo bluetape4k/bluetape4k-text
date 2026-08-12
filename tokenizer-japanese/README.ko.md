@@ -15,9 +15,9 @@
 - **품사 확장 함수** — `TokenBase`에 `isNoun()`, `isVerb()`, `isNounOrVerb()`, `isAdjective()`, `isJosa()`, `isPunctuation()` 추가
 - **금칙어 탐지** — 사전에 적재된 `CharArraySet` 기준으로 명사/동사 토큰만 대상으로 검사
 - **복합어 금칙어 탐지** — 단일 토큰 매칭 실패 시 인접 명사 + 명사/동사 조합 검사 (예: 覚せい剤 → 覚せい + 剤)
-- **금칙어 마스킹** — 탐지된 토큰을 마스크 문자로 토큰 길이만큼 반복 치환
+- **금칙어 마스킹** — `Locale.JAPANESE`를 검증하고 LOW/MIDDLE/HIGH cumulative severity threshold를 적용한 뒤 탐지된 토큰을 마스크 문자로 토큰 길이만큼 반복 치환
 - **런타임 사전 관리** — 서비스 재시작 없이 금칙어 추가·삭제·초기화 가능
-- **지연 사전 로딩** — `blockWordDictionary`는 최초 접근 시 `runBlocking(Dispatchers.IO)`로 `japanesetext/block/blocks.txt` 적재
+- **지연 사전 로딩** — `blockWordDictionary`는 최초 접근 시 `runBlocking(Dispatchers.IO)`로 `japanesetext/block/blocks.txt`와 severity override를 적재
 - **파사드 패턴** — `JapaneseProcessor`가 하위 컴포넌트 전체를 단일 진입점으로 통합
 
 ## 사용법
@@ -53,19 +53,27 @@ val verbs = JapaneseProcessor.filter(tokens) { it.isVerb() }.map { it.surface }
 
 ```kotlin
 import io.bluetape4k.tokenizer.japanese.JapaneseProcessor
+import io.bluetape4k.tokenizer.model.blockwordOptionsOf
 import io.bluetape4k.tokenizer.model.blockwordRequestOf
+import io.bluetape4k.tokenizer.model.Severity
+import java.util.Locale
 
 // 금칙어 탐지
 val found = JapaneseProcessor.findBlockwords("ホモの男性を理解できない").map { it.surface }
 // [ホモ]
 
-// 기본 옵션(mask = "*")으로 마스킹
-val request = blockwordRequestOf("ホモの男性を理解できない")
+// 일본어 locale과 severity threshold를 명시해 마스킹
+val options = blockwordOptionsOf(locale = Locale.JAPANESE, severity = Severity.MIDDLE)
+val request = blockwordRequestOf("ホモの男性を理解できない", options)
 val response = JapaneseProcessor.maskBlockwords(request)
 println(response.maskedText)        // **の男性を理解できない
 println(response.blockwordExists)   // true
 println(response.blockWords)        // [ホモ]
 ```
+
+`maskBlockwords`는 `Locale.JAPANESE`만 허용합니다. severity는 cumulative
+threshold로 동작하므로 `LOW`는 모든 tier, `MIDDLE`은 middle/high,
+`HIGH`는 high tier만 검사합니다. tier를 생략한 런타임 단어는 `LOW`에 추가됩니다.
 
 ### 런타임 사전 관리
 

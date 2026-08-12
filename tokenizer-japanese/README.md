@@ -15,9 +15,9 @@ Japanese morphological analysis and blockword filtering library powered by Kurom
 - **POS extension functions** — `isNoun()`, `isVerb()`, `isNounOrVerb()`, `isAdjective()`, `isJosa()`, `isPunctuation()` on `TokenBase`
 - **Blockword detection** — finds blocked words from a pre-loaded `CharArraySet` dictionary; targets nouns and verbs only
 - **Compound word detection** — when no single-token match is found, checks adjacent noun + noun/verb pairs (e.g. 覚せい剤 → 覚せい + 剤)
-- **Blockword masking** — replaces each blocked token with the mask character repeated to match token length
+- **Blockword masking** — validates `Locale.JAPANESE`, applies LOW/MIDDLE/HIGH cumulative severity thresholds, and replaces each blocked token with the mask character repeated to match token length
 - **Dynamic dictionary management** — add, remove, or clear blockwords at runtime without restarting the application
-- **Lazy dictionary loading** — `blockWordDictionary` is loaded from `japanesetext/block/blocks.txt` on first access using `runBlocking(Dispatchers.IO)`
+- **Lazy dictionary loading** — `blockWordDictionary` is loaded from `japanesetext/block/blocks.txt` plus severity overrides on first access using `runBlocking(Dispatchers.IO)`
 - **Facade pattern** — `JapaneseProcessor` provides a single entry point delegating to all sub-components
 
 ## Usage
@@ -54,20 +54,26 @@ val verbs = JapaneseProcessor.filter(tokens) { it.isVerb() }.map { it.surface }
 ```kotlin
 import io.bluetape4k.tokenizer.japanese.JapaneseProcessor
 import io.bluetape4k.tokenizer.model.blockwordRequestOf
-import io.bluetape4k.tokenizer.model.BlockwordOptions
+import io.bluetape4k.tokenizer.model.blockwordOptionsOf
 import io.bluetape4k.tokenizer.model.Severity
+import java.util.Locale
 
 // Detect blockwords
 val found = JapaneseProcessor.findBlockwords("ホモの男性を理解できない").map { it.surface }
 // [ホモ]
 
-// Mask blockwords with default options (mask = "*")
-val request = blockwordRequestOf("ホモの男性を理解できない")
+// Mask Japanese blockwords with an explicit locale and severity threshold
+val options = blockwordOptionsOf(locale = Locale.JAPANESE, severity = Severity.MIDDLE)
+val request = blockwordRequestOf("ホモの男性を理解できない", options)
 val response = JapaneseProcessor.maskBlockwords(request)
 println(response.maskedText)        // **の男性を理解できない
 println(response.blockwordExists)   // true
 println(response.blockWords)        // [ホモ]
 ```
+
+`maskBlockwords` requires `Locale.JAPANESE`. Severity uses cumulative thresholds:
+`LOW` includes all tiers, `MIDDLE` includes middle/high, and `HIGH` includes
+only high-tier entries. Runtime words added without a tier use `LOW`.
 
 ### Dynamic dictionary management
 

@@ -158,7 +158,10 @@ val response = KoreanProcessor.maskBlockwords(BlockwordRequest("이 욕설은 �
 
 ```kotlin
 import io.bluetape4k.tokenizer.japanese.JapaneseProcessor
+import io.bluetape4k.tokenizer.model.blockwordOptionsOf
 import io.bluetape4k.tokenizer.model.blockwordRequestOf
+import io.bluetape4k.tokenizer.model.Severity
+import java.util.Locale
 
 // Morphological analysis
 val tokens = JapaneseProcessor.tokenize("お寿司が食べたい。")
@@ -171,12 +174,17 @@ val nouns = JapaneseProcessor.filterNoun(
 ).map { it.surface }
 // [私, 日本語, 勉強]
 
-// Blockword masking
-val request = blockwordRequestOf("ホモの男性を理解できない")
+// Blockword masking with the Japanese locale and a cumulative threshold
+val options = blockwordOptionsOf(locale = Locale.JAPANESE, severity = Severity.MIDDLE)
+val request = blockwordRequestOf("ホモの男性を理解できない", options)
 val result = JapaneseProcessor.maskBlockwords(request)
 println(result.maskedText)       // **の男性を理解できない
 println(result.blockwordExists)  // true
 ```
+
+`JapaneseProcessor.maskBlockwords` requires `Locale.JAPANESE`. Severity is a
+cumulative threshold: `LOW` includes every tier, `MIDDLE` includes middle/high,
+and `HIGH` includes only high-tier entries.
 
 ### Language Detection
 

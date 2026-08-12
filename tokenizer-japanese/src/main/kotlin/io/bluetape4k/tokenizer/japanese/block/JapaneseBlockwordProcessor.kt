@@ -6,6 +6,7 @@ import io.bluetape4k.logging.debug
 import io.bluetape4k.logging.error
 import io.bluetape4k.logging.trace
 import io.bluetape4k.support.EMPTY_STRING
+import io.bluetape4k.tokenizer.exceptions.InvalidTokenizeRequestException
 import io.bluetape4k.tokenizer.exceptions.TokenizerException
 import io.bluetape4k.tokenizer.japanese.tokenizer.JapaneseTokenizer
 import io.bluetape4k.tokenizer.japanese.tokenizer.isNoun
@@ -13,8 +14,10 @@ import io.bluetape4k.tokenizer.japanese.tokenizer.isNounOrVerb
 import io.bluetape4k.tokenizer.japanese.utils.JapaneseDictionaryProvider
 import io.bluetape4k.tokenizer.model.BlockwordRequest
 import io.bluetape4k.tokenizer.model.BlockwordResponse
+import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.tokenizer.model.blockwordResponseOf
 import io.bluetape4k.tokenizer.model.requireBlockwordTextLength
+import java.util.Locale
 
 /**
  * Kuromoji IPADic 토크나이저로 일본어 문장의 금칙어를 탐지하고 마스킹합니다.
@@ -77,7 +80,8 @@ object JapaneseBlockwordProcessor: KLogging() {
      * 예: 覚せい剤(覚せい + 剤), 盗撮す(盗 + 撮す).
      *
      * ```kotlin
-     * val request = io.bluetape4k.tokenizer.model.blockwordRequestOf("覚せい剤を注文できるサイトはありますか？")
+     * val options = io.bluetape4k.tokenizer.model.blockwordOptionsOf(locale = java.util.Locale.JAPANESE)
+     * val request = io.bluetape4k.tokenizer.model.blockwordRequestOf("覚せい剤を注文できるサイトはありますか？", options)
      * val response = JapaneseBlockwordProcessor.maskBlockwords(request)
      *
      * // response.blockwordExists == true
@@ -109,10 +113,12 @@ object JapaneseBlockwordProcessor: KLogging() {
      *
      * Kuromoji 호출 전에 길이 초과 입력을 거부합니다.
      * 공백 입력은 빈 마스킹 텍스트 응답을 반환합니다. 매치된 토큰 표면형은 토큰 길이만큼 반복한 마스크 문자로 치환합니다.
+     * 요청 locale은 일본어만 허용하며, severity는 LOW(전체), MIDDLE(middle/high), HIGH(high) threshold로 적용합니다.
      * 처리 중 발생한 예외는 [io.bluetape4k.tokenizer.exceptions.TokenizerException]으로 감싸 다시 던집니다.
      *
      * ```kotlin
-     * val request = io.bluetape4k.tokenizer.model.blockwordRequestOf("ホモの男性を理解できない")
+     * val options = io.bluetape4k.tokenizer.model.blockwordOptionsOf(locale = java.util.Locale.JAPANESE)
+     * val request = io.bluetape4k.tokenizer.model.blockwordRequestOf("ホモの男性を理解できない", options)
      * val response = JapaneseBlockwordProcessor.maskBlockwords(request)
      *
      * // response.maskedText == "**の男性を理解できない"
@@ -120,15 +126,17 @@ object JapaneseBlockwordProcessor: KLogging() {
      *
      * @param request 원문과 마스킹 옵션을 담은 금칙어 요청입니다.
      * @return 마스킹된 텍스트와 매치된 금칙어 목록을 담은 응답입니다.
+     * @throws InvalidTokenizeRequestException 요청 locale이 일본어가 아니면 던집니다.
      */
     fun maskBlockwords(request: BlockwordRequest): BlockwordResponse {
         requireBlockwordTextLength(request.text)
         if (request.text.isBlank()) {
             return BlockwordResponse(request, EMPTY_STRING)
         }
+        validateLocale(request.options.locale)
 
         try {
-            val blockwordDictionary = JapaneseDictionaryProvider.currentBlockwordSnapshot().value
+            val blockwordDictionary = JapaneseDictionaryProvider.currentBlockwordSeveritySnapshot().value
             val tokens = JapaneseTokenizer.tokenize(request.text)
             var maskedText = request.text
             val maskStr = request.options.mask
@@ -143,7 +151,7 @@ object JapaneseBlockwordProcessor: KLogging() {
                 .filter { it.isNounOrVerb() }
                 .sortedByDescending { it.position }
                 .forEach { token ->
-                    if (canMask(token, blockwordDictionary)) {
+                    if (canMask(token, blockwordDictionary, request.options.severity)) {
                         log.trace { "금칙어를 마스킹합니다. position=${token.position}, length=${token.surface.length}" }
                         maskedText = maskedText.replaceRange(
                             token.position,
@@ -157,17 +165,38 @@ object JapaneseBlockwordProcessor: KLogging() {
         } catch (e: Error) {
             throw e
         } catch (e: Exception) {
-            log.error(e) { "금칙어 마스킹에 실패했습니다. textLength=${request.text.length}" }
+            log.error(e) {
+                "금칙어 마스킹에 실패했습니다. locale=${request.options.locale}, " +
+                        "severity=${request.options.severity}, textLength=${request.text.length}"
+            }
             throw TokenizerException("금칙어 마스킹에 실패했습니다. textLength=${request.text.length}", e)
         }
     }
 
-    private fun canMask(token: Token, blockwordDictionary: Set<String>): Boolean {
-        return isBlockword(token.surface, blockwordDictionary)
+    private fun canMask(
+        token: Token,
+        blockwordDictionary: Map<Severity, Set<String>>,
+        severity: Severity,
+    ): Boolean {
+        return isBlockword(token.surface, blockwordDictionary, severity)
     }
+
+    private fun isBlockword(
+        text: String,
+        blockwordDictionary: Map<Severity, Set<String>>,
+        severity: Severity,
+    ): Boolean = blockwordDictionary[severity].orEmpty().contains(text)
 
     private fun isBlockword(text: String, blockwordDictionary: Set<String>): Boolean =
         blockwordDictionary.contains(text)
+
+    private fun validateLocale(locale: Locale) {
+        if (locale.language != Locale.JAPANESE.language) {
+            throw InvalidTokenizeRequestException(
+                "Invalid Language[${locale.language}], Only support Japanese"
+            )
+        }
+    }
 
     private val Token.featureCount: Int get() = allFeaturesArray.size
 }
