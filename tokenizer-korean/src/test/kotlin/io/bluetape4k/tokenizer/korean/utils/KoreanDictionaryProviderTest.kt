@@ -30,7 +30,6 @@ import org.junit.jupiter.api.parallel.ResourceLock
 import java.util.Collections
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
-import kotlin.system.measureTimeMillis
 
 @ResourceLock("KoreanDictionaryProvider")
 class KoreanDictionaryProviderTest: TestBase() {
@@ -49,16 +48,6 @@ class KoreanDictionaryProviderTest: TestBase() {
         KoreanDictionaryProvider.preload()
 
         KoreanDictionaryProvider.allDictionariesInitialized().shouldBeTrue()
-    }
-
-    @Test
-    fun `preload cold warm timing을 기록한다`() = runSuspendIO {
-        val coldMillis = measureTimeMillis { KoreanDictionaryProvider.preload() }
-        val warmMillis = measureTimeMillis { KoreanDictionaryProvider.preload() }
-
-        println("ISSUE243_KOREAN_PRELOAD_TIMING cold=${coldMillis}ms warm=${warmMillis}ms")
-        coldMillis shouldBeEqualTo coldMillis.coerceAtLeast(0)
-        warmMillis shouldBeEqualTo warmMillis.coerceAtLeast(0)
     }
 
     @Test

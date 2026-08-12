@@ -29,18 +29,16 @@ README에 명시합니다.
 - 실제 `Job.cancel()`과 직접 `CancellationException` 후 재시도 2회 검증
 - 두 provider의 실제 `preload()` snapshot 준비 테스트 통과
 - 두 processor facade에서 `preload()` 위임과 snapshot 준비를 검증
-- cold/warm timing 관측: 일본어 `59ms/0ms`, 한국어 `382ms/1ms`
-  (각 provider timing 테스트를 단독 Gradle invocation으로 실행한 fresh JVM)
+- cold/warm timing 관측: 한국어 `302ms/1ms`, 일본어 `7ms/0ms`
+  (`:text-search:preloadTimingDiagnostic`의 JavaExec fresh JVM)
 - 재현 명령:
-  `./gradlew :tokenizer-japanese:test --tests
-  'io.bluetape4k.tokenizer.japanese.utils.JapaneseDictionaryProviderTest.preload cold warm timing을 기록한다'
-  --no-build-cache --console=plain --info`
-  및
-  `./gradlew :tokenizer-korean:test --tests
-  'io.bluetape4k.tokenizer.korean.utils.KoreanDictionaryProviderTest.preload cold warm timing을 기록한다'
-  --no-build-cache --console=plain`
-- timing assertion은 cold/warm 각각의 비음수 결과만 보장하는 관측용이며
-  deterministic benchmark 또는 성능 회귀 임계값으로 해석하지 않습니다.
+  `./gradlew :text-search:preloadTimingDiagnostic --no-build-cache --rerun-tasks --console=plain`
+- raw 결과와 실행 환경은
+  [`docs/benchmark/2026-08-12-issue-262-preload-timing.json`](../benchmark/2026-08-12-issue-262-preload-timing.json)에
+  보존합니다.
+- timing unit test는 일반 JUnit suite에서 제거했습니다. 진단 task는 첫 호출을
+  cold, 같은 JVM의 두 번째 호출을 warm으로 측정하고, 결과를 성능 회귀 임계값으로
+  해석하지 않습니다.
 - 두 모듈 전체 테스트, `build -x test`, `detekt`, `git diff --check` 통과
 
 ## 향후 규칙

@@ -224,6 +224,24 @@ Noun 규모 사전에 단어를 추가한 뒤 제거하는 pair를 수행해 동
 없으므로 이 실행에서 allocation/heap-retention 개선도 주장하지 않습니다.
 retention 경계는 결정적 bounded-history 테스트로 증명합니다.
 
+#### Dictionary preload timing diagnostic (Issue #262)
+
+preload timing diagnostic은 별도의 `JavaExec` JVM에서 실행합니다. 각 provider의
+첫 번째 `preload()` 호출을 `coldMs`, 같은 프로세스의 두 번째 호출을 `warmMs`로
+기록합니다. 이 task는 재현 가능한 관측용이며 JMH 처리량 벤치마크나 성능 승인
+임계값이 아닙니다.
+
+실행 명령:
+
+```bash
+./gradlew :text-search:preloadTimingDiagnostic --no-build-cache --rerun-tasks --console=plain
+```
+
+로컬 raw 결과와 실행 환경은
+[`docs/benchmark/2026-08-12-issue-262-preload-timing.json`](../docs/benchmark/2026-08-12-issue-262-preload-timing.json)에
+보존합니다. 이후 결과는 명령, JVM, host 등급, metric 방향이 호환될 때만
+비교합니다.
+
 로컬 벤치마크 실행:
 
 ```bash
