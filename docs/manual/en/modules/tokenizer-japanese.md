@@ -48,10 +48,13 @@ POS filtering is morphology-aware. It is more appropriate than raw substring sea
 ## Detect and mask blockwords
 
 ```kotlin
+import io.bluetape4k.tokenizer.model.blockwordOptionsOf
 import io.bluetape4k.tokenizer.model.blockwordRequestOf
+import java.util.Locale
 
+val options = blockwordOptionsOf(locale = Locale.JAPANESE)
 val response = JapaneseProcessor.maskBlockwords(
-    blockwordRequestOf("ホモの男性を理解できない"),
+    blockwordRequestOf("ホモの男性を理解できない", options),
 )
 
 println(response.maskedText)       // **の男性を理解できない
@@ -59,6 +62,7 @@ println(response.blockwordExists)  // true
 ```
 
 The built-in path targets noun and verb tokens and also checks adjacent noun plus noun/verb compounds when a single token does not match.
+`Locale.JAPANESE` is required. Severity uses cumulative thresholds: `LOW` includes all tiers, `MIDDLE` includes middle/high, and `HIGH` includes only high-tier entries.
 
 ## Dictionary lifetime
 

@@ -7,6 +7,7 @@ import io.bluetape4k.tokenizer.japanese.tokenizer.JapaneseTokenizer
 import io.bluetape4k.tokenizer.japanese.utils.JapaneseDictionaryProvider
 import io.bluetape4k.tokenizer.model.BlockwordRequest
 import io.bluetape4k.tokenizer.model.BlockwordResponse
+import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
 
 /**
@@ -100,9 +101,11 @@ object JapaneseProcessor: KLogging() {
 
     /**
      * 문장의 금칙어 토큰을 요청 옵션의 마스크 문자열로 치환합니다.
+     * 요청 locale은 `Locale.JAPANESE`만 허용하고, severity는 일본어 사전의 cumulative threshold로 적용합니다.
      *
      * ```kotlin
-     * val request = io.bluetape4k.tokenizer.model.blockwordRequestOf("ホモの男性を理解できない")
+     * val options = io.bluetape4k.tokenizer.model.blockwordOptionsOf(locale = java.util.Locale.JAPANESE)
+     * val request = io.bluetape4k.tokenizer.model.blockwordRequestOf("ホモの男性を理解できない", options)
      * val response = JapaneseProcessor.maskBlockwords(request)
      *
      * // response.maskedText == "**の男性を理解できない"
@@ -131,6 +134,15 @@ object JapaneseProcessor: KLogging() {
         JapaneseDictionaryProvider.addBlockwords(words)
     }
 
+    /** 지정한 severity tier에 인메모리 금칙어를 추가합니다.
+     *
+     * @param words 추가할 금칙어 단어 목록입니다.
+     * @param severity 추가할 severity tier입니다.
+     */
+    fun addBlockwords(words: List<String>, severity: Severity) {
+        JapaneseDictionaryProvider.addBlockwords(words, severity)
+    }
+
     /**
      * 인메모리 금칙어 사전에서 단어를 제거합니다. 등록되지 않은 단어는 무시합니다.
      *
@@ -146,6 +158,15 @@ object JapaneseProcessor: KLogging() {
      */
     fun removeBlockwords(words: List<String>) {
         JapaneseDictionaryProvider.removeBlockwords(words)
+    }
+
+    /** 지정한 severity tier에서 인메모리 금칙어를 제거합니다.
+     *
+     * @param words 제거할 금칙어 단어 목록입니다.
+     * @param severity 제거할 severity tier입니다.
+     */
+    fun removeBlockwords(words: List<String>, severity: Severity) {
+        JapaneseDictionaryProvider.removeBlockwords(words, severity)
     }
 
     /**

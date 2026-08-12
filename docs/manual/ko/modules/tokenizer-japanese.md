@@ -48,10 +48,13 @@ println(verbs) // [し]
 ## 금칙어 탐지와 마스킹
 
 ```kotlin
+import io.bluetape4k.tokenizer.model.blockwordOptionsOf
 import io.bluetape4k.tokenizer.model.blockwordRequestOf
+import java.util.Locale
 
+val options = blockwordOptionsOf(locale = Locale.JAPANESE)
 val response = JapaneseProcessor.maskBlockwords(
-    blockwordRequestOf("ホモの男性を理解できない"),
+    blockwordRequestOf("ホモの男性を理解できない", options),
 )
 
 println(response.maskedText)      // **の男性を理解できない
@@ -59,6 +62,7 @@ println(response.blockwordExists) // true
 ```
 
 내장 경로는 명사와 동사를 중심으로 찾고, 단일 토큰이 일치하지 않으면 인접한 명사와 명사·동사 조합도 확인한다.
+`Locale.JAPANESE`가 필요합니다. severity는 cumulative threshold로 동작해 `LOW`는 모든 tier, `MIDDLE`은 middle/high, `HIGH`는 high tier만 검사합니다.
 
 ## 사전 수명
 

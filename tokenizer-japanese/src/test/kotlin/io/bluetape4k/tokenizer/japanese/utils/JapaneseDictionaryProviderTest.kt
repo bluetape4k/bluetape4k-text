@@ -2,12 +2,14 @@ package io.bluetape4k.tokenizer.japanese.utils
 
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.tokenizer.japanese.AbstractTokenizerTest
+import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldContainAll
 import io.bluetape4k.junit5.concurrency.MultithreadingTester
 import io.bluetape4k.tokenizer.utils.DictionaryVersion
 import org.junit.jupiter.api.Test
@@ -55,8 +57,42 @@ class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
     }
 
     @Test
+    fun `severity snapshot은 cumulative threshold로 정규화된다`() {
+        val original = JapaneseDictionaryProvider.currentBlockwordSeveritySnapshot()
+        val replacement = mapOf(
+            Severity.LOW to listOf("jp-low"),
+            Severity.MIDDLE to listOf("jp-middle"),
+            Severity.HIGH to listOf("jp-high"),
+        )
+
+        try {
+            JapaneseDictionaryProvider.reloadBlockwords(
+                DictionaryVersion("japanese-blockwords", original.version.revision + 1),
+                replacement,
+            )
+            val value = JapaneseDictionaryProvider.currentBlockwordSeveritySnapshot().value
+
+            value.getValue(Severity.LOW) shouldContainAll
+                    listOf("jp-low", "jp-middle", "jp-high")
+            value.getValue(Severity.MIDDLE) shouldContainAll
+                    listOf("jp-middle", "jp-high")
+            value.getValue(Severity.HIGH) shouldContainAll
+                    listOf("jp-high")
+        } finally {
+            JapaneseDictionaryProvider.reloadBlockwords(
+                DictionaryVersion(
+                    "japanese-blockwords",
+                    JapaneseDictionaryProvider.currentBlockwordSnapshot().version.revision + 1,
+                ),
+                original.value,
+            )
+        }
+    }
+
+    @Test
     fun `버전이 있는 금칙어 snapshot을 reload하고 원본을 복구한다`() {
         val original = JapaneseDictionaryProvider.currentBlockwordSnapshot()
+        val originalBySeverity = JapaneseDictionaryProvider.currentBlockwordSeveritySnapshot()
         val updatedWord = "版관리"
 
         try {
@@ -69,7 +105,7 @@ class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
         } finally {
             JapaneseDictionaryProvider.reloadBlockwords(
                 DictionaryVersion("japanese-blockwords", original.version.revision + 2),
-                original.value,
+                originalBySeverity.value,
             )
         }
     }
@@ -77,6 +113,7 @@ class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
     @Test
     fun `반복 mutation은 revision과 visibility를 함께 갱신한다`() {
         val original = JapaneseDictionaryProvider.currentBlockwordSnapshot()
+        val originalBySeverity = JapaneseDictionaryProvider.currentBlockwordSeveritySnapshot()
         val newWord = "版관리반복"
 
         try {
@@ -104,7 +141,7 @@ class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
                     "japanese-blockwords",
                     JapaneseDictionaryProvider.currentBlockwordSnapshot().version.revision + 1,
                 ),
-                original.value,
+                originalBySeverity.value,
             )
         }
     }
@@ -121,6 +158,7 @@ class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
     @Test
     fun `동시 reload 중 public blockword view는 완전한 snapshot만 노출한다`() {
         val original = JapaneseDictionaryProvider.currentBlockwordSnapshot()
+        val originalBySeverity = JapaneseDictionaryProvider.currentBlockwordSeveritySnapshot()
         val stateA = listOf("jp-atomic-a-1", "jp-atomic-a-2")
         val stateB = listOf("jp-atomic-b-1", "jp-atomic-b-2")
         val expectedStates = setOf(stateA.toSet(), stateB.toSet())
@@ -165,7 +203,7 @@ class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
         } finally {
             JapaneseDictionaryProvider.reloadBlockwords(
                 DictionaryVersion("japanese-blockwords", revision.incrementAndGet()),
-                original.value,
+                originalBySeverity.value,
             )
         }
 

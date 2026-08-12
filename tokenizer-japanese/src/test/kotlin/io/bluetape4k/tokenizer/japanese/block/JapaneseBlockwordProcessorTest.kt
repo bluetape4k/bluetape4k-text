@@ -2,15 +2,20 @@ package io.bluetape4k.tokenizer.japanese.block
 
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
+import io.bluetape4k.tokenizer.exceptions.InvalidTokenizeRequestException
 import io.bluetape4k.tokenizer.japanese.AbstractTokenizerTest
 import io.bluetape4k.tokenizer.model.BlockwordResponse
+import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.tokenizer.model.blockwordOptionsOf
 import io.bluetape4k.tokenizer.model.blockwordRequestOf
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
+import io.bluetape4k.assertions.shouldContainAll
 import io.bluetape4k.assertions.shouldNotBeEmpty
+import io.bluetape4k.assertions.shouldNotContain
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -59,6 +64,34 @@ class JapaneseBlockwordProcessorTest: AbstractTokenizerTest() {
         val text = "ホモの男性を理解できない"
         val response = processBlockword(text)
         response.blockwordExists.shouldBeTrue()
+    }
+
+    @Test
+    fun `일본어 processor는 일본어가 아닌 locale을 거부`() {
+        val request = blockwordRequestOf(
+            "ホモの男性を理解できない",
+            blockwordOptionsOf(locale = Locale.KOREAN),
+        )
+
+        assertFailsWith<InvalidTokenizeRequestException> {
+            JapaneseBlockwordProcessor.maskBlockwords(request)
+        }
+    }
+
+    @Test
+    fun `일본어 severity threshold는 low middle high 순으로 적용`() {
+        val text = "ブス 性器 殺人"
+
+        val low = mask(text, Severity.LOW)
+        val middle = mask(text, Severity.MIDDLE)
+        val high = mask(text, Severity.HIGH)
+
+        low.blockWords shouldContainAll listOf("ブス", "性器", "殺人")
+        middle.blockWords shouldNotContain "ブス"
+        middle.blockWords shouldContainAll listOf("性器", "殺人")
+        high.blockWords shouldNotContain "ブス"
+        high.blockWords shouldNotContain "性器"
+        high.blockWords shouldContain "殺人"
     }
 
     @Test
@@ -206,6 +239,14 @@ class JapaneseBlockwordProcessorTest: AbstractTokenizerTest() {
 
     private fun processBlockword(text: String): BlockwordResponse {
         val request = blockwordRequestOf(text, options)
+        return JapaneseBlockwordProcessor.maskBlockwords(request)
+    }
+
+    private fun mask(text: String, severity: Severity): BlockwordResponse {
+        val request = blockwordRequestOf(
+            text,
+            blockwordOptionsOf(locale = Locale.JAPANESE, severity = severity),
+        )
         return JapaneseBlockwordProcessor.maskBlockwords(request)
     }
 }

@@ -7,6 +7,7 @@ import io.bluetape4k.tokenizer.japanese.tokenizer.JapaneseTokenizer
 import io.bluetape4k.tokenizer.japanese.tokenizer.isNoun
 import io.bluetape4k.tokenizer.model.MAX_BLOCKWORD_TEXT_LENGTH
 import io.bluetape4k.tokenizer.model.MAX_TOKENIZE_TEXT_LENGTH
+import io.bluetape4k.tokenizer.model.blockwordOptionsOf
 import io.bluetape4k.tokenizer.model.blockwordRequestOf
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
@@ -19,6 +20,7 @@ import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotContain
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.ResourceLock
+import java.util.Locale
 
 @ResourceLock("JapaneseDictionaryProvider")
 class JapaneseProcessorTest: AbstractTokenizerTest() {
@@ -86,7 +88,10 @@ class JapaneseProcessorTest: AbstractTokenizerTest() {
 
     @Test
     fun `maskBlockwords - 금칙어 마스킹`() {
-        val request = blockwordRequestOf("ホモの男性を理解できない")
+        val request = blockwordRequestOf(
+            "ホモの男性を理解できない",
+            blockwordOptionsOf(locale = Locale.JAPANESE),
+        )
         val response = JapaneseProcessor.maskBlockwords(request)
 
         response.blockwordExists.shouldBeTrue()
@@ -149,7 +154,10 @@ class JapaneseProcessorTest: AbstractTokenizerTest() {
 
     @Test
     fun `maskBlockwords - 금칙어 없는 경우`() {
-        val request = blockwordRequestOf("私は、日本語の勉強をしています。")
+        val request = blockwordRequestOf(
+            "私は、日本語の勉強をしています。",
+            blockwordOptionsOf(locale = Locale.JAPANESE),
+        )
         val response = JapaneseProcessor.maskBlockwords(request)
 
         response.blockwordExists.shouldBeFalse()
