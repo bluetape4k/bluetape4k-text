@@ -21,9 +21,23 @@ Korean NLP library for morphological analysis, normalization, phrase extraction,
 - **Chunking** — Pre-tokenization chunking by POS pattern: URL, Email, Hashtag, ScreenName, CashTag, Number, Korean, Alpha, Punctuation
 - **No twitter-text dependency** — URL/Hashtag/Mention/CashTag regex patterns are self-contained in `TwitterCompatPatterns.kt`
 - **Runtime dictionary update** — Add nouns or blockwords at runtime without restart
+- **Suspend dictionary preload** — Call `KoreanProcessor.preload()` during startup/readiness; direct synchronous access remains a compatibility fallback
 - **Thread-safe** — All `KoreanProcessor` methods are safe for concurrent use
 
 ## Usage
+
+### Startup dictionary preload
+
+Call the facade preload from an application startup coroutine so the first
+dictionary-backed operation does not perform resource I/O on the request thread.
+
+```kotlin
+import io.bluetape4k.tokenizer.korean.KoreanProcessor
+
+suspend fun warmUpKoreanTokenizer() {
+    KoreanProcessor.preload()
+}
+```
 
 ```kotlin
 import io.bluetape4k.tokenizer.korean.KoreanProcessor

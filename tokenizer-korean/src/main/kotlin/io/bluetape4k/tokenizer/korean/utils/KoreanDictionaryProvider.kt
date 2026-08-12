@@ -1,7 +1,6 @@
 package io.bluetape4k.tokenizer.korean.utils
 
 import io.bluetape4k.logging.KLogging
-import io.bluetape4k.support.publicLazy
 import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.tokenizer.korean.utils.KoreanConjugation.conjugatePredicated
 import io.bluetape4k.tokenizer.korean.utils.KoreanConjugation.conjugatePredicatesToCharArraySet
@@ -25,17 +24,66 @@ import io.bluetape4k.tokenizer.utils.DictionaryVersion
 import io.bluetape4k.tokenizer.utils.VersionedDictionary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.util.Collections
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
+
+/** suspend 초기화와 동기 facade가 같은 단일 성공 값을 공유하도록 합니다. */
+@PublishedApi
+internal class SuspendMemoized<T: Any>(
+    private val initializer: suspend () -> T,
+) {
+    private object Uninitialized
+
+    private val mutex = Mutex()
+
+    @Volatile
+    private var state: Any = Uninitialized
+
+    @Suppress("UNCHECKED_CAST")
+    private fun currentValue(): T = state as T
+
+    suspend fun get(): T {
+        val current = state
+        if (current !== Uninitialized) {
+            @Suppress("UNCHECKED_CAST")
+            return current as T
+        }
+
+        return mutex.withLock {
+            val initialized = state
+            if (initialized !== Uninitialized) {
+                @Suppress("UNCHECKED_CAST")
+                initialized as T
+            } else {
+                initializer().also { state = it }
+            }
+        }
+    }
+
+    fun getBlocking(): T {
+        return if (state !== Uninitialized) {
+            currentValue()
+        } else {
+            runBlocking(Dispatchers.IO) { get() }
+        }
+    }
+
+    internal fun isInitialized(): Boolean = state !== Uninitialized
+}
 
 /**
  * 토크나이저가 사용하는 한국어 사전과 파생 사전을 로드/조회합니다.
  *
  * ## 동작/계약
  * - 사전 데이터는 리소스 경로 `koreantext/` 하위에서 읽는다.
- * - 대부분 프로퍼티는 `lazy` 또는 `publicLazy`로 최초 접근 시점에 로딩된다.
+ * - 사전 loader는 suspend preload와 동기 facade가 공유하는 단일 lifecycle로 최초 접근 시점에 로딩된다.
  * - `addWordsToDictionary`로 런타임 단어를 추가하면 해당 품사 사전에 즉시 반영된다.
  *
  * ```kotlin
@@ -48,7 +96,7 @@ object KoreanDictionaryProvider: KLogging() {
 
     private val dictionaryMutationLock = ReentrantLock()
 
-    private val koreanDictionaryVersions by lazy {
+    private val koreanDictionaryVersions = SuspendMemoized {
         VersionedDictionary(
             DictionarySnapshot(
                 DictionaryVersion("korean-dictionary", 0),
@@ -58,7 +106,8 @@ object KoreanDictionaryProvider: KLogging() {
         )
     }
 
-    private val blockwordVersions by lazy {
+    @PublishedApi
+    internal val blockwordVersions = SuspendMemoized {
         VersionedDictionary(
             DictionarySnapshot(
                 DictionaryVersion("korean-blockwords", 0),
@@ -66,6 +115,89 @@ object KoreanDictionaryProvider: KLogging() {
             ),
             historyCapacity = 0,
         )
+    }
+
+    private val koreanEntityFreqLoader = SuspendMemoized {
+        withContext(Dispatchers.IO) {
+            DictionaryProvider.readWordFreqs("$BASE_PATH/freq/entity-freq.txt.gz")
+        }
+    }
+
+    private val spamNounsLoader = SuspendMemoized {
+        readWords(
+            "noun/spam.txt",
+            "noun/profane.txt",
+            "noun/slangs.txt",
+        )
+    }
+
+    private val properNounsLoader = SuspendMemoized {
+        readWords(
+            "noun/entities.txt",
+            "noun/names.txt",
+            "noun/twitter.txt",
+            "noun/lol.txt",
+            "noun/company_names.txt",
+            "noun/foreign.txt",
+            "noun/geolocations.txt",
+            "substantives/given_names.txt",
+            "noun/kpop.txt",
+            "noun/bible.txt",
+            "noun/pokemon.txt",
+            "noun/congress.txt",
+            "noun/wikipedia_title_nouns.txt",
+            "noun/brand.txt",
+            "noun/fashion.txt",
+            "noun/neologism.txt"
+        )
+    }
+
+    private val nameDictionaryLoader = SuspendMemoized {
+        coroutineScope {
+            val familyName = async { readWords("substantives/family_names.txt") }
+            val givenName = async { readWords("substantives/given_names.txt") }
+            val fullName = async { readWords("noun/kpop.txt", "noun/foreign.txt", "noun/names.txt") }
+            mapOf(
+                "family_name" to familyName.await(),
+                "given_name" to givenName.await(),
+                "full_name" to fullName.await()
+            )
+        }
+    }
+
+    private val typoDictionaryByLengthLoader = SuspendMemoized {
+        withContext(Dispatchers.IO) {
+            val grouped = DictionaryProvider.readWordMap("$BASE_PATH/typos/typos.txt")
+                .groupBy { it.first.length }
+            val result = mutableMapOf<Int, Map<String, String>>()
+
+            grouped.forEach { (index, pair) ->
+                result[index] = pair.associate { (k, v) -> k to v }
+            }
+
+            result
+        }
+    }
+
+    private val predicateStemsLoader = SuspendMemoized {
+        fun getConjugationMap(words: Set<String>, isAdjective: Boolean): Map<String, String> {
+            return words
+                .flatMap { word ->
+                    conjugatePredicated(setOf(word), isAdjective).map {
+                        it to word + "다"
+                    }
+                }
+                .toMap()
+        }
+
+        coroutineScope {
+            val verb = async { readWordsAsSet("verb/verb.txt") }
+            val adjective = async { readWordsAsSet("adjective/adjective.txt") }
+            mapOf(
+                Verb to getConjugationMap(verb.await(), false),
+                Adjective to getConjugationMap(adjective.await(), true)
+            )
+        }
     }
 
     /**
@@ -120,10 +252,44 @@ object KoreanDictionaryProvider: KLogging() {
     }
 
     /**
+     * 한국어 토크나이저가 사용하는 모든 사전을 호출 코루틴을 차단하지 않고 미리 로드합니다.
+     *
+     * 동기 facade를 직접 처음 조회하면 기존 API 호환성을 위해 호출 스레드를 잠시 차단할 수
+     * 있으므로 애플리케이션 시작 단계에서 이 함수를 호출하는 것을 권장합니다. 동시 호출은
+     * 각 loader의 단일 초기화 결과를 공유하고, 취소/실패한 초기화는 다음 호출에서 재시도합니다.
+     */
+    suspend fun preload() {
+        withContext(Dispatchers.IO) {
+            listOf(
+                async { koreanDictionaryVersions.get() },
+                async { blockwordVersions.get() },
+                async { koreanEntityFreqLoader.get() },
+                async { spamNounsLoader.get() },
+                async { properNounsLoader.get() },
+                async { nameDictionaryLoader.get() },
+                async { typoDictionaryByLengthLoader.get() },
+                async { predicateStemsLoader.get() },
+            ).awaitAll()
+        }
+    }
+
+    internal fun allDictionariesInitialized(): Boolean = listOf(
+        koreanDictionaryVersions,
+        blockwordVersions,
+        koreanEntityFreqLoader,
+        spamNounsLoader,
+        properNounsLoader,
+        nameDictionaryLoader,
+        typoDictionaryByLengthLoader,
+        predicateStemsLoader,
+    ).all(SuspendMemoized<*>::isInitialized)
+
+    /**
      * 엔티티 빈도 사전입니다.
      *
      * ## 동작/계약
-     * - 최초 접근 시 `freq/entity-freq.txt.gz`를 로드한다.
+     * - `preload()` 또는 최초 동기 접근 시 `freq/entity-freq.txt.gz`를 로드한다.
+     * - event-loop와 같은 호출 스레드 차단을 피하려면 애플리케이션 시작 단계에서 `preload()`를 호출한다.
      * - `ParsedChunk.getFreqScore()` 계산에 사용된다.
      * - `KoreanDictionaryProviderTest`의 `load frequency` 케이스에서 비어 있지 않음을 검증한다.
      *
@@ -132,11 +298,8 @@ object KoreanDictionaryProvider: KLogging() {
      * // freq.isNotEmpty() == true
      * ```
      */
-    val koreanEntityFreq: Map<CharSequence, Float> by lazy {
-        runBlocking(Dispatchers.IO) {
-            DictionaryProvider.readWordFreqs("$BASE_PATH/freq/entity-freq.txt.gz")
-        }
-    }
+    val koreanEntityFreq: Map<CharSequence, Float>
+        get() = koreanEntityFreqLoader.getBlocking()
 
     /**
      * 지정 품사 사전에 단어 컬렉션을 추가합니다.
@@ -157,7 +320,7 @@ object KoreanDictionaryProvider: KLogging() {
      */
     fun addWordsToDictionary(pos: KoreanPos, words: Collection<String>) {
         dictionaryMutationLock.withLock {
-            val current = koreanDictionaryVersions.snapshot()
+            val current = koreanDictionaryVersions.getBlocking().snapshot()
             val currentWords = current.value[pos]
             val changed = currentWords != null && words.any { it !in currentWords }
             val next = if (changed) {
@@ -194,7 +357,7 @@ object KoreanDictionaryProvider: KLogging() {
     /** 지정 품사 사전에서 단어 컬렉션을 제거하고 새 snapshot revision을 기록합니다. */
     fun removeWordsFromDictionary(pos: KoreanPos, words: Collection<String>) {
         dictionaryMutationLock.withLock {
-            val current = koreanDictionaryVersions.snapshot()
+            val current = koreanDictionaryVersions.getBlocking().snapshot()
             val currentWords = current.value[pos]
             val changed = currentWords != null && words.any { it in currentWords }
             val next = if (changed) {
@@ -208,7 +371,7 @@ object KoreanDictionaryProvider: KLogging() {
 
     /** 현재 품사 사전 snapshot과 버전을 반환합니다. */
     fun currentDictionarySnapshot(): DictionarySnapshot<Map<KoreanPos, Set<String>>> =
-        koreanDictionaryVersions.snapshot()
+        koreanDictionaryVersions.getBlocking().snapshot()
 
     /**
      * 품사별 사전을 새 버전으로 원자적으로 교체합니다.
@@ -226,7 +389,7 @@ object KoreanDictionaryProvider: KLogging() {
     ): DictionarySnapshot<Map<KoreanPos, Set<String>>> = dictionaryMutationLock.withLock {
         require(version.name == "korean-dictionary") { "Expected korean-dictionary version" }
         val replacement = dictionaries.mapValues { (_, words) -> words.toSet() }
-        koreanDictionaryVersions.reload(version) { immutableMap(replacement) }
+        koreanDictionaryVersions.getBlocking().reload(version) { immutableMap(replacement) }
     }
 
     /**
@@ -246,10 +409,10 @@ object KoreanDictionaryProvider: KLogging() {
      * ```
      */
     val koreanDictionary: Map<KoreanPos, CharArraySet>
-        get() = publicDictionaryView(koreanDictionaryVersions.snapshot().value)
+        get() = publicDictionaryView(koreanDictionaryVersions.getBlocking().snapshot().value)
 
-    private fun loadKoreanDictionary(): Map<KoreanPos, CharArraySet> =
-        runBlocking(Dispatchers.IO) {
+    private suspend fun loadKoreanDictionary(): Map<KoreanPos, CharArraySet> =
+        withContext(Dispatchers.IO) {
             mutableMapOf<KoreanPos, CharArraySet>()
                 .apply {
                     put(
@@ -319,15 +482,8 @@ object KoreanDictionaryProvider: KLogging() {
      * // spam.isNotEmpty() == true
      * ```
      */
-    val spamNouns by lazy {
-        runBlocking(Dispatchers.IO) {
-            readWords(
-                "noun/spam.txt",
-                "noun/profane.txt",
-                "noun/slangs.txt",
-            )
-        }
-    }
+    val spamNouns: CharArraySet
+        get() = spamNounsLoader.getBlocking()
 
     /**
      * 심각도별 금칙어 사전입니다.
@@ -346,10 +502,10 @@ object KoreanDictionaryProvider: KLogging() {
      * ```
      */
     val blockWords: Map<Severity, CharArraySet>
-        get() = publicBlockwordView(blockwordVersions.snapshot().value)
+        get() = publicBlockwordView(blockwordVersions.getBlocking().snapshot().value)
 
-    private fun loadBlockWords(): Map<Severity, CharArraySet> =
-        runBlocking(Dispatchers.IO) {
+    private suspend fun loadBlockWords(): Map<Severity, CharArraySet> =
+        withContext(Dispatchers.IO) {
             val low = async { readWords("block/block_low.txt", "block/block_middle.txt", "block/block_high.txt") }
             val middle = async { readWords("block/block_middle.txt", "block/block_high.txt") }
             val high = async { readWords("block/block_high.txt") }
@@ -363,7 +519,7 @@ object KoreanDictionaryProvider: KLogging() {
 
     /** 현재 심각도별 금칙어 snapshot과 버전을 반환합니다. */
     fun currentBlockwordSnapshot(): DictionarySnapshot<Map<Severity, Set<String>>> =
-        blockwordVersions.snapshot()
+        blockwordVersions.getBlocking().snapshot()
 
     /**
      * 심각도별 금칙어 사전을 새 버전으로 교체합니다.
@@ -380,12 +536,12 @@ object KoreanDictionaryProvider: KLogging() {
         dictionaryMutationLock.withLock {
             require(version.name == "korean-blockwords") { "Expected korean-blockwords version" }
             val replacement = canonicalBlockwordValue(wordsBySeverity)
-            blockwordVersions.reload(version) { immutableMap(replacement) }
+            blockwordVersions.getBlocking().reload(version) { immutableMap(replacement) }
         }
 
     /** 지정 심각도에서 금칙어가 존재하는지 확인합니다. */
     fun containsBlockword(text: String, severity: Severity): Boolean =
-        blockwordVersions.snapshot().value[severity]?.contains(text) == true
+        blockwordVersions.getBlocking().snapshot().value[severity]?.contains(text) == true
 
     /** 기존 가변 금칙어 API가 갱신 버전도 기록하도록 내부 mutation을 감쌉니다. */
     internal inline fun mutateBlockwords(
@@ -393,7 +549,7 @@ object KoreanDictionaryProvider: KLogging() {
         action: CharArraySet.() -> Boolean,
     ) {
         dictionaryMutationLock.withLock {
-            val current = blockwordVersions.snapshot()
+            val current = blockwordVersions.getBlocking().snapshot()
             val exactTiers = exactBlockwordValue(current.value).toMutableMap()
             val words = CharArraySet(exactTiers.getValue(severity).toList())
             if (words.action()) {
@@ -417,28 +573,8 @@ object KoreanDictionaryProvider: KLogging() {
      * // proper.isNotEmpty() == true
      * ```
      */
-    val properNouns by publicLazy {
-        runBlocking(Dispatchers.IO) {
-            readWords(
-                "noun/entities.txt",
-                "noun/names.txt",
-                "noun/twitter.txt",
-                "noun/lol.txt",
-                "noun/company_names.txt",
-                "noun/foreign.txt",
-                "noun/geolocations.txt",
-                "substantives/given_names.txt",
-                "noun/kpop.txt",
-                "noun/bible.txt",
-                "noun/pokemon.txt",
-                "noun/congress.txt",
-                "noun/wikipedia_title_nouns.txt",
-                "noun/brand.txt",
-                "noun/fashion.txt",
-                "noun/neologism.txt"
-            )
-        }
-    }
+    val properNouns: CharArraySet
+        get() = properNounsLoader.getBlocking()
 
     /**
      * 성/이름/전체 이름 분류 사전입니다.
@@ -452,18 +588,8 @@ object KoreanDictionaryProvider: KLogging() {
      * // hasKim == true 또는 false
      * ```
      */
-    val nameDictionary: Map<String, CharArraySet> by publicLazy {
-        runBlocking(Dispatchers.IO) {
-            val familyName = async { readWords("substantives/family_names.txt") }
-            val givenName = async { readWords("substantives/given_names.txt") }
-            val fullName = async { readWords("noun/kpop.txt", "noun/foreign.txt", "noun/names.txt") }
-            mapOf(
-                "family_name" to familyName.await(),
-                "given_name" to givenName.await(),
-                "full_name" to fullName.await()
-            )
-        }
-    }
+    val nameDictionary: Map<String, CharArraySet>
+        get() = nameDictionaryLoader.getBlocking()
 
     /**
      * 오타 교정 사전을 원문 길이별로 그룹화한 맵입니다.
@@ -477,20 +603,8 @@ object KoreanDictionaryProvider: KLogging() {
      * // grouped.keys.isNotEmpty() == true
      * ```
      */
-    val typoDictionaryByLength: Map<Int, Map<String, String>> by publicLazy {
-        runBlocking(Dispatchers.IO) {
-            val grouped = DictionaryProvider.readWordMap("$BASE_PATH/typos/typos.txt")
-                .groupBy { it.first.length }
-            // val grouped = readWordMap("typos/typos.txt").toList().groupBy { it.first.length }
-            val result = mutableMapOf<Int, Map<String, String>>()
-
-            grouped.forEach { (index, pair) ->
-                result[index] = pair.associate { (k, v) -> k to v }
-            }
-
-            result
-        }
-    }
+    val typoDictionaryByLength: Map<Int, Map<String, String>>
+        get() = typoDictionaryByLengthLoader.getBlocking()
 
     /**
      * 활용형 표면형을 기본형으로 역매핑한 사전입니다.
@@ -504,26 +618,8 @@ object KoreanDictionaryProvider: KLogging() {
      * // stem == "하다"
      * ```
      */
-    val predicateStems: Map<KoreanPos, Map<String, String>> by publicLazy {
-        fun getConjugationMap(words: Set<String>, isAdjective: Boolean): Map<String, String> {
-            return words
-                .flatMap { word ->
-                    conjugatePredicated(setOf(word), isAdjective).map {
-                        it to word + "다"
-                    }
-                }
-                .toMap()
-        }
-
-        runBlocking(Dispatchers.IO) {
-            val verb = async { readWordsAsSet("verb/verb.txt") }
-            val adjective = async { readWordsAsSet("adjective/adjective.txt") }
-            mapOf(
-                Verb to getConjugationMap(verb.await(), false),
-                Adjective to getConjugationMap(adjective.await(), true)
-            )
-        }
-    }
+    val predicateStems: Map<KoreanPos, Map<String, String>>
+        get() = predicateStemsLoader.getBlocking()
 
     private fun snapshotDictionaryValue(dictionary: Map<KoreanPos, CharArraySet>): Map<KoreanPos, Set<String>> =
         immutableMap(dictionary.mapValues { (_, words) -> immutableSet(words.map { it.asDictionaryWord() }) })
@@ -551,15 +647,15 @@ object KoreanDictionaryProvider: KLogging() {
     }
 
     private fun publishDictionaryMutation(value: Map<KoreanPos, Set<String>>) {
-        val current = koreanDictionaryVersions.snapshot()
-        koreanDictionaryVersions.reload(
+        val current = koreanDictionaryVersions.getBlocking().snapshot()
+        koreanDictionaryVersions.getBlocking().reload(
             DictionaryVersion(current.version.name, current.version.revision + 1)
         ) { value }
     }
 
     private fun publishBlockwordMutation(value: Map<Severity, Set<String>>) {
-        val current = blockwordVersions.snapshot()
-        blockwordVersions.reload(
+        val current = blockwordVersions.getBlocking().snapshot()
+        blockwordVersions.getBlocking().reload(
             DictionaryVersion(current.version.name, current.version.revision + 1)
         ) { value }
     }

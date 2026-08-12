@@ -21,9 +21,23 @@
 - **청킹** — 전처리 품사 패턴 기반 청킹: URL, Email, Hashtag, ScreenName, CashTag, Number, Korean, Alpha, Punctuation
 - **twitter-text 의존성 제거** — URL/Hashtag/Mention/CashTag 정규식 패턴이 `TwitterCompatPatterns.kt`에 내부 구현
 - **런타임 사전 업데이트** — 재시작 없이 명사 또는 금칙어를 런타임에 추가
+- **suspend 사전 preload** — startup/readiness에서 `KoreanProcessor.preload()`를 호출하며, 직접 동기 조회는 호환성 fallback으로 유지
 - **스레드 안전** — `KoreanProcessor`의 모든 메서드는 동시 사용에 안전
 
 ## 사용법
+
+### 시작 단계 사전 preload
+
+애플리케이션 startup coroutine에서 facade의 preload를 호출하면 첫 사전 기반
+연산이 요청 스레드에서 리소스 I/O를 수행하지 않습니다.
+
+```kotlin
+import io.bluetape4k.tokenizer.korean.KoreanProcessor
+
+suspend fun warmUpKoreanTokenizer() {
+    KoreanProcessor.preload()
+}
+```
 
 ```kotlin
 import io.bluetape4k.tokenizer.korean.KoreanProcessor

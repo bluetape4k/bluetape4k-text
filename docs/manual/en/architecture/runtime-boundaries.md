@@ -10,13 +10,13 @@ Creating an all-language detector per call combines the broadest model set with 
 
 ## Korean and Japanese processors
 
-`KoreanProcessor` and `JapaneseProcessor` are shared facade objects. The Korean API is documented as safe for concurrent use. The Japanese blockword dictionary loads lazily on first access using an IO dispatcher boundary, so the first blockword request can be more expensive than steady state.
+`KoreanProcessor` and `JapaneseProcessor` are shared facade objects. The Korean API is documented as safe for concurrent use. Both facades expose a suspend `preload()` for startup/readiness; it shares the provider's single-initialization lifecycle and keeps resource I/O out of the request path. Direct synchronous access remains a compatibility fallback and can block on the first lookup.
 
-If predictable latency matters, exercise the operations you will serve during application warmup. Do not mutate runtime dictionaries casually: additions, removals, and clears change process-wide behavior for later requests.
+If predictable latency matters, call the relevant facade `preload()` during application warmup and record cold/warm timing. Do not mutate runtime dictionaries casually: additions, removals, and clears change process-wide behavior for later requests.
 
 ## Dictionary loading
 
-`DictionaryProvider.readWords` combines multiple resources with coroutine-based asynchronous loading. Call it from a controlled setup coroutine. Resource files may be plain text or gzip-compressed, and the resulting `CharArraySet` is intended for repeated membership checks.
+`DictionaryProvider.readWords` combines multiple resources with coroutine-based asynchronous loading. Call the processor facade `preload()` from a controlled setup coroutine. Resource files may be plain text or gzip-compressed, and the resulting `CharArraySet` is intended for repeated membership checks.
 
 The loader does not define how a cluster distributes policy updates. Persist and version application-owned dictionaries outside the request path when instances must agree.
 

@@ -41,6 +41,17 @@ import io.bluetape4k.tokenizer.utils.CharArraySet
 object KoreanProcessor: KLogging() {
 
     /**
+     * 한국어 토크나이저가 사용하는 사전을 호출 코루틴을 차단하지 않고 미리 로드합니다.
+     *
+     * 애플리케이션 startup/readiness 단계에서 호출하면 첫 동기 facade 조회의 IO blocking을
+     * 요청 경로 밖으로 이동할 수 있습니다. 실제 loader lifecycle과 취소·재시도 규칙은
+     * [KoreanDictionaryProvider]가 소유합니다.
+     */
+    suspend fun preload() {
+        KoreanDictionaryProvider.preload()
+    }
+
+    /**
      * 구어체/반복 문자/오타를 정규화합니다.
      *
      * ## 동작/계약
