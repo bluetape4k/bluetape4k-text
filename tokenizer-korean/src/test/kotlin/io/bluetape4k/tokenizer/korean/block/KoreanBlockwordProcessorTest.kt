@@ -64,7 +64,7 @@ class KoreanBlockwordProcessorTest {
     }
 
     @RepeatedTest(REPEAT_SIZE)
-    fun `심각도가 HIGH 인 금칙어는 금칙어 처리 요청 시 LOW 라면 처리되지 않습니다`() = runTest {
+    fun `리소스와 runtime 금칙어는 동일한 threshold 정책을 적용한다`() = runTest {
         io.bluetape4k.tokenizer.korean.KoreanProcessor.addBlockwords(
             listOf("찌찌뽕", "대끼리"),
             Severity.MIDDLE
@@ -75,7 +75,7 @@ class KoreanBlockwordProcessorTest {
         )
 
         val original = "홈쇼핑 미니미는 무슨 히.로뽕이야 어쩌라구? 찌.찌뽕이야? 대.끼리야? 심각도 HIGH"
-        val expected = "홈쇼핑 미니미는 무슨 ***이야 어쩌라구? 찌찌뽕이야? 대끼리야? 심각도 HIGH"
+        val expected = "홈쇼핑 미니미는 무슨 ***이야 어쩌라구? ***이야? ***야? 심각도 HIGH"
         val request = BlockwordRequest(
             original,
             BlockwordOptions(severity = Severity.LOW)
@@ -84,7 +84,7 @@ class KoreanBlockwordProcessorTest {
 
         log.debug { "response=$response" }
         response.maskedText shouldBeEqualTo expected
-        response.blockWords shouldContainAll listOf("히로뽕") // Severity LOW 인 금칙어는 처리하지 않는다
+        response.blockWords shouldContainAll listOf("히로뽕", "찌찌뽕", "대끼리")
     }
 
     @RepeatedTest(REPEAT_SIZE)

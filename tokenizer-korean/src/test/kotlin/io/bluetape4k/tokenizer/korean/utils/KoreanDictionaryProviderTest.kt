@@ -7,6 +7,7 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Noun
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Verb
 import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.tokenizer.utils.CharArraySet
+import io.bluetape4k.tokenizer.utils.DictionarySnapshot
 import io.bluetape4k.tokenizer.utils.DictionaryVersion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -132,9 +133,9 @@ class KoreanDictionaryProviderTest: TestBase() {
             val original = KoreanDictionaryProvider.currentBlockwordSnapshot()
             val addedWord = "COW금칙어_${severity.name}"
             val affected = when (severity) {
-                Severity.LOW -> setOf(Severity.LOW, Severity.MIDDLE, Severity.HIGH)
-                Severity.MIDDLE -> setOf(Severity.MIDDLE, Severity.HIGH)
-                Severity.HIGH -> setOf(Severity.HIGH)
+                Severity.LOW -> setOf(Severity.LOW)
+                Severity.MIDDLE -> setOf(Severity.LOW, Severity.MIDDLE)
+                Severity.HIGH -> setOf(Severity.LOW, Severity.MIDDLE, Severity.HIGH)
             }
 
             try {
@@ -160,6 +161,148 @@ class KoreanDictionaryProviderTest: TestBase() {
                     original.value,
                 )
             }
+        }
+    }
+
+    @Test
+    fun `runtime severity mutation은 source tier를 threshold cumulative view에 올바르게 반영한다`() {
+        val original = KoreanDictionaryProvider.currentBlockwordSnapshot()
+        val words = Severity.values().associateWith { severity ->
+            "issue241-runtime-${severity.name.lowercase()}"
+        }
+        val expected = mapOf(
+            Severity.LOW to words.values.toSet(),
+            Severity.MIDDLE to setOf(words.getValue(Severity.MIDDLE), words.getValue(Severity.HIGH)),
+            Severity.HIGH to setOf(words.getValue(Severity.HIGH)),
+        )
+
+        try {
+            words.forEach { (severity, word) ->
+                KoreanDictionaryProvider.mutateBlockwords(severity) {
+                    add(word)
+                }
+            }
+
+            val actual = KoreanDictionaryProvider.currentBlockwordSnapshot().value
+            assertBlockwordEntries(actual, words.values, expected)
+            words.forEach { (source, word) ->
+                Severity.values().forEach { threshold ->
+                    val contains = KoreanDictionaryProvider.containsBlockword(word, threshold)
+                    if (threshold.ordinal <= source.ordinal) contains.shouldBeTrue() else contains.shouldBeFalse()
+                }
+            }
+        } finally {
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion(
+                    "korean-blockwords",
+                    KoreanDictionaryProvider.currentBlockwordSnapshot().version.revision + 1,
+                ),
+                original.value,
+            )
+        }
+    }
+
+    @Test
+    fun `reload은 exact tier를 threshold view로 정규화한다`() {
+        val original = KoreanDictionaryProvider.currentBlockwordSnapshot()
+        val words = mapOf(
+            Severity.LOW to "issue241-reload-low",
+            Severity.MIDDLE to "issue241-reload-middle",
+            Severity.HIGH to "issue241-reload-high",
+        )
+        val exactTierInput = words.mapValues { (_, word) -> listOf(word) }
+
+        try {
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion(
+                    "korean-blockwords",
+                    original.version.revision + 1,
+                ),
+                exactTierInput,
+            )
+
+            val reloaded = KoreanDictionaryProvider.currentBlockwordSnapshot().value
+            assertBlockwordEntries(
+                reloaded,
+                words.values,
+                mapOf(
+                    Severity.LOW to words.values.toSet(),
+                    Severity.MIDDLE to setOf(
+                        words.getValue(Severity.MIDDLE),
+                        words.getValue(Severity.HIGH),
+                    ),
+                    Severity.HIGH to setOf(words.getValue(Severity.HIGH)),
+                ),
+            )
+        } finally {
+            restoreBlockwords(original)
+        }
+    }
+
+    @Test
+    fun `remove와 clear도 severity tier와 threshold view를 보존한다`() {
+        val original = KoreanDictionaryProvider.currentBlockwordSnapshot()
+        val words = mapOf(
+            Severity.LOW to "issue241-remove-low",
+            Severity.MIDDLE to "issue241-remove-middle",
+            Severity.HIGH to "issue241-remove-high",
+        )
+
+        try {
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion("korean-blockwords", original.version.revision + 1),
+                words.mapValues { (_, word) -> listOf(word) },
+            )
+            KoreanDictionaryProvider.mutateBlockwords(Severity.MIDDLE) {
+                remove(words.getValue(Severity.MIDDLE))
+            }
+            var after = KoreanDictionaryProvider.currentBlockwordSnapshot().value
+            assertBlockwordEntries(
+                after,
+                words.values,
+                mapOf(
+                    Severity.LOW to setOf(words.getValue(Severity.LOW), words.getValue(Severity.HIGH)),
+                    Severity.MIDDLE to setOf(words.getValue(Severity.HIGH)),
+                    Severity.HIGH to setOf(words.getValue(Severity.HIGH)),
+                ),
+            )
+
+            KoreanDictionaryProvider.mutateBlockwords(Severity.LOW) {
+                val changed = isNotEmpty()
+                clear()
+                changed
+            }
+            after = KoreanDictionaryProvider.currentBlockwordSnapshot().value
+            assertBlockwordEntries(
+                after,
+                words.values,
+                Severity.values().associateWith { setOf(words.getValue(Severity.HIGH)) },
+            )
+        } finally {
+            restoreBlockwords(original)
+        }
+    }
+
+    private fun restoreBlockwords(
+        original: DictionarySnapshot<Map<Severity, Set<String>>>,
+    ) {
+        KoreanDictionaryProvider.reloadBlockwords(
+            DictionaryVersion(
+                "korean-blockwords",
+                KoreanDictionaryProvider.currentBlockwordSnapshot().version.revision + 1,
+            ),
+            original.value,
+        )
+    }
+
+    private fun assertBlockwordEntries(
+        actual: Map<Severity, Set<String>>,
+        trackedWords: Collection<String>,
+        expected: Map<Severity, Set<String>>,
+    ) {
+        val tracked = trackedWords.toSet()
+        Severity.values().forEach { severity ->
+            actual.getValue(severity).filter { it in tracked }.toSet() shouldBeEqualTo expected.getValue(severity)
         }
     }
 

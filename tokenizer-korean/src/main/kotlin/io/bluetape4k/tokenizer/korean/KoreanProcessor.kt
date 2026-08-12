@@ -176,7 +176,9 @@ object KoreanProcessor: KLogging() {
      * 심각도별 금칙어 사전에 단어를 추가합니다.
      *
      * ## 동작/계약
-     * - `severity`에 맞는 blockWords 사전에 단어를 추가한다.
+     * - `severity` source tier에 단어를 추가한다.
+     * - threshold 조회 view에서는 LOW source는 LOW, MIDDLE source는 LOW/MIDDLE,
+     *   HIGH source는 LOW/MIDDLE/HIGH에서 조회된다.
      * - 복합 명사 탐지를 위해 동일 단어를 명사 사전과 `properNouns`에도 추가한다.
      *
      * ```kotlin
@@ -203,7 +205,7 @@ object KoreanProcessor: KLogging() {
      * 금칙어 사전에서 단어를 제거합니다. (Deprecated)
      *
      * ## 동작/계약
-     * - `removeBlockwords(words, severity)`와 동일하게 severity 범위 사전에서 제거한다.
+     * - `removeBlockwords(words, severity)`와 동일하게 해당 source tier에서 제거한다.
      *
      * ```kotlin
      * KoreanProcessor.removeBlockword(listOf("금칙어"), Severity.HIGH)
@@ -227,7 +229,7 @@ object KoreanProcessor: KLogging() {
      * [addBlockwords]가 기록하는 모든 사전에서 단어를 제거합니다.
      *
      * ## 동작/계약
-     * - 지정한 [severity]의 `blockWords` 사전에서 제거한다.
+     * - 지정한 [severity] source tier에서 제거한다.
      * - [addBlockwords]와 대칭이 되도록 [KoreanDictionaryProvider.koreanDictionary]의 `Noun` 항목과
      *   [KoreanDictionaryProvider.properNouns]에서도 제거한다.
      *
@@ -251,17 +253,17 @@ object KoreanProcessor: KLogging() {
     }
 
     /**
-     * 심각도 범위에 해당하는 금칙어 사전을 비웁니다.
+     * 지정한 source tier의 금칙어 사전을 비웁니다.
      *
      * ## 동작/계약
-     * - `Severity.LOW`면 low/middle/high 모두, `MIDDLE`이면 middle/high, 그 외는 high만 clear한다.
+     * - 해당 tier의 단어만 제거하며, threshold cumulative view는 남은 higher tier 단어를 계속 포함한다.
      *
      * ```kotlin
      * KoreanProcessor.clearBlockwords(Severity.HIGH)
      * // high dictionary cleared
      * ```
      *
-     * @param severity 비울 금칙어 심각도입니다. 낮은 심각도는 그보다 높은 심각도 사전까지 함께 비웁니다.
+     * @param severity 비울 금칙어 source tier입니다.
      */
     fun clearBlockwords(severity: Severity = Severity.DEFAULT) {
         withBlockwordDictionary(severity) {
