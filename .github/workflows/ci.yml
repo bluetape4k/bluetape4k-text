@@ -549,6 +549,13 @@ jobs:
 
           for artifact in "${expected_artifacts[@]}"; do
             artifact_dir="coverage-artifacts/${artifact}"
+            # download-artifact extracts a single matched artifact directly
+            # into the target path instead of creating an artifact subdirectory.
+            # Keep the named directory contract for multi-artifact downloads,
+            # while accepting the valid single-artifact layout as the root.
+            if [[ ! -d "${artifact_dir}" && ${#expected_artifacts[@]} -eq 1 && -d "coverage-artifacts" ]]; then
+              artifact_dir="coverage-artifacts"
+            fi
             if [[ ! -d "${artifact_dir}" ]]; then
               missing_artifacts+=("${artifact}")
               continue
