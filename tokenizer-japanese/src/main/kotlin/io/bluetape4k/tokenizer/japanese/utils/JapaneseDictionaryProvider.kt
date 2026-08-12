@@ -12,10 +12,53 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.Collections
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
+
+/** suspend 초기화와 동기 facade가 같은 단일 성공 값을 공유하도록 합니다. */
+internal class SuspendMemoized<T: Any>(
+    private val initializer: suspend () -> T,
+) {
+    private object Uninitialized
+
+    private val mutex = Mutex()
+
+    @Volatile
+    private var state: Any = Uninitialized
+
+    @Suppress("UNCHECKED_CAST")
+    private fun currentValue(): T = state as T
+
+    suspend fun get(): T {
+        val current = state
+        if (current !== Uninitialized) {
+            @Suppress("UNCHECKED_CAST")
+            return current as T
+        }
+
+        return mutex.withLock {
+            val initialized = state
+            if (initialized !== Uninitialized) {
+                @Suppress("UNCHECKED_CAST")
+                initialized as T
+            } else {
+                initializer().also { state = it }
+            }
+        }
+    }
+
+    fun getBlocking(): T {
+        return if (state !== Uninitialized) {
+            currentValue()
+        } else {
+            runBlocking(Dispatchers.IO) { get() }
+        }
+    }
+}
 
 private class JapaneseBlockwordValue(
     val wordsBySeverity: Map<Severity, Set<String>>,
@@ -41,14 +84,11 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
 
     private val dictionaryMutationLock = ReentrantLock()
 
-    private val blockwordVersions by lazy {
-        val wordsBySeverity = runBlocking(Dispatchers.IO) {
-            readWordsBySeverity()
-        }
+    private val blockwordVersions = SuspendMemoized {
         VersionedDictionary(
             DictionarySnapshot(
                 DictionaryVersion("japanese-blockwords", 0),
-                snapshotBlockwordValue(wordsBySeverity),
+                snapshotBlockwordValue(readWordsBySeverity()),
             ),
             historyCapacity = 0,
         )
@@ -97,6 +137,20 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
         return DictionaryProvider.readWords(*paths.map { "$BASE_PATH/$it" }.toTypedArray())
     }
 
+    /**
+     * 일본어 금칙어 사전을 호출 코루틴을 차단하지 않고 미리 로드합니다.
+     *
+     * `blockWordDictionary`를 처음 직접 조회하면 기존 동기 facade 호환성을 위해
+     * 호출 스레드를 잠시 차단할 수 있으므로, 애플리케이션 시작 단계에서 이 함수를
+     * 호출하는 것을 권장합니다. 동시 호출은 하나의 초기화만 수행하고 같은 snapshot을
+     * 공유합니다.
+     */
+    suspend fun preload() {
+        withContext(Dispatchers.IO) {
+            blockwordVersions.get()
+        }
+    }
+
     private suspend fun readWordsBySeverity(): Map<Severity, Set<String>> = coroutineScope {
         val allWords = async {
             readWords("block/blocks.txt")
@@ -127,9 +181,11 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     }
 
     /**
-     * 최초 접근 시 `block/blocks.txt`에서 lazy 로드하는 인메모리 금칙어 사전입니다.
+     * `preload()` 또는 최초 동기 접근 시 `block/blocks.txt`에서 로드하는 인메모리 금칙어 사전입니다.
      * `blocks.txt`의 기존 전체 목록과 `blocks_severity.tsv`의 exact-tier override를
      * 함께 읽으며, severity 조회는 한국어 processor와 같은 cumulative threshold 정책을 사용합니다.
+     * event-loop와 같은 호출 스레드 차단을 피하려면 애플리케이션 시작 단계에서 `preload()`를
+     * 호출해야 합니다.
      *
      * [addBlockwords], [removeBlockwords], [clearBlockwords]로 수행한 변경은 다음 조회부터
      * 새 immutable snapshot에 반영됩니다. 반환값은 read-only 호환 view이며 직접 쓰기를
@@ -143,7 +199,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      */
     val blockWordDictionary: CharArraySet
         get() = CharArraySet.unmodifiableSet(
-            CharArraySet(blockwordVersions.snapshot().value.words.toList())
+            CharArraySet(blockwordVersions.getBlocking().snapshot().value.words.toList())
         )
 
     /**
@@ -171,7 +227,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     fun addBlockwords(words: Collection<String>, severity: Severity) {
         log.debug { "금칙어를 추가합니다. count=${words.size}, totalLength=${words.sumOf { it.length }}" }
         dictionaryMutationLock.withLock {
-            val current = blockwordVersions.snapshot()
+            val current = blockwordVersions.getBlocking().snapshot()
             val exactTiers = exactBlockwordValue(current.value.wordsBySeverity).toMutableMap()
             val currentWords = exactTiers.getValue(severity)
             val nextWords = immutableSet(currentWords + words)
@@ -200,7 +256,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     fun removeBlockwords(words: Collection<String>) {
         log.debug { "금칙어를 제거합니다. count=${words.size}, totalLength=${words.sumOf { it.length }}" }
         dictionaryMutationLock.withLock {
-            val current = blockwordVersions.snapshot()
+            val current = blockwordVersions.getBlocking().snapshot()
             val exactTiers = exactBlockwordValue(current.value.wordsBySeverity).toMutableMap()
             val wordsToRemove = words.toSet()
             val nextTiers = exactTiers.mapValues { (_, tierWords) -> tierWords - wordsToRemove }
@@ -222,7 +278,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     fun removeBlockwords(words: Collection<String>, severity: Severity) {
         log.debug { "금칙어를 제거합니다. count=${words.size}, totalLength=${words.sumOf { it.length }}" }
         dictionaryMutationLock.withLock {
-            val current = blockwordVersions.snapshot()
+            val current = blockwordVersions.getBlocking().snapshot()
             val exactTiers = exactBlockwordValue(current.value.wordsBySeverity).toMutableMap()
             val currentWords = exactTiers.getValue(severity)
             val nextWords = immutableSet(currentWords - words.toSet())
@@ -249,7 +305,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     fun clearBlockwords() {
         log.debug { "금칙어 사전을 비웁니다" }
         dictionaryMutationLock.withLock {
-            val current = blockwordVersions.snapshot()
+            val current = blockwordVersions.getBlocking().snapshot()
             publishBlockwordMutation(
                 if (current.value.words.isEmpty()) current.value else snapshotBlockwordValue(emptyMap())
             )
@@ -258,7 +314,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
 
     /** 현재 일본어 금칙어 snapshot과 버전을 반환합니다. */
     fun currentBlockwordSnapshot(): DictionarySnapshot<Set<String>> {
-        val current = blockwordVersions.snapshot()
+        val current = blockwordVersions.getBlocking().snapshot()
         return DictionarySnapshot(current.version, current.value.words)
     }
 
@@ -268,7 +324,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      * `LOW`는 모든 tier, `MIDDLE`은 middle/high, `HIGH`는 high tier만 포함합니다.
      */
     fun currentBlockwordSeveritySnapshot(): DictionarySnapshot<Map<Severity, Set<String>>> {
-        val current = blockwordVersions.snapshot()
+        val current = blockwordVersions.getBlocking().snapshot()
         return DictionarySnapshot(current.version, current.value.wordsBySeverity)
     }
 
@@ -304,7 +360,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
 
     /** 지정한 단어가 현재 일본어 금칙어 사전에 있는지 확인합니다. */
     fun containsBlockword(text: String): Boolean =
-        blockwordVersions.snapshot().value.words.contains(text)
+        blockwordVersions.getBlocking().snapshot().value.words.contains(text)
 
     /**
      * 지정한 severity threshold에서 단어가 금칙어인지 확인합니다.
@@ -313,7 +369,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      * @param severity 적용할 cumulative severity threshold입니다.
      */
     fun containsBlockword(text: String, severity: Severity): Boolean =
-        blockwordVersions.snapshot().value.wordsBySeverity[severity].orEmpty().contains(text)
+        blockwordVersions.getBlocking().snapshot().value.wordsBySeverity[severity].orEmpty().contains(text)
 
     private fun snapshotBlockwordValue(wordsBySeverity: Map<Severity, Collection<String>>): JapaneseBlockwordValue =
         JapaneseBlockwordValue(canonicalBlockwordValue(wordsBySeverity))
@@ -324,7 +380,7 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     ): DictionarySnapshot<JapaneseBlockwordValue> {
         require(version.name == "japanese-blockwords") { "Expected japanese-blockwords version" }
         val replacement = snapshotBlockwordValue(wordsBySeverity)
-        return blockwordVersions.reload(version) { replacement }
+        return blockwordVersions.getBlocking().reload(version) { replacement }
     }
 
     private fun canonicalBlockwordValue(
@@ -362,8 +418,8 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     }
 
     private fun publishBlockwordMutation(value: JapaneseBlockwordValue) {
-        val current = blockwordVersions.snapshot()
-        blockwordVersions.reload(
+        val current = blockwordVersions.getBlocking().snapshot()
+        blockwordVersions.getBlocking().reload(
             DictionaryVersion(current.version.name, current.version.revision + 1)
         ) { value }
     }

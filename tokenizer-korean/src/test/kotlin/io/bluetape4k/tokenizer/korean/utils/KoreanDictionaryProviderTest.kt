@@ -1,6 +1,7 @@
 package io.bluetape4k.tokenizer.korean.utils
 
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.tokenizer.korean.TestBase
 import io.bluetape4k.tokenizer.korean.KoreanProcessor
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Noun
@@ -10,6 +11,8 @@ import io.bluetape4k.tokenizer.utils.CharArraySet
 import io.bluetape4k.tokenizer.utils.DictionarySnapshot
 import io.bluetape4k.tokenizer.utils.DictionaryVersion
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
@@ -24,12 +27,72 @@ import io.bluetape4k.junit5.concurrency.MultithreadingTester
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.ResourceLock
 import java.util.Collections
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
 @ResourceLock("KoreanDictionaryProvider")
 class KoreanDictionaryProviderTest: TestBase() {
 
     companion object: KLogging()
+
+    @Test
+    fun `명시적 suspend preload API를 제공한다`() {
+        KoreanDictionaryProvider::class.java.methods
+            .any { method -> method.name == "preload" && method.parameterTypes.size == 1 }
+            .shouldBeTrue()
+    }
+
+    @Test
+    fun `preload은 주요 사전 snapshot을 준비한다`() = runSuspendIO {
+        KoreanDictionaryProvider.preload()
+
+        KoreanDictionaryProvider.koreanDictionary[Noun].shouldNotBeEmpty()
+        KoreanDictionaryProvider.blockWords.getValue(Severity.HIGH).shouldNotBeEmpty()
+        KoreanDictionaryProvider.properNouns.shouldNotBeEmpty()
+    }
+
+    @Test
+    fun `동시 suspend 초기화는 loader를 한 번만 실행하고 취소 후 재시도한다`() = runSuspendIO {
+        val calls = AtomicInteger()
+        val started = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        val memoized = SuspendMemoized {
+            calls.incrementAndGet()
+            started.complete(Unit)
+            release.await()
+            "loaded"
+        }
+
+        val first = async(Dispatchers.Default) { memoized.get() }
+        started.await()
+        val rest = (1..15).map { async(Dispatchers.Default) { memoized.get() } }
+        release.complete(Unit)
+
+        (listOf(first) + rest).awaitAll().forEach { it shouldBeEqualTo "loaded" }
+        calls.get() shouldBeEqualTo 1
+
+        val retryCalls = AtomicInteger()
+        val retryable = SuspendMemoized {
+            if (retryCalls.incrementAndGet() == 1) {
+                throw CancellationException("cancelled initialization")
+            }
+            "recovered"
+        }
+        assertFailsWith<CancellationException> { retryable.get() }
+        retryable.get() shouldBeEqualTo "recovered"
+        retryCalls.get() shouldBeEqualTo 2
+
+        val failureCalls = AtomicInteger()
+        val failureRetryable = SuspendMemoized {
+            if (failureCalls.incrementAndGet() == 1) {
+                error("failed initialization")
+            }
+            "recovered-after-failure"
+        }
+        assertFailsWith<IllegalStateException> { failureRetryable.get() }
+        failureRetryable.get() shouldBeEqualTo "recovered-after-failure"
+        failureCalls.get() shouldBeEqualTo 2
+    }
 
     @Test
     fun `사전 로드하기`() {
