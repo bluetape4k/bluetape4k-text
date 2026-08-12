@@ -57,6 +57,13 @@ class KoreanTextProcessorTest: TestBase() {
     companion object: KLogging()
 
     @Test
+    fun `preload - facade exposes non blocking dictionary warmup`() = runSuspendTest {
+        KoreanProcessor.preload()
+
+        KoreanDictionaryProvider.allDictionariesInitialized().shouldBeTrue()
+    }
+
+    @Test
     fun `should normailize`() = runSuspendTest {
         normalize("그랰ㅋㅋㅋㅋ 샤릉햌ㅋㅋ") shouldBeEqualTo "그래ㅋㅋㅋ 사랑해ㅋㅋ"
     }

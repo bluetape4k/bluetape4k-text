@@ -58,6 +58,8 @@ internal class SuspendMemoized<T: Any>(
             runBlocking(Dispatchers.IO) { get() }
         }
     }
+
+    internal fun isInitialized(): Boolean = state !== Uninitialized
 }
 
 private class JapaneseBlockwordValue(
@@ -150,6 +152,8 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
             blockwordVersions.get()
         }
     }
+
+    internal fun allDictionariesInitialized(): Boolean = blockwordVersions.isInitialized()
 
     private suspend fun readWordsBySeverity(): Map<Severity, Set<String>> = coroutineScope {
         val allWords = async {

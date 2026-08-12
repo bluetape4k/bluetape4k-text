@@ -17,10 +17,23 @@ Japanese morphological analysis and blockword filtering library powered by Kurom
 - **Compound word detection** — when no single-token match is found, checks adjacent noun + noun/verb pairs (e.g. 覚せい剤 → 覚せい + 剤)
 - **Blockword masking** — validates `Locale.JAPANESE`, applies LOW/MIDDLE/HIGH cumulative severity thresholds, and replaces each blocked token with the mask character repeated to match token length
 - **Dynamic dictionary management** — add, remove, or clear blockwords at runtime without restarting the application
-- **Lazy dictionary loading** — `blockWordDictionary` is loaded from `japanesetext/block/blocks.txt` plus severity overrides on first access using `runBlocking(Dispatchers.IO)`
+- **Suspend dictionary preload** — `JapaneseProcessor.preload()` loads the blockword dictionary from `japanesetext/block/blocks.txt` plus severity overrides before readiness; direct synchronous access remains a compatibility fallback
 - **Facade pattern** — `JapaneseProcessor` provides a single entry point delegating to all sub-components
 
 ## Usage
+
+### Startup dictionary preload
+
+Call the facade preload from an application startup coroutine so the first
+blockword request does not perform dictionary I/O on the request thread.
+
+```kotlin
+import io.bluetape4k.tokenizer.japanese.JapaneseProcessor
+
+suspend fun warmUpJapaneseTokenizer() {
+    JapaneseProcessor.preload()
+}
+```
 
 ### Morphological analysis
 

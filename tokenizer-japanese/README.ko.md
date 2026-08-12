@@ -17,10 +17,23 @@
 - **복합어 금칙어 탐지** — 단일 토큰 매칭 실패 시 인접 명사 + 명사/동사 조합 검사 (예: 覚せい剤 → 覚せい + 剤)
 - **금칙어 마스킹** — `Locale.JAPANESE`를 검증하고 LOW/MIDDLE/HIGH cumulative severity threshold를 적용한 뒤 탐지된 토큰을 마스크 문자로 토큰 길이만큼 반복 치환
 - **런타임 사전 관리** — 서비스 재시작 없이 금칙어 추가·삭제·초기화 가능
-- **지연 사전 로딩** — `blockWordDictionary`는 최초 접근 시 `runBlocking(Dispatchers.IO)`로 `japanesetext/block/blocks.txt`와 severity override를 적재
+- **suspend 사전 preload** — readiness 전에 `JapaneseProcessor.preload()`로 `japanesetext/block/blocks.txt`와 severity override를 적재하며, 직접 동기 조회는 호환성 fallback으로 유지
 - **파사드 패턴** — `JapaneseProcessor`가 하위 컴포넌트 전체를 단일 진입점으로 통합
 
 ## 사용법
+
+### 시작 단계 사전 preload
+
+애플리케이션 startup coroutine에서 facade의 preload를 호출하면 첫 금칙어
+요청이 요청 스레드에서 사전 I/O를 수행하지 않습니다.
+
+```kotlin
+import io.bluetape4k.tokenizer.japanese.JapaneseProcessor
+
+suspend fun warmUpJapaneseTokenizer() {
+    JapaneseProcessor.preload()
+}
+```
 
 ### 형태소 분석
 

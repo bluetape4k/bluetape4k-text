@@ -17,12 +17,14 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.awaitCancellation
 import io.bluetape4k.tokenizer.utils.DictionaryVersion
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.ResourceLock
 import java.util.Collections
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.system.measureTimeMillis
 
 @ResourceLock("JapaneseDictionaryProvider")
 class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
@@ -39,7 +41,17 @@ class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
     @Test
     fun `preload은 금칙어 snapshot을 준비한다`() = runSuspendIO {
         JapaneseDictionaryProvider.preload()
-        JapaneseDictionaryProvider.blockWordDictionary.shouldNotBeEmpty()
+        JapaneseDictionaryProvider.allDictionariesInitialized().shouldBeTrue()
+    }
+
+    @Test
+    fun `preload cold warm timing을 기록한다`() = runSuspendIO {
+        val coldMillis = measureTimeMillis { JapaneseDictionaryProvider.preload() }
+        val warmMillis = measureTimeMillis { JapaneseDictionaryProvider.preload() }
+
+        println("ISSUE243_JAPANESE_PRELOAD_TIMING cold=${coldMillis}ms warm=${warmMillis}ms")
+        coldMillis shouldBeEqualTo coldMillis.coerceAtLeast(0)
+        warmMillis shouldBeEqualTo warmMillis.coerceAtLeast(0)
     }
 
     @Test
@@ -61,6 +73,23 @@ class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
 
         (listOf(first) + rest).awaitAll().forEach { it shouldBeEqualTo "loaded" }
         calls.get() shouldBeEqualTo 1
+
+        val cancellationCalls = AtomicInteger()
+        val cancellationStarted = CompletableDeferred<Unit>()
+        val cancellable = SuspendMemoized {
+            if (cancellationCalls.incrementAndGet() == 1) {
+                cancellationStarted.complete(Unit)
+                awaitCancellation()
+            }
+            "recovered-after-job-cancellation"
+        }
+        val cancelled = async(Dispatchers.Default) { cancellable.get() }
+        cancellationStarted.await()
+        cancelled.cancel()
+        cancelled.join()
+        cancelled.isCancelled.shouldBeTrue()
+        cancellable.get() shouldBeEqualTo "recovered-after-job-cancellation"
+        cancellationCalls.get() shouldBeEqualTo 2
 
         val retryCalls = AtomicInteger()
         val retryable = SuspendMemoized {

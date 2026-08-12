@@ -27,6 +27,17 @@ import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
 object JapaneseProcessor: KLogging() {
 
     /**
+     * 일본어 금칙어 사전을 호출 코루틴을 차단하지 않고 미리 로드합니다.
+     *
+     * 애플리케이션 startup/readiness 단계에서 호출하면 첫 동기 facade 조회의 IO blocking을
+     * 요청 경로 밖으로 이동할 수 있습니다. 실제 loader lifecycle과 취소·재시도 규칙은
+     * [JapaneseDictionaryProvider]가 소유합니다.
+     */
+    suspend fun preload() {
+        JapaneseDictionaryProvider.preload()
+    }
+
+    /**
      * 입력 문장을 형태소 토큰 목록으로 분석합니다.
      *
      * Kuromoji 호출 전에 `MAX_TOKENIZE_TEXT_LENGTH`를 초과하는 입력을 거부합니다.

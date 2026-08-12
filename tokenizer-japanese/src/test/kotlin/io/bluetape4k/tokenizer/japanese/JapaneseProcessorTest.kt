@@ -5,6 +5,7 @@ import io.bluetape4k.logging.debug
 import io.bluetape4k.tokenizer.japanese.block.JapaneseBlockwordProcessor
 import io.bluetape4k.tokenizer.japanese.tokenizer.JapaneseTokenizer
 import io.bluetape4k.tokenizer.japanese.tokenizer.isNoun
+import io.bluetape4k.tokenizer.japanese.utils.JapaneseDictionaryProvider
 import io.bluetape4k.tokenizer.model.MAX_BLOCKWORD_TEXT_LENGTH
 import io.bluetape4k.tokenizer.model.MAX_TOKENIZE_TEXT_LENGTH
 import io.bluetape4k.tokenizer.model.blockwordOptionsOf
@@ -18,6 +19,7 @@ import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotContain
+import io.bluetape4k.junit5.coroutines.runSuspendTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.ResourceLock
 import java.util.Locale
@@ -26,6 +28,13 @@ import java.util.Locale
 class JapaneseProcessorTest: AbstractTokenizerTest() {
 
     companion object: KLogging()
+
+    @Test
+    fun `preload - facade exposes non blocking dictionary warmup`() = runSuspendTest {
+        JapaneseProcessor.preload()
+
+        JapaneseDictionaryProvider.allDictionariesInitialized().shouldBeTrue()
+    }
 
     @Test
     fun `tokenize - 형태소 분석`() {

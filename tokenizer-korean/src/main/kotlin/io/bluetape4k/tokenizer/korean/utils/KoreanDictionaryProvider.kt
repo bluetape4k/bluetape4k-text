@@ -74,6 +74,8 @@ internal class SuspendMemoized<T: Any>(
             runBlocking(Dispatchers.IO) { get() }
         }
     }
+
+    internal fun isInitialized(): Boolean = state !== Uninitialized
 }
 
 /**
@@ -270,6 +272,17 @@ object KoreanDictionaryProvider: KLogging() {
             ).awaitAll()
         }
     }
+
+    internal fun allDictionariesInitialized(): Boolean = listOf(
+        koreanDictionaryVersions,
+        blockwordVersions,
+        koreanEntityFreqLoader,
+        spamNounsLoader,
+        properNounsLoader,
+        nameDictionaryLoader,
+        typoDictionaryByLengthLoader,
+        predicateStemsLoader,
+    ).all(SuspendMemoized<*>::isInitialized)
 
     /**
      * 엔티티 빈도 사전입니다.

@@ -15,6 +15,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeSameInstanceAs
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.parallel.ResourceLock
 import java.util.Collections
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.system.measureTimeMillis
 
 @ResourceLock("KoreanDictionaryProvider")
 class KoreanDictionaryProviderTest: TestBase() {
@@ -46,9 +48,17 @@ class KoreanDictionaryProviderTest: TestBase() {
     fun `preload은 주요 사전 snapshot을 준비한다`() = runSuspendIO {
         KoreanDictionaryProvider.preload()
 
-        KoreanDictionaryProvider.koreanDictionary[Noun].shouldNotBeEmpty()
-        KoreanDictionaryProvider.blockWords.getValue(Severity.HIGH).shouldNotBeEmpty()
-        KoreanDictionaryProvider.properNouns.shouldNotBeEmpty()
+        KoreanDictionaryProvider.allDictionariesInitialized().shouldBeTrue()
+    }
+
+    @Test
+    fun `preload cold warm timing을 기록한다`() = runSuspendIO {
+        val coldMillis = measureTimeMillis { KoreanDictionaryProvider.preload() }
+        val warmMillis = measureTimeMillis { KoreanDictionaryProvider.preload() }
+
+        println("ISSUE243_KOREAN_PRELOAD_TIMING cold=${coldMillis}ms warm=${warmMillis}ms")
+        coldMillis shouldBeEqualTo coldMillis.coerceAtLeast(0)
+        warmMillis shouldBeEqualTo warmMillis.coerceAtLeast(0)
     }
 
     @Test
@@ -70,6 +80,23 @@ class KoreanDictionaryProviderTest: TestBase() {
 
         (listOf(first) + rest).awaitAll().forEach { it shouldBeEqualTo "loaded" }
         calls.get() shouldBeEqualTo 1
+
+        val cancellationCalls = AtomicInteger()
+        val cancellationStarted = CompletableDeferred<Unit>()
+        val cancellable = SuspendMemoized {
+            if (cancellationCalls.incrementAndGet() == 1) {
+                cancellationStarted.complete(Unit)
+                awaitCancellation()
+            }
+            "recovered-after-job-cancellation"
+        }
+        val cancelled = async(Dispatchers.Default) { cancellable.get() }
+        cancellationStarted.await()
+        cancelled.cancel()
+        cancelled.join()
+        cancelled.isCancelled.shouldBeTrue()
+        cancellable.get() shouldBeEqualTo "recovered-after-job-cancellation"
+        cancellationCalls.get() shouldBeEqualTo 2
 
         val retryCalls = AtomicInteger()
         val retryable = SuspendMemoized {

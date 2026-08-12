@@ -10,13 +10,13 @@ Lingua 감지기는 언어 모델을 읽는다. 미리 로드하면 시작할 �
 
 ## 한국어·일본어 프로세서
 
-`KoreanProcessor`와 `JapaneseProcessor`는 공유 facade 객체다. 한국어 API는 동시 호출에 안전하다. 일본어 금칙어 사전은 처음 사용할 때 IO dispatcher 경계에서 지연 로드되므로 첫 금칙어 요청은 평상시보다 느릴 수 있다.
+`KoreanProcessor`와 `JapaneseProcessor`는 공유 facade 객체다. 한국어 API는 동시 호출에 안전하다. 두 facade는 startup/readiness에서 호출할 수 있는 suspend `preload()`를 제공하며 provider의 단일 초기화 lifecycle을 공유한다. 직접 동기 조회는 호환성 fallback으로 유지되므로 첫 조회에서 호출 스레드를 차단할 수 있다.
 
-초기 응답 시간도 일정해야 한다면 readiness 전에 실제로 제공할 연산을 한 번씩 호출한다. 런타임 사전을 변경하면 프로세스 전체의 이후 결과가 달라지므로 관리되지 않은 요청에서 변경 API를 호출하지 않는다.
+초기 응답 시간도 일정해야 한다면 readiness 전에 해당 facade의 `preload()`를 호출하고 cold/warm 시간을 기록한다. 런타임 사전을 변경하면 프로세스 전체의 이후 결과가 달라지므로 관리되지 않은 요청에서 변경 API를 호출하지 않는다.
 
 ## 사전 로딩
 
-`DictionaryProvider.readWords`는 여러 리소스를 coroutine 기반 비동기 방식으로 합친다. 애플리케이션 초기화 coroutine에서 호출하고 결과 `CharArraySet`을 재사용하자. 리소스는 일반 텍스트나 gzip 형식을 사용할 수 있다.
+`DictionaryProvider.readWords`는 여러 리소스를 coroutine 기반 비동기 방식으로 합친다. processor facade의 `preload()`를 애플리케이션 초기화 coroutine에서 호출하고 결과 `CharArraySet`을 재사용하자. 리소스는 일반 텍스트나 gzip 형식을 사용할 수 있다.
 
 클러스터 전체에 정책 업데이트를 배포하는 일은 loader의 책임이 아니다. 인스턴스가 같은 정책을 써야 한다면 애플리케이션 사전을 별도로 버전 관리하고 요청 경로 밖에서 설치한다.
 
