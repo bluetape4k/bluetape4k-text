@@ -18,30 +18,40 @@ child가 완료되지 않고 stream close도 지연될 수 있었다.
 
 두 Flow 기반 API의 각 resource read를 `runInterruptible(Dispatchers.IO)`로 감싼다.
 기존 `withContext(Dispatchers.IO)`와 `Flow.async` 병렬·순서 semantics는 유지하고,
-취소 시 blocking read thread를 interrupt해 기존 `use {}` cleanup이 실행되도록 한다.
+취소 시 blocking read thread에 interruption을 요청한다. Java `InputStream`이
+interruption에 협조한다는 보장은 없으므로, 이 변경은 협조적인 resource의 취소
+응답성과 기존 `use {}` cleanup 경로를 개선하는 계약으로 한정한다.
 
 ## Verification
 
 - 새 custom `ClassLoader`와 blocking `InputStream`으로 실제 `Job.cancel()` 경로를
   재현했다.
+- 두 blocking resource가 동시에 read를 시작하는 barrier와 child failure 후 sibling
+  cleanup을 확인해 `Flow.async` 병렬성·structured failure 전파를 고정했다.
+- `readWords`와 `readWordsAsSet` 양쪽에서 cancellation 후 stream close와 child
+  completion을 대칭적으로 확인했다.
 - 수정 전 cancellation regression은 5초 안에 stream close/child completion을
   만들지 못해 RED였다.
 - 수정 후 `./gradlew :tokenizer-core:test --tests
   "io.bluetape4k.tokenizer.utils.DictionaryProviderTest" --no-build-cache`에서
-  8개 테스트가 통과했다.
+  11개 테스트가 통과했다.
 - 정상 다중 resource 병합, stream close, 누락 resource, child failure 전파를
   함께 확인했다.
 
 ## Surprise / Miss
 
 `withContext(Dispatchers.IO)`만으로는 resource lifecycle의 cancellation 계약을
-증명할 수 없었다. 단순히 `Job.isCancelled`만 확인하면 blocking child와 stream이
-남아 있는 상태를 놓칠 수 있으므로, 테스트는 실제 blocking read 시작 신호와 stream
-close, child completion을 각각 관찰해야 한다.
+증명할 수 없었다. `runInterruptible`은 worker thread interruption을 요청하지만
+임의의 `InputStream`이 이를 처리한다는 보장은 없으므로, 테스트와 KDoc은
+협조적인 resource에 대한 응답성으로 범위를 명시해야 한다. 단순히 `Job.isCancelled`만
+확인하면 blocking child와 stream이 남아 있는 상태를 놓칠 수 있으므로, 테스트는 실제
+blocking read 시작 신호와 stream close, child completion을 각각 관찰해야 한다.
 
 ## Future Guard
 
 새로운 blocking I/O를 coroutine Flow 안에 추가할 때는 dispatcher 선택과
 cancellation interruptibility를 별도 계약으로 검토한다. 취소 테스트는 수동으로
 `CancellationException`을 던지지 말고 실제 `Job.cancel()`을 사용하며, resource
-`close`와 child completion을 함께 검증한다.
+`close`와 child completion을 함께 검증한다. 실제 blocking stream fixture가 필요한
+이유는 일반 virtual-time tester가 thread interruption과 `InputStream.close()`의
+상호작용을 증명하지 못하기 때문이다.

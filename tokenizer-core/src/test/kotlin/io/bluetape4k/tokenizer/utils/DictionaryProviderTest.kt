@@ -12,11 +12,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ThreadContextElement
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Test
 import java.io.FilterInputStream
+import java.io.IOException
 import java.io.InputStream
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
@@ -34,6 +37,8 @@ class DictionaryProviderTest {
         private const val SECOND_PATH = "dictionary/test/second.txt"
         private const val MISSING_PATH = "dictionary/test/missing.txt"
         private const val SLOW_PATH = "dictionary/test/slow.txt"
+        private const val FAILING_PATH = "dictionary/test/failing.txt"
+        private const val SIBLING_PATH = "dictionary/test/sibling.txt"
     }
 
     @Test
@@ -97,6 +102,40 @@ class DictionaryProviderTest {
     }
 
     @Test
+    fun `여러 dictionary resource가 실제로 병렬 시작된다`() = runSuspendIO {
+        val firstStarted = CompletableDeferred<Unit>()
+        val secondStarted = CompletableDeferred<Unit>()
+        val release = CountDownLatch(1)
+        val first = BarrierInputStream(firstStarted, release)
+        val second = BarrierInputStream(secondStarted, release)
+        val classLoader = ResourceClassLoader(
+            mapOf(
+                FIRST_PATH to { first },
+                SECOND_PATH to { second },
+            )
+        )
+        val job = async(Dispatchers.Default + ContextClassLoader(classLoader)) {
+            DictionaryProvider.readWordsAsSet(FIRST_PATH, SECOND_PATH)
+        }
+
+        try {
+            withTimeout(5.seconds) {
+                firstStarted.await()
+                secondStarted.await()
+            }
+            release.countDown()
+            withTimeout(5.seconds) {
+                job.await()
+                first.closed.await()
+                second.closed.await()
+            }
+        } finally {
+            release.countDown()
+            job.cancelAndJoin()
+        }
+    }
+
+    @Test
     fun `child resource failure is propagated`() = runSuspendIO {
         val classLoader = ResourceClassLoader(
             mapOf(
@@ -112,12 +151,73 @@ class DictionaryProviderTest {
     }
 
     @Test
+    fun `child read failure cancels sibling and closes both resources`() = runSuspendIO {
+        val failingStarted = CompletableDeferred<Unit>()
+        val siblingStarted = CompletableDeferred<Unit>()
+        val failureRelease = CountDownLatch(1)
+        val failing = FailingInputStream(failingStarted, failureRelease)
+        val sibling = BlockingInputStream(siblingStarted)
+        val classLoader = ResourceClassLoader(
+            mapOf(
+                FAILING_PATH to { failing },
+                SIBLING_PATH to { sibling },
+            )
+        )
+        supervisorScope {
+            val job = async(Dispatchers.Default + ContextClassLoader(classLoader)) {
+                DictionaryProvider.readWords(FAILING_PATH, SIBLING_PATH)
+            }
+
+            try {
+                withTimeout(5.seconds) {
+                    failingStarted.await()
+                    siblingStarted.await()
+                }
+                failureRelease.countDown()
+                assertFailsWith<IOException> { job.await() }
+                withTimeout(5.seconds) {
+                    failing.closed.await()
+                    sibling.closed.await()
+                }
+            } finally {
+                failureRelease.countDown()
+                sibling.release()
+                job.cancelAndJoin()
+            }
+        }
+    }
+
+    @Test
     fun `실제 Job 취소가 blocking child와 resource cleanup으로 전파된다`() = runSuspendIO {
         val started = CompletableDeferred<Unit>()
         val stream = BlockingInputStream(started)
         val classLoader = ResourceClassLoader(mapOf(SLOW_PATH to { stream }))
         val job = async(Dispatchers.Default + ContextClassLoader(classLoader)) {
             DictionaryProvider.readWords(SLOW_PATH)
+        }
+
+        try {
+            withTimeout(5.seconds) { started.await() }
+
+            job.cancel()
+            withTimeout(5.seconds) {
+                stream.closed.await()
+                job.join()
+            }
+            job.isCancelled.shouldBeTrue()
+        } finally {
+            stream.release()
+            job.cancelAndJoin()
+        }
+    }
+
+    @Test
+    fun `실제 Job 취소가 readWordsAsSet blocking child와 resource cleanup으로 전파된다`() = runSuspendIO {
+        val started = CompletableDeferred<Unit>()
+        val stream = BlockingInputStream(started)
+        val classLoader = ResourceClassLoader(mapOf(SLOW_PATH to { stream }))
+        val job = async(Dispatchers.Default + ContextClassLoader(classLoader)) {
+            DictionaryProvider.readWordsAsSet(SLOW_PATH)
         }
 
         try {
@@ -147,6 +247,52 @@ class DictionaryProviderTest {
         override fun close() {
             closed.set(true)
             super.close()
+        }
+    }
+
+    private class BarrierInputStream(
+        private val started: CompletableDeferred<Unit>,
+        private val release: CountDownLatch,
+    ): InputStream() {
+        val closed = CompletableDeferred<Unit>()
+
+        override fun read(): Int {
+            started.complete(Unit)
+            return try {
+                release.await()
+                -1
+            } catch (_: InterruptedException) {
+                Thread.currentThread().interrupt()
+                -1
+            }
+        }
+
+        override fun close() {
+            closed.complete(Unit)
+            release.countDown()
+        }
+    }
+
+    private class FailingInputStream(
+        private val started: CompletableDeferred<Unit>,
+        private val failureRelease: CountDownLatch,
+    ): InputStream() {
+        val closed = CompletableDeferred<Unit>()
+
+        override fun read(): Int {
+            started.complete(Unit)
+            return try {
+                failureRelease.await()
+                throw IOException("synthetic dictionary read failure")
+            } catch (_: InterruptedException) {
+                Thread.currentThread().interrupt()
+                -1
+            }
+        }
+
+        override fun close() {
+            closed.complete(Unit)
+            failureRelease.countDown()
         }
     }
 
