@@ -5,6 +5,7 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -171,6 +172,7 @@ object DictionaryProvider: KLogging() {
      * - Collect한 line은 `addAll`로 [destination]에 merge합니다.
      * - 누적 결과를 담은 같은 [destination] instance를 반환합니다.
      * - Blocking I/O는 [Dispatchers.IO]에서 수행합니다.
+     * - 호출 coroutine이 취소되면 blocking resource read도 interrupt되어 child와 stream이 정리됩니다.
      *
      * @param paths 읽을 dictionary resource path 목록입니다.
      * @param destination word를 누적할 mutable set입니다.
@@ -187,7 +189,9 @@ object DictionaryProvider: KLogging() {
     ): MutableSet<String> = withContext(Dispatchers.IO) {
         paths.asFlow()
             .async { path ->
-                readFileByLineFromResources(path)
+                runInterruptible(Dispatchers.IO) {
+                    readFileByLineFromResources(path)
+                }
             }
             .collect { words ->
                 destination.addAll(words)
@@ -204,6 +208,7 @@ object DictionaryProvider: KLogging() {
      * - 결과는 `addAll`로 [destination]에 merge하며, duplicate word는 set semantic에 따라 deduplicate됩니다.
      * - 같은 [destination] instance를 반환합니다.
      * - Blocking I/O는 [Dispatchers.IO]에서 수행합니다.
+     * - 호출 coroutine이 취소되면 blocking resource read도 interrupt되어 child와 stream이 정리됩니다.
      *
      * @param paths 읽을 dictionary resource path 목록입니다.
      * @param destination word를 누적할 [CharArraySet]입니다.
@@ -220,7 +225,9 @@ object DictionaryProvider: KLogging() {
     ): CharArraySet = withContext(Dispatchers.IO) {
         paths.asFlow()
             .async { path ->
-                readFileByLineFromResources(path)
+                runInterruptible(Dispatchers.IO) {
+                    readFileByLineFromResources(path)
+                }
             }
             .collect { words ->
                 destination.addAll(words)
