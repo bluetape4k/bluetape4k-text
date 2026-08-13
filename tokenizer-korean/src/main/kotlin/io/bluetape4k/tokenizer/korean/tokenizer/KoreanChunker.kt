@@ -98,7 +98,8 @@ object KoreanChunker: KLogging() {
      * 패턴 매치 구간과 품사를 함께 보관하는 청크 매치 정보입니다.
      *
      * ## 동작/계약
-     * - `range`는 `start..end`를 그대로 노출한다.
+     * - `end`는 `Matcher.end()`와 같은 exclusive offset이다.
+     * - `range`는 `start until end`로 계산되는 exclusive 인덱스 범위다.
      * - `disjoint`는 두 매치의 겹침 여부를 시작/끝 인덱스로 판별한다.
      *
      * ```kotlin
@@ -114,17 +115,17 @@ object KoreanChunker: KLogging() {
         val pos: KoreanPos,
     ) {
         /**
-         * 매치 시작/끝을 포함하는 인덱스 범위입니다.
+         * 매치 시작부터 `end` 직전까지의 exclusive 인덱스 범위입니다.
          *
          * ## 동작/계약
-         * - 생성자에 전달한 `start`, `end`를 그대로 사용해 계산한다.
+         * - 생성자에 전달한 `start`, `end`를 사용해 `start until end`로 계산한다.
          *
          * ```kotlin
          * val range = KoreanChunker.ChunkMatch(3, 5, "abc", KoreanPos.Alpha).range
-         * // range == 3..5
+         * // range == 3 until 5 (3..4)
          * ```
          */
-        val range: IntRange = start..end
+        val range: IntRange = start until end
 
         /**
          * 두 매치가 서로 겹치지 않는지 확인합니다.
