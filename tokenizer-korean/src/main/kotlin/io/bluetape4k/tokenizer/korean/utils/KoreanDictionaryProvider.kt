@@ -27,6 +27,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -76,6 +77,13 @@ internal class SuspendMemoized<T: Any>(
     }
 
     internal fun isInitialized(): Boolean = state !== Uninitialized
+
+    /** 테스트에서 memoized lifecycle을 격리하기 위해 초기화 상태를 되돌립니다. */
+    internal suspend fun resetForTesting() {
+        mutex.withLock {
+            state = Uninitialized
+        }
+    }
 }
 
 /**
@@ -118,7 +126,7 @@ object KoreanDictionaryProvider: KLogging() {
     }
 
     private val koreanEntityFreqLoader = SuspendMemoized {
-        withContext(Dispatchers.IO) {
+        runInterruptible(Dispatchers.IO) {
             DictionaryProvider.readWordFreqs("$BASE_PATH/freq/entity-freq.txt.gz")
         }
     }
@@ -166,7 +174,7 @@ object KoreanDictionaryProvider: KLogging() {
     }
 
     private val typoDictionaryByLengthLoader = SuspendMemoized {
-        withContext(Dispatchers.IO) {
+        runInterruptible(Dispatchers.IO) {
             val grouped = DictionaryProvider.readWordMap("$BASE_PATH/typos/typos.txt")
                 .groupBy { it.first.length }
             val result = mutableMapOf<Int, Map<String, String>>()
@@ -283,6 +291,24 @@ object KoreanDictionaryProvider: KLogging() {
         typoDictionaryByLengthLoader,
         predicateStemsLoader,
     ).all(SuspendMemoized<*>::isInitialized)
+
+    /**
+     * 테스트마다 singleton loader lifecycle을 격리하기 위해 초기화 상태를 되돌립니다.
+     *
+     * 실제 애플리케이션 코드에서는 호출하지 않으며, public dictionary 계약에는 노출되지 않습니다.
+     */
+    internal suspend fun resetForTesting() {
+        listOf(
+            koreanDictionaryVersions,
+            blockwordVersions,
+            koreanEntityFreqLoader,
+            spamNounsLoader,
+            properNounsLoader,
+            nameDictionaryLoader,
+            typoDictionaryByLengthLoader,
+            predicateStemsLoader,
+        ).forEach { it.resetForTesting() }
+    }
 
     /**
      * 엔티티 빈도 사전입니다.
