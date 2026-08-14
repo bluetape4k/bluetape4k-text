@@ -1,5 +1,6 @@
 package io.bluetape4k.text.search.flow
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterThan
@@ -8,15 +9,27 @@ import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.text.search.SearchOptions
 import io.bluetape4k.text.search.ahoCorasickOf
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.time.Duration.Companion.seconds
@@ -32,6 +45,7 @@ class AhoCorasickFlowTest {
 
     companion object : KLogging() {
         private const val SAMPLE_TEXT = "ushers"
+        private const val REPEATED_MATCHES = 512
     }
 
     private fun fixtureAutomaton(options: SearchOptions = SearchOptions()) =
@@ -184,5 +198,106 @@ class AhoCorasickFlowTest {
         caught.shouldNotBeNull()
         caught.shouldBeInstanceOf<CancellationException>()
         log.debug { "CancellationException 정상 전파됨: ${caught.message}" }
+    }
+
+    @Test
+    fun `take(1) 조기 종료가 upstream producer completion으로 전파된다`() = runSuspendIO {
+        // 준비
+        val producerCompletion = CompletableDeferred<Throwable?>()
+        val text = repeatedMatchText()
+
+        // 실행
+        val matches = fixtureAutomaton()
+            .matchesAsFlow(text)
+            .onCompletion { cause -> producerCompletion.complete(cause) }
+            .take(1)
+            .toList()
+
+        // 검증
+        matches shouldHaveSize 1
+        withTimeout(5.seconds) {
+            producerCompletion.await().shouldBeInstanceOf<CancellationException>()
+        }
+    }
+
+    @Test
+    fun `실제 Job 취소가 producer와 child cleanup으로 전파된다`() = runSuspendIO {
+        // 준비
+        val parentJob = Job()
+        val scope = CoroutineScope(parentJob + Dispatchers.Default)
+        val firstMatch = CompletableDeferred<Unit>()
+        val producerCompletion = CompletableDeferred<Throwable?>()
+        val collecting = scope.launch {
+            fixtureAutomaton()
+                .matchesAsFlow(repeatedMatchText())
+                .onCompletion { cause -> producerCompletion.complete(cause) }
+                .collect {
+                    firstMatch.complete(Unit)
+                    awaitCancellation()
+                }
+        }
+
+        try {
+            // 실행
+            withTimeout(5.seconds) { firstMatch.await() }
+            collecting.cancelAndJoin()
+
+            // 검증
+            collecting.isCancelled.shouldBeTrue()
+            withTimeout(5.seconds) {
+                producerCompletion.await().shouldBeInstanceOf<CancellationException>()
+            }
+            parentJob.children.toList().shouldBeEmpty()
+        } finally {
+            collecting.cancelAndJoin()
+            parentJob.cancel()
+        }
+    }
+
+    @Test
+    fun `upstream failure가 flow completion과 exception 전파로 종료된다`() = runSuspendIO {
+        // 준비
+        val parentJob = Job()
+        val scope = CoroutineScope(parentJob + Dispatchers.Default)
+        val producerCompletion = CompletableDeferred<Throwable?>()
+        val collecting = scope.async {
+            fixtureAutomaton()
+                .matchesAsFlow(FailingCharSequence())
+                .onCompletion { cause -> producerCompletion.complete(cause) }
+                .toList()
+        }
+
+        try {
+            // 실행
+            val failure = assertFailsWith<IllegalStateException> { collecting.await() }
+
+            // 검증
+            failure.message shouldBeEqualTo "synthetic upstream failure"
+            collecting.isCompleted.shouldBeTrue()
+            withTimeout(5.seconds) {
+                producerCompletion.await().shouldBeInstanceOf<IllegalStateException>()
+            }
+            parentJob.children.toList().shouldBeEmpty()
+        } finally {
+            collecting.cancelAndJoin()
+            parentJob.cancel()
+        }
+    }
+
+    private fun repeatedMatchText(): String = buildString {
+        // 충분히 큰 fixture로 producer가 channel buffer를 채우는 동안 collector 취소를 검증한다.
+        repeat(REPEATED_MATCHES) {
+            append("he ")
+        }
+    }
+
+    private class FailingCharSequence : CharSequence {
+        override val length: Int = 1
+
+        override fun get(index: Int): Char = 'x'
+
+        override fun subSequence(startIndex: Int, endIndex: Int): CharSequence = this
+
+        override fun toString(): String = error("synthetic upstream failure")
     }
 }
