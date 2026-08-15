@@ -90,6 +90,11 @@ class UnicodeSupportTest: AbstractLinguaTest() {
         }
 
         @Test
+        fun supplementaryCodeUnitsDoNotMatchBmpChineseRanges() {
+            String(Character.toChars(0x20000)).forEach { it.isChinese.shouldBeFalse() }
+        }
+
+        @Test
         fun nonChineseBlocksReturnFalse() {
             listOf('A', '가', 'あ', 'م', 'ก').forEach { it.isChinese.shouldBeFalse() }
         }

@@ -92,6 +92,13 @@ class UnicodeDetectorTest: AbstractLinguaTest() {
             String(unicodeDetector.filterString("A가あ中ก", Locale.of("th"))) shouldBeEqualTo "Aก"
             String(unicodeDetector.filterString("A가あ中ก", Locale.of("ar"))) shouldBeEqualTo "A"
         }
+
+        @Test
+        fun `supplementary CJK code point is ignored by Char based filtering`() {
+            val supplementaryCjk = String(Character.toChars(0x20000))
+
+            String(unicodeDetector.filterString("A${supplementaryCjk}中", Locale.CHINESE)) shouldBeEqualTo "A中"
+        }
     }
 
     @Nested
