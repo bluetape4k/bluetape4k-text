@@ -7,15 +7,16 @@
 ## 2026-08-15 GitHub 상태 갱신
 
 현재 근거: GitHub 기준 `0.4.0` milestone의 열린 이슈는 7개다. #250 Lingua
-detector 재사용 예제와 문서 정합성 보완을 진행 중이며, #244 정규화 경로 개선을
-다음 P2 후보로 둔다. #104, #105, #116, #117, #118은 범위를 확정한 뒤 처리할
-백로그다.
+detector 재사용 예제와 문서 정합성 보완은 [PR #272](https://github.com/bluetape4k/bluetape4k-text/pull/272)로
+병합됐고, 현재 작업은 병합 후 WIP 상태를 정렬하는 #273이다. #244 정규화 경로
+개선을 다음 P2 후보로 둔다. #104, #105, #116, #117, #118은 범위를 확정한 뒤
+처리할 백로그다.
 
 ### 진행 중
 
-- [#250](https://github.com/bluetape4k/bluetape4k-text/issues/250)
-  `Lingua detector 재사용 예제와 0.4.0 WIP 문서 정합성 보완` — detector 주입,
-  preload/lazy 선택, 예제 테스트와 문서 대기열을 정합화한다.
+- [#273](https://github.com/bluetape4k/bluetape4k-text/issues/273)
+  `#250 병합 후 0.4.0 WIP 진행 상태 정합성 갱신` — #250 완료 근거와 현재
+  0.4.0 열린 이슈 대기열을 WIP와 CHANGELOG에 반영한다.
 
 ### 다음 P2 후보
 
@@ -25,6 +26,9 @@ detector 재사용 예제와 문서 정합성 보완을 진행 중이며, #244 �
 
 ### 최근 완료
 
+- [#250](https://github.com/bluetape4k/bluetape4k-text/issues/250)의 Lingua
+  detector 재사용 예제와 문서 정합성 보완을 [PR #272](https://github.com/bluetape4k/bluetape4k-text/pull/272)로
+  병합했다. merge commit은 `06b010f4e1f83bee4bf881d50e64de37bcaa1548`이다.
 - [#248](https://github.com/bluetape4k/bluetape4k-text/issues/248)의 Lingua 경계
   입력 회귀를 [PR #271](https://github.com/bluetape4k/bluetape4k-text/pull/271)에서
   완료했다.
@@ -114,7 +118,7 @@ Minor 후보:
 
 | Priority | Issue | 난이도 | 비고 |
 |---|---|---:|---|
-| P2 | [#250](https://github.com/bluetape4k/bluetape4k-text/issues/250) | 낮음 | Lingua detector 재사용 예제와 0.4.0 문서 정합성을 완료한다. |
+| P2 | [#273](https://github.com/bluetape4k/bluetape4k-text/issues/273) | 낮음 | #250 병합 후 WIP/CHANGELOG와 0.4.0 작업 큐의 정합성을 갱신한다. |
 | P2 | [#244](https://github.com/bluetape4k/bluetape4k-text/issues/244) | 높음 | O(n²) 정규화 경로의 상한과 회귀·성능 검증을 설계한다. |
 | P3 | #104, #105, #116, #117, #118 | 중간 | 백로그 항목은 구체적인 범위와 실행 근거를 확인한 뒤 일정에 올린다. |
 
@@ -125,4 +129,4 @@ Minor 후보:
 | Correctness / performance | 1 | 구체적인 regression이 생길 때까지 `Backlog`를 유지한다. |
 | Feature work | 1 | #105와 #116의 backend 평가 범위를 먼저 확정한다. |
 | Build/CI maintenance | 1 | #140은 검증 완료됐고, 새 릴리스/CI 실패가 있을 때만 처리한다. |
-| Docs/KDoc polish | 1 | #250의 예제 README와 0.4.0 WIP/CHANGELOG 정합성을 마무리한다. |
+| Docs/KDoc polish | 1 | #273의 0.4.0 WIP/CHANGELOG 정합성을 마무리한다. |
