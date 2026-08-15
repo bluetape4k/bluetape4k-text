@@ -1,24 +1,33 @@
 # WIP - bluetape4k-text
 
-스냅샷: 2026-08-01 KST
-범위: 0.3.0 릴리스 트레인의 CI·문서 정리와 열린 백로그 관리.
-열린 이슈 수: 6개.
+스냅샷: 2026-08-15 KST
+범위: 0.4.0 milestone의 예제 품질과 text-search 개선 큐 관리.
+열린 이슈 수: 7개.
 
-## 2026-08-01 GitHub 상태 갱신
+## 2026-08-15 GitHub 상태 갱신
 
-현재 근거: GitHub 기준 열린 이슈는 6개다. `0.3.0`에는 #227 문서 갱신이
-진행 중이다. #140 gitleaks 설치 강화와 #225 CHANGELOG 용어 표준화는
-각각 PR #165와 PR #226에서 완료됐다. 나머지 #104, #105, #116, #117, #118은
-백로그에 남아 있다.
+현재 근거: GitHub 기준 `0.4.0` milestone의 열린 이슈는 7개다. #250 Lingua
+detector 재사용 예제와 문서 정합성 보완을 진행 중이며, #244 정규화 경로 개선을
+다음 P2 후보로 둔다. #104, #105, #116, #117, #118은 범위를 확정한 뒤 처리할
+백로그다.
 
 ### 진행 중
 
-- [#227](https://github.com/bluetape4k/bluetape4k-text/issues/227)
-  `docs: refresh WIP and CHANGELOG for current 0.3.0 queue` — 현재 GitHub
-  이슈 대기열과 완료된 유지보수 작업을 WIP/CHANGELOG에 반영한다.
+- [#250](https://github.com/bluetape4k/bluetape4k-text/issues/250)
+  `Lingua detector 재사용 예제와 0.4.0 WIP 문서 정합성 보완` — detector 주입,
+  preload/lazy 선택, 예제 테스트와 문서 대기열을 정합화한다.
+
+### 다음 P2 후보
+
+- [#244](https://github.com/bluetape4k/bluetape4k-text/issues/244)
+  `OffsetMapping NFC/NFKC 정규화의 O(n²) 경로 개선` — 정규화 경로의 상한과
+  회귀·성능 검증을 먼저 설계한다.
 
 ### 최근 완료
 
+- [#248](https://github.com/bluetape4k/bluetape4k-text/issues/248)의 Lingua 경계
+  입력 회귀를 [PR #271](https://github.com/bluetape4k/bluetape4k-text/pull/271)에서
+  완료했다.
 - [#140](https://github.com/bluetape4k/bluetape4k-text/issues/140)의 gitleaks
   설치 강화를 [PR #165](https://github.com/bluetape4k/bluetape4k-text/pull/165)에서 완료했다.
 - [#225](https://github.com/bluetape4k/bluetape4k-text/issues/225)의 한국어
@@ -96,16 +105,18 @@ Minor 후보:
 
 ## 현재 방향
 
-`0.2.0` stable line은 publish됐고 `bluetape4k-dependencies` `1.2.0`에서
-소비하고 있다. 이제 개발은 `0.3.0`으로 이동하며, workflow가 주입하는 snapshot
-publication을 위해 `snapshotVersion=`은 비워 둔다.
+`0.3.0` stable line은 publish됐고 현재 개발은 `0.4.0` milestone에 있다. 이번
+라인은 detector 재사용 예제와 정규화 경로 개선처럼 검증 가능한 품질 작업을
+우선하며, workflow가 주입하는 snapshot publication을 위해 `snapshotVersion=`은
+비워 둔다.
 
 ## 우선순위 큐
 
 | Priority | Issue | 난이도 | 비고 |
 |---|---|---:|---|
-| P1 | [#227](https://github.com/bluetape4k/bluetape4k-text/issues/227) | 낮음 | 현재 GitHub 이슈 대기열과 #140/#225 완료 상태를 WIP와 CHANGELOG에 반영한다. |
-| P2 | #104, #105, #116, #117, #118 | 중간 | 백로그 항목은 구체적인 범위와 실행 근거를 확인한 뒤 일정에 올린다. |
+| P2 | [#250](https://github.com/bluetape4k/bluetape4k-text/issues/250) | 낮음 | Lingua detector 재사용 예제와 0.4.0 문서 정합성을 완료한다. |
+| P2 | [#244](https://github.com/bluetape4k/bluetape4k-text/issues/244) | 높음 | O(n²) 정규화 경로의 상한과 회귀·성능 검증을 설계한다. |
+| P3 | #104, #105, #116, #117, #118 | 중간 | 백로그 항목은 구체적인 범위와 실행 근거를 확인한 뒤 일정에 올린다. |
 
 ## WIP Limits
 
@@ -114,4 +125,4 @@ publication을 위해 `snapshotVersion=`은 비워 둔다.
 | Correctness / performance | 1 | 구체적인 regression이 생길 때까지 `Backlog`를 유지한다. |
 | Feature work | 1 | #105와 #116의 backend 평가 범위를 먼저 확정한다. |
 | Build/CI maintenance | 1 | #140은 검증 완료됐고, 새 릴리스/CI 실패가 있을 때만 처리한다. |
-| Docs/KDoc polish | 1 | PR #227의 WIP/CHANGELOG 갱신을 마무리한 뒤 다음 할당 이슈를 기다린다. |
+| Docs/KDoc polish | 1 | #250의 예제 README와 0.4.0 WIP/CHANGELOG 정합성을 마무리한다. |
