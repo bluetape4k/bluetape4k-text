@@ -1,7 +1,9 @@
 package io.bluetape4k.lingua
 
 import com.github.pemistahl.lingua.api.Language
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
 import org.junit.jupiter.api.Test
 
 class LanguageDetectorExtensionsTest: AbstractLinguaTest() {
@@ -68,7 +70,12 @@ class LanguageDetectorExtensionsTest: AbstractLinguaTest() {
             Language.KOREAN,
             Language.JAPANESE,
         )
-        segments.forEach { check(it.confidence in 0.55..1.0) }
+        segments.forEach { (it.confidence in 0.55..1.0).shouldBeTrue() }
+    }
+
+    @Test
+    fun `빈 입력이면 언어 구간을 반환하지 않는다`() {
+        detector.detectLanguageSegments("") shouldBeEqualTo emptyList()
     }
 
     @Test
@@ -88,15 +95,46 @@ class LanguageDetectorExtensionsTest: AbstractLinguaTest() {
     }
 
     @Test
-    fun `unknown 문자는 임계값을 낮출 때 확인할 수 있다`() {
-        val segments = detector.detectLanguageSegments("ᚠᚢᚦ", minimumConfidence = 0.0)
+    fun `알 수 없는 토큰은 fallback에서 빈 집합이 된다`() {
+        detector.detectAllLanguagesOf("ᚠᚢᚦ") shouldBeEqualTo emptySet()
+    }
 
-        check(segments.singleOrNull()?.language == Language.UNKNOWN || segments.isEmpty())
+    @Test
+    fun `신뢰도 0과 1 경계가 각각 unknown과 확정 구간을 보존한다`() {
+        val unknownAtZero = detector.detectLanguageSegments("ᚠᚢᚦ", minimumConfidence = 0.0)
+        unknownAtZero shouldBeEqualTo listOf(
+            LanguageSegment(0, 3, Language.UNKNOWN, 0.0),
+        )
+        detector.detectLanguageSegments("ᚠᚢᚦ", minimumConfidence = 1.0) shouldBeEqualTo emptyList()
+
+        detector.detectLanguageSegments("안녕", minimumConfidence = 1.0) shouldBeEqualTo listOf(
+            LanguageSegment(0, 2, Language.KOREAN, 1.0),
+        )
     }
 
     @Test
     fun `유효하지 않은 신뢰도 임계값은 거부한다`() {
-        check(runCatching { detector.detectLanguageSegments("Hello", minimumConfidence = 1.1) }.isFailure)
+        assertFailsWith<IllegalArgumentException> {
+            detector.detectLanguageSegments("Hello", minimumConfidence = 1.1)
+        }
+    }
+
+    @Test
+    fun `인접한 같은 언어 문자는 하나의 구간으로 합친다`() {
+        val text = "안녕가나다"
+
+        detector.detectLanguageSegments(text) shouldBeEqualTo listOf(
+            LanguageSegment(0, text.length, Language.KOREAN, 1.0),
+        )
+    }
+
+    @Test
+    fun `보조 평면 이모지 뒤에서도 UTF-16 구간 offset을 유지한다`() {
+        val text = "🔥Hello 안녕"
+        val segments = detector.detectLanguageSegments(text)
+
+        segments.map { text.substring(it.start, it.endExclusive) } shouldBeEqualTo listOf("Hello", "안녕")
+        segments.map { it.start to it.endExclusive } shouldBeEqualTo listOf(2 to 7, 8 to 10)
     }
 
 
