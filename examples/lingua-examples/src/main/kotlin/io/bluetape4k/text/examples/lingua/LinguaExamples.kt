@@ -20,12 +20,7 @@ internal data class LinguaExampleReport(
 internal fun runLinguaExamples(): LinguaExampleReport {
     val languages = setOf(Language.ENGLISH, Language.KOREAN, Language.JAPANESE)
     val mixedText = "Hello service. 안녕하세요. こんにちは。"
-    val reusedDetector = languageDetectorOf(
-        languages = languages,
-        minimumRelativeDistance = 0.0,
-        isEveryLanguageModelPreloaded = true,
-        isLowAccuracyModeEnabled = false,
-    )
+    val reusedDetector = createMixedLanguageDetector()
     val subsetDetector = languageDetectorOf(languages) {
         withMinimumRelativeDistance(0.0)
         withPreloadedLanguageModels()
@@ -53,5 +48,6 @@ internal fun renderLinguaExampleReport(report: LinguaExampleReport): String =
 
 fun main() {
     println(renderLinguaExampleReport(runLinguaExamples()))
-    println(renderMixedLanguagePipeline(runMixedLanguagePipeline("Hello 안녕하세요 こんにちは")))
+    val detector = createMixedLanguageDetector(preloadModels = true)
+    println(renderMixedLanguagePipeline(runMixedLanguagePipeline("Hello 안녕하세요 こんにちは", detector)))
 }
