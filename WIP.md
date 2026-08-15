@@ -1,22 +1,24 @@
 # WIP - bluetape4k-text
 
-스냅샷: 2026-08-15 KST
+스냅샷: 2026-08-16 KST
 범위: 0.4.0 milestone의 예제 품질과 text-search 개선 큐 관리.
-열린 이슈 수: 7개.
+열린 이슈 수: 6개.
 
-## 2026-08-15 GitHub 상태 갱신
+## 2026-08-16 GitHub 상태 갱신
 
-현재 근거: GitHub 기준 `0.4.0` milestone의 열린 이슈는 7개다. #250 Lingua
-detector 재사용 예제와 문서 정합성 보완은 [PR #272](https://github.com/bluetape4k/bluetape4k-text/pull/272)로
-병합됐고, #273의 병합 후 WIP 상태 정렬은 [PR #274](https://github.com/bluetape4k/bluetape4k-text/pull/274)로
-완료됐다. 현재 문서 정합성 작업은 #275이며, #244 정규화 경로 개선을 다음 P2
-후보로 둔다. #104, #105, #116, #117, #118은 범위를 확정한 뒤 처리할 백로그다.
+현재 근거: GitHub 기준 `0.4.0` milestone의 열린 이슈는 #104, #105, #116, #117, #118,
+#244로 6개다. #250 Lingua detector 재사용 예제와 문서 정합성 보완은
+[PR #272](https://github.com/bluetape4k/bluetape4k-text/pull/272)로 병합됐고, #273의 병합 후
+WIP 상태 정렬은 [PR #274](https://github.com/bluetape4k/bluetape4k-text/pull/274)로 완료됐다.
+#275 post-merge snapshot 정합성 보완은 [PR #276](https://github.com/bluetape4k/bluetape4k-text/pull/276)로
+병합됐으며, 이번 snapshot closeout은 milestone 밖 maintenance [#277](https://github.com/bluetape4k/bluetape4k-text/issues/277)로
+기록한다. #244 정규화 경로 개선을 다음 P2 후보로 두고, #104, #105, #116, #117, #118은
+범위를 확정한 뒤 처리할 백로그로 유지한다.
 
 ### 진행 중
 
-- [#275](https://github.com/bluetape4k/bluetape4k-text/issues/275)
-  `#273 종료 후 0.4.0 WIP snapshot live 상태 갱신` — #273의 완료 근거와
-  현재 0.4.0 열린 이슈 대기열을 WIP와 CHANGELOG에 정렬한다.
+`0.4.0` milestone에서 현재 진행 중인 작업은 없다. snapshot closeout maintenance는
+milestone queue를 교란하지 않도록 milestone 밖에서 별도 관리한다.
 
 ### 다음 P2 후보
 
@@ -29,6 +31,9 @@ detector 재사용 예제와 문서 정합성 보완은 [PR #272](https://github
 - [#273](https://github.com/bluetape4k/bluetape4k-text/issues/273)의 #250 병합 후
   WIP 진행 상태 정합성 갱신을 [PR #274](https://github.com/bluetape4k/bluetape4k-text/pull/274)로
   완료했다. merge commit은 `dea6051b9b666e9cc832d218cb5263eca6d5fd44`이다.
+- [#275](https://github.com/bluetape4k/bluetape4k-text/issues/275)의 post-merge WIP/CHANGELOG
+  정합성 갱신을 [PR #276](https://github.com/bluetape4k/bluetape4k-text/pull/276)로 완료했다.
+  merge commit은 `7b68d76094bb430395b37a7a2119f0f6dffcd1f9`이다.
 - [#250](https://github.com/bluetape4k/bluetape4k-text/issues/250)의 Lingua
   detector 재사용 예제와 문서 정합성 보완을 [PR #272](https://github.com/bluetape4k/bluetape4k-text/pull/272)로
   병합했다. merge commit은 `06b010f4e1f83bee4bf881d50e64de37bcaa1548`이다.
@@ -121,7 +126,6 @@ Minor 후보:
 
 | Priority | Issue | 난이도 | 비고 |
 |---|---|---:|---|
-| P2 | [#275](https://github.com/bluetape4k/bluetape4k-text/issues/275) | 낮음 | #273 종료 후 WIP/CHANGELOG와 0.4.0 작업 큐의 정합성을 갱신한다. |
 | P2 | [#244](https://github.com/bluetape4k/bluetape4k-text/issues/244) | 높음 | O(n²) 정규화 경로의 상한과 회귀·성능 검증을 설계한다. |
 | P3 | #104, #105, #116, #117, #118 | 중간 | 백로그 항목은 구체적인 범위와 실행 근거를 확인한 뒤 일정에 올린다. |
 
@@ -132,4 +136,4 @@ Minor 후보:
 | Correctness / performance | 1 | 구체적인 regression이 생길 때까지 `Backlog`를 유지한다. |
 | Feature work | 1 | #105와 #116의 backend 평가 범위를 먼저 확정한다. |
 | Build/CI maintenance | 1 | #140은 검증 완료됐고, 새 릴리스/CI 실패가 있을 때만 처리한다. |
-| Docs/KDoc polish | 1 | #275의 0.4.0 WIP/CHANGELOG 정합성을 마무리한다. |
+| Docs/KDoc polish | 1 | 현재 0.4.0 docs 작업은 없다. 다음 문서 변경은 live milestone 상태를 다시 확인한 뒤 등록한다. |

@@ -14,6 +14,7 @@
 ### 변경
 
 - #273 종료와 PR #274의 merge commit을 반영해 0.4.0 열린 이슈 대기열과 루트 `WIP.md` snapshot을 현재 상태로 정렬했다([#275](https://github.com/bluetape4k/bluetape4k-text/issues/275)).
+- PR #276(`7b68d76094bb430395b37a7a2119f0f6dffcd1f9`) 병합 후 `0.4.0` milestone 열린 이슈 6개와 루트 `WIP.md` snapshot을 다시 정렬했다([#277](https://github.com/bluetape4k/bluetape4k-text/issues/277)).
 
 ## [0.3.0] - 2026-08-06
 
