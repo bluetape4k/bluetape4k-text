@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit
  * - [parseTextDenseMatches]: 겹치는 dense match 기준선
  * - [parseTextNoMatch]: 매치가 없는 입력 기준선
  * - [parseTextNfkcNormalization]: NFKC 정규화 경로 기준선
+ * - [parseTextNfkcNormalizationLargeInput]: 100,000자 NFKC 정규화 회귀 기준선
  * - [naiveContainsSmallDictionary]: `String.contains` 순차 비교군
  *
  * **벤치마크 설계**:
@@ -51,6 +52,7 @@ open class AhoCorasickBenchmark {
     private lateinit var noMatchText: String
     private lateinit var denseText: String
     private lateinit var normalizedText: String
+    private lateinit var normalizedLargeText: String
 
     @Setup(Level.Trial)
     fun setup() {
@@ -84,6 +86,7 @@ open class AhoCorasickBenchmark {
                 append("ＣＡＦＥ 한글 ㈜ ")
             }
         }
+        normalizedLargeText = "a".repeat(NORMALIZED_LARGE_TEXT_LENGTH)
     }
 
     /**
@@ -135,6 +138,18 @@ open class AhoCorasickBenchmark {
         normalizedMatcher.parseText(normalizedText)
 
     /**
+     * 100,000자 ASCII 입력에서 NFKC 정규화와 검색을 수행하는 처리량을 측정한다.
+     *
+     * 입력 크기를 고정해 [io.bluetape4k.text.search.internal.OffsetMapping]의 prefix 재정규화 회귀가
+     * benchmark 결과에 드러나도록 한다.
+     *
+     * @return 매치 결과 리스트 (검색 경로 유지용 반환값)
+     */
+    @Benchmark
+    fun parseTextNfkcNormalizationLargeInput(): List<AhoCorasickMatch<String>> =
+        normalizedMatcher.parseText(normalizedLargeText)
+
+    /**
      * 작은 사전 기준 순진한(naive) `String.contains` 순차 비교 처리량을 측정한다.
      *
      * O(k × n) 복잡도로 키워드 수(k)와 텍스트 길이(n)에 비례한다.
@@ -151,5 +166,6 @@ open class AhoCorasickBenchmark {
         private const val LARGE_TEXT_TOKEN_COUNT = 2_000
         private const val DENSE_TOKEN_COUNT = 2_000
         private const val NORMALIZED_TOKEN_COUNT = 1_000
+        private const val NORMALIZED_LARGE_TEXT_LENGTH = 100_000
     }
 }
