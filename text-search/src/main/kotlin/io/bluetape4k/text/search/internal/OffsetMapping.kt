@@ -14,6 +14,10 @@ import java.text.Normalizer
  * - **NFC**: `ㄴㅏ`(2 chars, 분리 자모) -> `나`(1 char), 길이가 줄어듭니다.
  * - **NFKC**: `㈜`(1 char) -> `(주)`(3 chars), 길이가 늘어납니다.
  *
+ * 정규화 상호작용 구간 내부의 prefix 추적은 [MAX_NORMALIZATION_SEGMENT_LENGTH]자로 제한합니다.
+ * 이 제한은 비정상적으로 긴 combining mark 연속 입력이 다시 quadratic 비용을 만들지 않도록 하며,
+ * 제한을 넘는 입력은 [IllegalArgumentException]으로 거부합니다.
+ *
  * ## Usage pattern
  * ```kotlin
  * val (normalized, mapping) = OffsetMapping.build(originalText, NormalizationForm.NFC)
@@ -83,8 +87,8 @@ internal class OffsetMapping private constructor(
         /**
          * [original] 문자열과 정규화 [form]으로 [OffsetMapping]을 생성합니다.
          *
-         * 문자 단위 sliding normalization으로 위치별 offset 변화를 추적합니다. 생성되는 정규화 문자열은
-         * `Normalizer.normalize(original, form)` 결과와 같습니다.
+         * 정규화 상호작용 segment 단위 sliding normalization으로 위치별 offset 변화를 추적합니다.
+         * 생성되는 정규화 문자열은 `Normalizer.normalize(original, form)` 결과와 같습니다.
          *
          * @param original 정규화할 원본 [CharSequence]입니다.
          * @param form 적용할 정규화 형식입니다.
@@ -112,68 +116,123 @@ internal class OffsetMapping private constructor(
                 return "" to OffsetMapping(emptyNorm, origToNorm)
             }
 
-            // 알고리즘: prefix를 한 글자씩 늘려가며 정규화합니다.
-            //
-            // 매 단계마다 원본 prefix를 한 글자 늘려가며 전체 prefix를 normalize.
-            // 정규화 결과 길이의 변화 패턴으로 origPos를 normalized 위치에 매핑한다:
-            //
-            // - 길이 증가 (확장): 새로 늘어난 normalized 위치는 모두 현재 origPos에서 비롯됨
-            // - 길이 감소 (합성): 일부 trailing 위치가 사라짐. 남은 마지막 위치는 합성 결과 → 현재 origPos가 마지막 기여자
-            // - 길이 동일: 마지막 위치가 reorder/replacement으로 갱신되었을 수 있으므로 origPos 재기록
-            //
-            // 결과는 `Normalizer.normalize(original, form)`과 정확히 동일하다 (생성 방식 동일).
-            //
-            // 복잡도: 최악의 경우 O(n²) — 매 step마다 prefix 전체 정규화.
-            // text-search 입력 크기에선 충분하나, 대용량은 ICU4J `Normalizer2.normalizeSecondAndAppend` 권장.
-            val sb = StringBuilder(origLen)
+            // 정규화 상호작용이 가능한 구간(normalization segment)별로 prefix를 추적합니다.
+            // ASCII처럼 각 문자가 독립적인 입력은 한 문자 segment가 되므로 전체 비용이 O(n)입니다.
+            // combining mark, Hangul Jamo, NFKC 반각 voiced mark는 이전 문자와 같은 segment에
+            // 남겨 정규화 결과와 기존의 "마지막 기여 문자" 매핑을 보존합니다.
             val normToOrigList = ArrayList<Int>(origLen)
-            var lastNormLen = 0
+            val normalizedBuilder = StringBuilder(origLen)
+            var segmentStart = 0
+            var index = 0
+            var previousCodePoint = -1
 
-            for (origPos in 0 until origLen) {
-                origToNorm[origPos] = lastNormLen
-                sb.append(original[origPos])
-                val curNorm = Normalizer.normalize(sb, javaForm)
-                val curLen = curNorm.length
-                when {
-                    curLen > lastNormLen -> {
-                        // 확장: 새로 추가된 normalized 위치는 모두 origPos가 기여
-                        repeat(curLen - lastNormLen) { normToOrigList.add(origPos) }
-                    }
-                    curLen < lastNormLen -> {
-                        // 합성으로 길이 감소: 잉여 trailing 매핑 제거.
-                        // 남은 마지막 위치는 현재 origPos(합성을 완성한 마지막 기여자)로 갱신.
-                        while (normToOrigList.size > curLen) {
-                            normToOrigList.removeAt(normToOrigList.size - 1)
-                        }
-                        if (normToOrigList.isNotEmpty()) {
-                            normToOrigList[normToOrigList.size - 1] = origPos
-                        }
-                    }
-                    else -> {
-                        // 길이 동일: 합성/재배열로 마지막 normalized 문자가 교체됨.
-                        // 마지막 위치를 현재 origPos(합성을 완성한 마지막 기여자)로 갱신.
-                        if (normToOrigList.isNotEmpty()) {
-                            normToOrigList[normToOrigList.size - 1] = origPos
-                        }
-                    }
+            while (index < origLen) {
+                val codePoint = Character.codePointAt(original, index)
+                if (index > segmentStart && !continuesNormalization(previousCodePoint, codePoint, form)) {
+                    appendSegment(
+                        original = original,
+                        start = segmentStart,
+                        end = index,
+                        javaForm = javaForm,
+                        normalized = normalizedBuilder,
+                        normToOrigList = normToOrigList,
+                        origToNorm = origToNorm,
+                    )
+                    segmentStart = index
                 }
-                lastNormLen = curLen
+                previousCodePoint = codePoint
+                index += Character.charCount(codePoint)
             }
-            origToNorm[origLen] = lastNormLen
 
-            // normalized 결과 — sb 정규화 결과를 그대로 사용
-            val normalized = Normalizer.normalize(sb, javaForm)
-            check(normalized.length == lastNormLen) {
-                "internal: normalized length mismatch (${normalized.length} != $lastNormLen)"
-            }
+            appendSegment(
+                original = original,
+                start = segmentStart,
+                end = origLen,
+                javaForm = javaForm,
+                normalized = normalizedBuilder,
+                normToOrigList = normToOrigList,
+                origToNorm = origToNorm,
+            )
+
+            val normalized = normalizedBuilder.toString()
+            origToNorm[origLen] = normalized.length
 
             // normToOrig 배열 + sentinel
-            val normToOrig = IntArray(lastNormLen + 1)
-            for (i in 0 until lastNormLen) normToOrig[i] = normToOrigList[i]
-            normToOrig[lastNormLen] = origLen
+            val normToOrig = IntArray(normalized.length + 1)
+            for (i in normalized.indices) normToOrig[i] = normToOrigList[i]
+            normToOrig[normalized.length] = origLen
 
             return normalized to OffsetMapping(normToOrig, origToNorm)
         }
+
+        private fun appendSegment(
+            original: CharSequence,
+            start: Int,
+            end: Int,
+            javaForm: Normalizer.Form,
+            normalized: StringBuilder,
+            normToOrigList: MutableList<Int>,
+            origToNorm: IntArray,
+        ) {
+            val segmentLength = end - start
+            require(segmentLength <= MAX_NORMALIZATION_SEGMENT_LENGTH) {
+                "normalization segment too long: $segmentLength chars (max $MAX_NORMALIZATION_SEGMENT_LENGTH)"
+            }
+            val segment = StringBuilder(segmentLength)
+            var lastNormLen = 0
+
+            for (localPos in 0 until segmentLength) {
+                val origPos = start + localPos
+                origToNorm[origPos] = normalized.length + lastNormLen
+                segment.append(original[origPos])
+                val curLen = Normalizer.normalize(segment, javaForm).length
+                when {
+                    curLen > lastNormLen -> repeat(curLen - lastNormLen) { normToOrigList.add(origPos) }
+                    curLen < lastNormLen -> {
+                        repeat(lastNormLen - curLen) { normToOrigList.removeAt(normToOrigList.lastIndex) }
+                        if (normToOrigList.isNotEmpty()) normToOrigList[normToOrigList.lastIndex] = origPos
+                    }
+                    else -> if (normToOrigList.isNotEmpty()) normToOrigList[normToOrigList.lastIndex] = origPos
+                }
+                lastNormLen = curLen
+            }
+
+            val normalizedSegment = Normalizer.normalize(segment, javaForm)
+            check(normalizedSegment.length == lastNormLen) {
+                "internal: normalized segment length mismatch (${normalizedSegment.length} != $lastNormLen)"
+            }
+            normalized.append(normalizedSegment)
+            origToNorm[end] = normalized.length
+        }
+
+        private fun continuesNormalization(previous: Int, current: Int, form: NormalizationForm): Boolean =
+            isCombiningMark(current) ||
+                isHangulContinuation(previous, current) ||
+                (form == NormalizationForm.NFKC && current in COMPATIBILITY_COMBINING_MARKS)
+
+        private fun isCombiningMark(codePoint: Int): Boolean = when (Character.getType(codePoint)) {
+            Character.NON_SPACING_MARK.toInt(),
+            Character.COMBINING_SPACING_MARK.toInt(),
+            Character.ENCLOSING_MARK.toInt(),
+            -> true
+
+            else -> false
+        }
+
+        private fun isHangulContinuation(previous: Int, current: Int): Boolean =
+            (previous in HANGUL_LEADING_JAMO && current in HANGUL_VOWEL_JAMO) ||
+                (previous in HANGUL_VOWEL_JAMO && current in HANGUL_TRAILING_JAMO) ||
+                (previous in HANGUL_LV_SYLLABLES && current in HANGUL_TRAILING_JAMO)
+
+        private const val HANGUL_SYLLABLE_BASE = 0xAC00
+        private const val HANGUL_SYLLABLE_COUNT = 11_172
+        private const val MAX_NORMALIZATION_SEGMENT_LENGTH = 1_024
+        private val HANGUL_LEADING_JAMO = 0x1100..0x1112
+        private val HANGUL_VOWEL_JAMO = 0x1161..0x1175
+        private val HANGUL_TRAILING_JAMO = 0x11A8..0x11C2
+        private val HANGUL_LV_SYLLABLES = HANGUL_SYLLABLE_BASE until
+            (HANGUL_SYLLABLE_BASE + HANGUL_SYLLABLE_COUNT) step 28
+        private val COMPATIBILITY_COMBINING_MARKS = setOf(0xFF9E, 0xFF9F)
 
         /**
          * `normOffset == origOffset`인 identity mapping을 반환합니다. 정규화를 적용하지 않은 경우에 사용합니다.

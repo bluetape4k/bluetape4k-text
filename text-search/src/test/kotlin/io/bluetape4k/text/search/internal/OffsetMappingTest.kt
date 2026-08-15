@@ -4,9 +4,13 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.text.search.NormalizationForm
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeLessThan
 import io.bluetape4k.assertions.shouldBeNull
+import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldContain
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import kotlin.system.measureTimeMillis
 
 /**
  * [OffsetMapping] 단위 테스트.
@@ -111,6 +115,49 @@ class OffsetMappingTest {
     }
 
     @Test
+    fun `NFKC - 반각 가타카나 voiced mark를 같은 정규화 segment로 처리`() {
+        // 준비: ｶ(U+FF76) + ﾞ(U+FF9E) → NFKC → ガ(U+30AC)
+        val original = "\uFF76\uFF9E"
+
+        // 실행
+        val (normalized, mapping) = OffsetMapping.build(original, NormalizationForm.NFKC)
+
+        // 검증: 두 원본 문자가 하나의 호환 합성 결과에 기여한다.
+        normalized shouldBeEqualTo "ガ"
+        val m = checkNotNull(mapping)
+        m.toOriginal(0) shouldBeEqualTo 1
+        m.toOriginalEndInclusive(0) shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `NFC - 연속 combining mark의 정규화 결과와 원본 끝 offset 보존`() {
+        // 준비: a + cedilla + acute는 starter와 두 combining mark가 한 segment를 이룬다.
+        val original = "a\u0327\u0301"
+
+        // 실행
+        val (normalized, mapping) = OffsetMapping.build(original, NormalizationForm.NFC)
+
+        // 검증: Java Normalizer와 같은 결과이며 매치 끝은 마지막 기여 mark를 가리킨다.
+        normalized shouldBeEqualTo "á\u0327"
+        val m = checkNotNull(mapping)
+        m.toOriginalEndInclusive(normalized.lastIndex) shouldBeEqualTo original.lastIndex
+    }
+
+    @Test
+    fun `NFC - 과도하게 긴 normalization segment는 quadratic 경로를 거부`() {
+        // 준비: starter 뒤에 1,024자를 초과하는 combining mark를 연결한다.
+        val original = "a" + "\u0301".repeat(1_025)
+
+        // 실행 및 검증: segment 상한을 넘으면 원본을 exception message에 포함하지 않고 거부한다.
+        val exception = assertFailsWith<IllegalArgumentException> {
+            OffsetMapping.build(original, NormalizationForm.NFC)
+        }
+        exception.message.orEmpty() shouldContain "normalization segment too long"
+        exception.message.orEmpty() shouldContain "max 1024"
+        exception.message.orEmpty() shouldContain original.length.toString()
+    }
+
+    @Test
     fun `빈 문자열, 단일 char, ascii-only - 정규화 무영향 케이스`() {
         // 준비, 실행, 검증: 빈 문자열
         val (emptyText, emptyMapping) = OffsetMapping.build("", NormalizationForm.NFC)
@@ -165,5 +212,28 @@ class OffsetMappingTest {
         identity.toOriginalEndInclusive(3) shouldBeEqualTo 3
 
         log.debug { "round-trip 복원: '$recovered' from original[$origStart..$origEndInclusive]" }
+    }
+
+    @Test
+    fun `NFC ASCII 100000자 입력은 선형 상한 안에서 처리`() {
+        // 준비: JIT 및 첫 정규화 초기화 비용을 제외하고 5배 크기 입력을 비교한다.
+        val medium = "a".repeat(10_000)
+        val large = "a".repeat(100_000)
+        repeat(2) { OffsetMapping.build("warmup", NormalizationForm.NFC) }
+
+        // 실행: 동일한 NFC 경로에서 중간·대형 입력을 각각 측정한다.
+        val mediumMillis = measureTimeMillis {
+            OffsetMapping.build(medium, NormalizationForm.NFC)
+        }
+        var normalizedLength = 0
+        val largeMillis = measureTimeMillis {
+            val (normalized, mapping) = OffsetMapping.build(large, NormalizationForm.NFC)
+            normalizedLength = normalized.length
+            checkNotNull(mapping).toOriginalEndInclusive(large.lastIndex) shouldBeEqualTo large.lastIndex
+        }
+
+        // 검증: 입력을 5배 늘렸을 때 quadratic prefix 재정규화처럼 12배 이상 급증하지 않는다.
+        normalizedLength shouldBeEqualTo large.length
+        largeMillis shouldBeLessThan mediumMillis * 12 + 200
     }
 }
