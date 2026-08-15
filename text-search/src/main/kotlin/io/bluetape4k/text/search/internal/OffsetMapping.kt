@@ -87,8 +87,8 @@ internal class OffsetMapping private constructor(
         /**
          * [original] 문자열과 정규화 [form]으로 [OffsetMapping]을 생성합니다.
          *
-         * 문자 단위 sliding normalization으로 위치별 offset 변화를 추적합니다. 생성되는 정규화 문자열은
-         * `Normalizer.normalize(original, form)` 결과와 같습니다.
+         * 정규화 상호작용 segment 단위 sliding normalization으로 위치별 offset 변화를 추적합니다.
+         * 생성되는 정규화 문자열은 `Normalizer.normalize(original, form)` 결과와 같습니다.
          *
          * @param original 정규화할 원본 [CharSequence]입니다.
          * @param form 적용할 정규화 형식입니다.
