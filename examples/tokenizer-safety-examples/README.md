@@ -5,32 +5,44 @@ and the Japanese backend comparison boundary.
 
 ## Japanese backend comparison
 
-`JapaneseBackendComparisonExamples` renders the current `Kuromoji IPADic`
-runtime observation beside the official `Sudachi JVM` split-mode surface
-recording using one report shape. The current side calls `JapaneseProcessor`
-and records the first IPADic POS field. The candidate side is deliberately a
-`RECORDED` fixture because the Sudachi system dictionary is not stored in this
-repository.
+`JapaneseBackendComparisonExamples` runs `Kuromoji IPADic` and `Sudachi JVM`
+against the same approved corpus using one report shape. Both backends map the
+first broad POS field into the neutral observation model. Sudachi also records
+live A/B/C split-mode surfaces and C-mode POS observations.
 
-The report also prints each backend's license, runtime footprint, and Gradle
-dependency state. The current example uses only `bt4k.kuromoji.ipadic`; no
-candidate dependency is added.
+The report also prints each backend's license, runtime footprint, dictionary
+version, and Gradle dependency state. Sudachi uses the central catalog alias
+`bt4k.sudachi` for the exact `com.worksap.nlp:sudachi:0.8.0` dependency. The
+upstream release identifies `v0.8.*` as an intermediate series before `v1`, so
+the version is intentionally pinned.
 
-The `A/B/C` surface differences make the migration cost visible, while the
-candidate POS status remains `UNMAPPED`. This is a contract and migration
-example, not an accuracy or latency benchmark. Claiming runtime parity requires
-separately approved Sudachi dependency and dictionary integration followed by a
-same-corpus verification.
+The dictionary is the official [SudachiDict `v20260428` core
+release](https://github.com/WorksApplications/SudachiDict/releases/tag/v20260428).
+The archive is 72,238,136 bytes with SHA-256
+`40c8ffc095283f07aa06cae922e7b8147bf2919ec8830567b0b3f7a7efa3239f`; its
+extracted `system_core.dic` is 217,374,303 bytes. The build verifies the
+Apache-2.0 archive's `LEGAL` and `LICENSE-2.0.txt` entries. The 217 MB binary
+is never committed; it is downloaded and verified under
+`build/sudachi-dictionary/v20260428`.
 
-The surface fixture is grounded in the [official Sudachi split-mode
+This is not an accuracy or latency benchmark. The current conditions are JDK
+25, the same three inputs (`選挙管理委員会`, `東京都へ行く`, and
+`外国人参政権`), bundled Kuromoji IPADic, and SudachiDict core. For example,
+Sudachi splits `選挙管理委員会` as `選挙/管理/委員/会`,
+`選挙/管理/委員会`, and `選挙管理委員会` in A/B/C modes, while Kuromoji
+returns `選挙/管理/委員/会`. The example records such surface/POS mismatches
+as migration evidence.
+
+The comparison is grounded in the [official Sudachi split-mode
 documentation](https://github.com/WorksApplications/Sudachi#the-modes-of-splitting)
 and the repository's [Issue #105 evaluation](../../docs/superpowers/research/2026-08-16-issue-105-japanese-backend-evaluation.md).
-The actual dictionary-backed verification is tracked in [follow-up Issue
-#284](https://github.com/bluetape4k/bluetape4k-text/issues/284).
+The dependency-free report shape from #116 remains intact; Issue #284 adds the
+approved external dependency and dictionary-backed runtime boundary.
 
 Run the example, including the comparison, with:
 
 ```bash
+./gradlew :examples:tokenizer-safety-examples:prepareSudachiDictionary
 ./gradlew :examples:tokenizer-safety-examples:run
 ```
 
