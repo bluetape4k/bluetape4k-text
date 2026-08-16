@@ -2,18 +2,22 @@
 
 스냅샷: 2026-08-16 KST
 범위: 0.4.0 milestone의 예제 품질과 text-search 개선 큐 관리.
-열린 이슈 수: 6개.
+열린 이슈 수: 4개.
 
 ## 2026-08-16 GitHub 상태 갱신
 
-현재 근거: GitHub 기준 `0.4.0` milestone의 열린 이슈는 #104, #105, #116, #117, #118,
-#244로 6개다. #250 Lingua detector 재사용 예제와 문서 정합성 보완은
+현재 근거: GitHub 기준 `0.4.0` milestone의 열린 이슈는 #105, #116, #117, #118로
+4개다. #104 release metadata smoke check는
+[PR #280](https://github.com/bluetape4k/bluetape4k-text/pull/280)으로 병합됐고, #244 정규화
+경로 개선은 [PR #279](https://github.com/bluetape4k/bluetape4k-text/pull/279)로 병합됐다.
+#250 Lingua detector 재사용 예제와 문서 정합성 보완은
 [PR #272](https://github.com/bluetape4k/bluetape4k-text/pull/272)로 병합됐고, #273의 병합 후
 WIP 상태 정렬은 [PR #274](https://github.com/bluetape4k/bluetape4k-text/pull/274)로 완료됐다.
 #275 post-merge snapshot 정합성 보완은 [PR #276](https://github.com/bluetape4k/bluetape4k-text/pull/276)로
 병합됐으며, 이번 snapshot closeout은 milestone 밖 maintenance [#277](https://github.com/bluetape4k/bluetape4k-text/issues/277)로
-기록한다. #244 정규화 경로 개선을 다음 P2 후보로 두고, #104, #105, #116, #117, #118은
-범위를 확정한 뒤 처리할 백로그로 유지한다.
+기록했다. #105 modern Japanese tokenizer backend 평가를 다음 P2 후보로 두고, #116은
+#105의 backend 결정 이후 비교 sample로 유지한다. #117과 #118은 범위를 확정한 뒤 처리할
+백로그로 유지한다.
 
 ### 진행 중
 
@@ -22,12 +26,19 @@ milestone queue를 교란하지 않도록 milestone 밖에서 별도 관리한�
 
 ### 다음 P2 후보
 
-- [#244](https://github.com/bluetape4k/bluetape4k-text/issues/244)
-  `OffsetMapping NFC/NFKC 정규화의 O(n²) 경로 개선` — 정규화 경로의 상한과
-  회귀·성능 검증을 먼저 설계한다.
+- [#105](https://github.com/bluetape4k/bluetape4k-text/issues/105)
+  `Kuromoji IPADic을 넘어서는 modern Japanese tokenizer backend 평가` — candidate backend의
+  유지보수 상태, license, token quality, runtime footprint를 먼저 비교한다. #116 비교 sample은
+  backend 결정 이후에 진행한다.
 
 ### 최근 완료
 
+- [#104](https://github.com/bluetape4k/bluetape4k-text/issues/104)의 Maven Central
+  release metadata smoke check를 [PR #280](https://github.com/bluetape4k/bluetape4k-text/pull/280)로
+  병합했다. merge commit은 `348458808aee47394d98af88250fab34a5f6d6be`이다.
+- [#244](https://github.com/bluetape4k/bluetape4k-text/issues/244)의 OffsetMapping
+  정규화 경로 개선을 [PR #279](https://github.com/bluetape4k/bluetape4k-text/pull/279)로
+  병합했다. merge commit은 `d9a3c6fdadf2801ec3fb2096590a8e26774d0465`이다.
 - [#273](https://github.com/bluetape4k/bluetape4k-text/issues/273)의 #250 병합 후
   WIP 진행 상태 정합성 갱신을 [PR #274](https://github.com/bluetape4k/bluetape4k-text/pull/274)로
   완료했다. merge commit은 `dea6051b9b666e9cc832d218cb5263eca6d5fd44`이다.
@@ -48,15 +59,13 @@ milestone queue를 교란하지 않도록 milestone 밖에서 별도 관리한�
 
 ### 백로그
 
-1. [#104](https://github.com/bluetape4k/bluetape4k-text/issues/104)
-   `build: add release metadata smoke check against Maven Central before handoff`
-2. [#105](https://github.com/bluetape4k/bluetape4k-text/issues/105)
+1. [#105](https://github.com/bluetape4k/bluetape4k-text/issues/105)
    `feat: evaluate modern Japanese tokenizer backend beyond Kuromoji IPADic`
-3. [#116](https://github.com/bluetape4k/bluetape4k-text/issues/116)
+2. [#116](https://github.com/bluetape4k/bluetape4k-text/issues/116)
    `examples: evaluate Japanese tokenizer backend comparison sample`
-4. [#117](https://github.com/bluetape4k/bluetape4k-text/issues/117)
+3. [#117](https://github.com/bluetape4k/bluetape4k-text/issues/117)
    `examples: add offline corpus quality report generator sample`
-5. [#118](https://github.com/bluetape4k/bluetape4k-text/issues/118)
+4. [#118](https://github.com/bluetape4k/bluetape4k-text/issues/118)
    `epic: build runnable bluetape4k-text examples suite`
 
 ## 2026-05-24 마일스톤 갱신
@@ -126,8 +135,8 @@ Minor 후보:
 
 | Priority | Issue | 난이도 | 비고 |
 |---|---|---:|---|
-| P2 | [#244](https://github.com/bluetape4k/bluetape4k-text/issues/244) | 높음 | O(n²) 정규화 경로의 상한과 회귀·성능 검증을 설계한다. |
-| P3 | #104, #105, #116, #117, #118 | 중간 | 백로그 항목은 구체적인 범위와 실행 근거를 확인한 뒤 일정에 올린다. |
+| P2 | [#105](https://github.com/bluetape4k/bluetape4k-text/issues/105) | 중간 | Japanese tokenizer backend의 후보·license·품질·footprint를 비교한 뒤 방향을 결정한다. |
+| P3 | #116, #117, #118 | 중간 | #116은 #105 backend 결정 이후 진행하고, 나머지는 구체적인 범위와 실행 근거를 확인한 뒤 일정에 올린다. |
 
 ## WIP Limits
 
