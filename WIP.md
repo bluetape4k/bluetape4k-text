@@ -1,37 +1,54 @@
 # WIP - bluetape4k-text
 
-스냅샷: 2026-08-16 KST
+스냅샷: 2026-08-17 KST
 범위: 0.4.0 milestone의 예제 품질과 text-search 개선 큐 관리.
-열린 이슈 수: 4개.
+0.4.0 열린 이슈 수: 0개.
+0.4.0 열린 PR 수: 0개.
+현재 열린 Backlog 이슈 수: 2개.
 
-## 2026-08-16 GitHub 상태 갱신
+## 2026-08-17 GitHub 상태 갱신
 
-현재 근거: GitHub 기준 `0.4.0` milestone의 열린 이슈는 #105, #116, #117, #118로
-4개다. #104 release metadata smoke check는
-[PR #280](https://github.com/bluetape4k/bluetape4k-text/pull/280)으로 병합됐고, #244 정규화
+현재 근거: GitHub 기준 `0.4.0` milestone의 열린 issue와 PR은 모두 0건이다.
+#105, #116, #117, #118은 모두 CLOSED이며 현재 진행 중인 작업이나 다음 후보로
+두지 않는다. #116 일본어 tokenizer backend 비교 sample은
+[PR #285](https://github.com/bluetape4k/bluetape4k-text/pull/285)으로 병합됐고, #244 정규화
 경로 개선은 [PR #279](https://github.com/bluetape4k/bluetape4k-text/pull/279)로 병합됐다.
 #250 Lingua detector 재사용 예제와 문서 정합성 보완은
 [PR #272](https://github.com/bluetape4k/bluetape4k-text/pull/272)로 병합됐고, #273의 병합 후
 WIP 상태 정렬은 [PR #274](https://github.com/bluetape4k/bluetape4k-text/pull/274)로 완료됐다.
 #275 post-merge snapshot 정합성 보완은 [PR #276](https://github.com/bluetape4k/bluetape4k-text/pull/276)로
 병합됐으며, 이번 snapshot closeout은 milestone 밖 maintenance [#277](https://github.com/bluetape4k/bluetape4k-text/issues/277)로
-기록했다. #105 modern Japanese tokenizer backend 평가를 다음 P2 후보로 두고, #116은
-#105의 backend 결정 이후 비교 sample로 유지한다. #117과 #118은 범위를 확정한 뒤 처리할
-백로그로 유지한다.
+기록했다. #117 offline corpus quality report generator sample은
+[PR #287](https://github.com/bluetape4k/bluetape4k-text/pull/287)로 병합됐고, #118 examples
+epic은 [PR #285](https://github.com/bluetape4k/bluetape4k-text/pull/285),
+[PR #286](https://github.com/bluetape4k/bluetape4k-text/pull/286),
+[PR #287](https://github.com/bluetape4k/bluetape4k-text/pull/287)의 완료를 포함해 종료됐다.
+#104 release metadata smoke check는
+[PR #280](https://github.com/bluetape4k/bluetape4k-text/pull/280)으로 병합됐다.
 
 ### 진행 중
 
-`0.4.0` milestone에서 현재 진행 중인 작업은 없다. snapshot closeout maintenance는
+`0.4.0` milestone에서 현재 진행 중인 작업은 없다. 열린 Backlog issue #288과 #289는
 milestone queue를 교란하지 않도록 milestone 밖에서 별도 관리한다.
 
 ### 다음 P2 후보
 
-- [#105](https://github.com/bluetape4k/bluetape4k-text/issues/105)
-  `Kuromoji IPADic을 넘어서는 modern Japanese tokenizer backend 평가` — candidate backend의
-  유지보수 상태, license, token quality, runtime footprint를 먼저 비교한다. #116 비교 sample은
-  backend 결정 이후에 진행한다.
+현재 `0.4.0` milestone에 열린 issue와 PR이 없으므로 후보를 임의로 승격하지 않는다.
+새 후보는 구체적인 범위와 근거를 확인한 뒤 별도 issue로 등록하고, 적절한 milestone을
+확인한 후 이 문서에 반영한다.
 
 ### 최근 완료
+
+- `0.4.0` queue의 #105, #116, #117, #118이 모두 CLOSED 상태임을 확인했다.
+- [#116](https://github.com/bluetape4k/bluetape4k-text/issues/116)의 일본어 tokenizer
+  backend 비교 sample을 [PR #285](https://github.com/bluetape4k/bluetape4k-text/pull/285)로
+  병합했다.
+- [#117](https://github.com/bluetape4k/bluetape4k-text/issues/117)의 offline corpus
+  quality report generator sample을 [PR #287](https://github.com/bluetape4k/bluetape4k-text/pull/287)로
+  병합했다.
+- [#118](https://github.com/bluetape4k/bluetape4k-text/issues/118)의 examples epic을
+  PR #285, [PR #286](https://github.com/bluetape4k/bluetape4k-text/pull/286), PR #287 완료와
+  함께 종료했다.
 
 - [#104](https://github.com/bluetape4k/bluetape4k-text/issues/104)의 Maven Central
   release metadata smoke check를 [PR #280](https://github.com/bluetape4k/bluetape4k-text/pull/280)로
@@ -59,14 +76,14 @@ milestone queue를 교란하지 않도록 milestone 밖에서 별도 관리한�
 
 ### 백로그
 
-1. [#105](https://github.com/bluetape4k/bluetape4k-text/issues/105)
-   `feat: evaluate modern Japanese tokenizer backend beyond Kuromoji IPADic`
-2. [#116](https://github.com/bluetape4k/bluetape4k-text/issues/116)
-   `examples: evaluate Japanese tokenizer backend comparison sample`
-3. [#117](https://github.com/bluetape4k/bluetape4k-text/issues/117)
-   `examples: add offline corpus quality report generator sample`
-4. [#118](https://github.com/bluetape4k/bluetape4k-text/issues/118)
-   `epic: build runnable bluetape4k-text examples suite`
+1. [#288](https://github.com/bluetape4k/bluetape4k-text/issues/288)
+   `연결되지 않은 역사적 PR 62건 추적` — PR/issue 연결 처분과 남은 후속 작업을 기록한다.
+2. [#289](https://github.com/bluetape4k/bluetape4k-text/issues/289)
+   `0.4.0 WIP snapshot live 상태 정합성 갱신` — 이 문서의 현재 snapshot을 GitHub live 상태와
+   일치시킨다.
+
+> 아래 2026-05-24 이하 내용은 당시 discovery 기록을 보존한 historical archive다. 현재
+> milestone과 Backlog 판단에는 이 문서 상단의 최신 snapshot만 사용한다.
 
 ## 2026-05-24 마일스톤 갱신
 
