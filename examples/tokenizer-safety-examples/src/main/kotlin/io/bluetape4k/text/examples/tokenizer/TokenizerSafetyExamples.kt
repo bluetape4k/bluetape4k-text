@@ -92,4 +92,5 @@ fun main() {
     println(renderTokenizerSafetyReport(oversized))
     println(renderDictionaryReloadReport(runDictionaryReloadExample()))
     println(renderTextModerationResponse(runTextModerationExample()))
+    println(renderJapaneseBackendComparison(runJapaneseBackendComparison()))
 }
