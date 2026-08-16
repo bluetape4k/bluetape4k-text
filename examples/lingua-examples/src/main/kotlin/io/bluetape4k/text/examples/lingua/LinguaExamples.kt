@@ -50,4 +50,5 @@ fun main() {
     println(renderLinguaExampleReport(runLinguaExamples()))
     val detector = createMixedLanguageDetector(preloadModels = true)
     println(renderMixedLanguagePipeline(runMixedLanguagePipeline("Hello 안녕하세요 こんにちは", detector)))
+    println(renderOfflineCorpusQualityReport(runOfflineCorpusQualityExample(detector = detector)))
 }

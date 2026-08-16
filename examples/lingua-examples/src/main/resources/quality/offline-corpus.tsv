@@ -1,0 +1,4 @@
+# id<TAB>expected languages<TAB>small deterministic fixture text
+korean-greeting	KOREAN	안녕하세요 코틀린
+japanese-greeting	JAPANESE	こんにちは Kotlin
+mixed-greeting	KOREAN,JAPANESE	안녕하세요 こんにちは
