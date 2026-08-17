@@ -4,7 +4,7 @@
 범위: 0.4.0 milestone의 예제 품질과 text-search 개선 큐 관리.
 0.4.0 열린 이슈 수: 0개.
 0.4.0 열린 PR 수: 0개.
-현재 열린 Backlog 이슈 수: 2개.
+현재 열린 Backlog 이슈 수: 0개.
 
 ## 2026-08-17 GitHub 상태 갱신
 
@@ -28,8 +28,8 @@ epic은 [PR #285](https://github.com/bluetape4k/bluetape4k-text/pull/285),
 
 ### 진행 중
 
-`0.4.0` milestone에서 현재 진행 중인 작업은 없다. 열린 Backlog issue #288과 #289는
-milestone queue를 교란하지 않도록 milestone 밖에서 별도 관리한다.
+`0.4.0` milestone에서 현재 진행 중인 작업은 없다. Issue #288의 역사적 PR 연결 audit과
+#289의 WIP snapshot 정합성 갱신을 완료했으며, 현재 열린 Backlog issue도 없다.
 
 ### 다음 P2 후보
 
@@ -49,6 +49,11 @@ milestone queue를 교란하지 않도록 milestone 밖에서 별도 관리한�
 - [#118](https://github.com/bluetape4k/bluetape4k-text/issues/118)의 examples epic을
   PR #285, [PR #286](https://github.com/bluetape4k/bluetape4k-text/pull/286), PR #287 완료와
   함께 종료했다.
+- [#288](https://github.com/bluetape4k/bluetape4k-text/issues/288)의 역사적 PR 62건 연결
+  audit을 완료했다. 대상은 외부 참조 16건과 역사적 완료 46건으로 처분했으며, 새 issue를
+  기계적으로 생성하지 않았다.
+- [#289](https://github.com/bluetape4k/bluetape4k-text/issues/289)의 WIP snapshot 정합성
+  갱신을 [PR #290](https://github.com/bluetape4k/bluetape4k-text/pull/290)으로 완료했다.
 
 - [#104](https://github.com/bluetape4k/bluetape4k-text/issues/104)의 Maven Central
   release metadata smoke check를 [PR #280](https://github.com/bluetape4k/bluetape4k-text/pull/280)로
@@ -76,11 +81,8 @@ milestone queue를 교란하지 않도록 milestone 밖에서 별도 관리한�
 
 ### 백로그
 
-1. [#288](https://github.com/bluetape4k/bluetape4k-text/issues/288)
-   `연결되지 않은 역사적 PR 62건 추적` — PR/issue 연결 처분과 남은 후속 작업을 기록한다.
-2. [#289](https://github.com/bluetape4k/bluetape4k-text/issues/289)
-   `0.4.0 WIP snapshot live 상태 정합성 갱신` — 이 문서의 현재 snapshot을 GitHub live 상태와
-   일치시킨다.
+현재 열린 Backlog issue가 없다. #288과 #289는 각각 역사적 PR 연결 audit과 WIP snapshot
+정합성 갱신을 완료하고 종료했다.
 
 > 아래 2026-05-24 이하 내용은 당시 discovery 기록을 보존한 historical archive다. 현재
 > milestone과 Backlog 판단에는 이 문서 상단의 최신 snapshot만 사용한다.
