@@ -50,8 +50,9 @@ epic은 [PR #285](https://github.com/bluetape4k/bluetape4k-text/pull/285),
   PR #285, [PR #286](https://github.com/bluetape4k/bluetape4k-text/pull/286), PR #287 완료와
   함께 종료했다.
 - [#288](https://github.com/bluetape4k/bluetape4k-text/issues/288)의 역사적 PR 62건 연결
-  audit을 완료했다. 대상은 외부 참조 16건과 역사적 완료 46건으로 처분했으며, 새 issue를
-  기계적으로 생성하지 않았다.
+  audit을 [PR #291](https://github.com/bluetape4k/bluetape4k-text/pull/291)으로 closeout했다.
+  대상은 외부 참조 16건과 역사적 완료 46건으로 처분했으며, 새 issue를 기계적으로 생성하지
+  않았다.
 - [#289](https://github.com/bluetape4k/bluetape4k-text/issues/289)의 WIP snapshot 정합성
   갱신을 [PR #290](https://github.com/bluetape4k/bluetape4k-text/pull/290)으로 완료했다.
 
