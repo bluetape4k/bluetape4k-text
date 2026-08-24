@@ -176,6 +176,18 @@ class CharArrayMapTest {
     }
 
     @Test
+    fun `unmodifiable snapshot iterator does not expose mutable key arrays`() {
+        val source = CharArrayMap<Int>(2).apply { put("token", 1) }
+        val snapshot = CharArrayMap.unmodifiableMap(source)
+
+        val key = snapshot.keys.single() as CharArray
+        key[0] = 'X'
+
+        snapshot.containsKey("token").shouldBeTrue()
+        snapshot.containsKey("Xoken").shouldBeFalse()
+    }
+
+    @Test
     fun `copy from regular Map`() {
         val regularMap =
             mutableMapOf<Any, String>(

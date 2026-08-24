@@ -18,9 +18,8 @@ class LanguageSegmentContractTest: AbstractLinguaTest() {
         assertFailsWith<IllegalArgumentException> {
             LanguageSegment(-1, 2, Language.ENGLISH, 0.9)
         }
-        assertFailsWith<IllegalArgumentException> {
-            LanguageSegment(2, 2, Language.ENGLISH, 0.9)
-        }
+        val empty = LanguageSegment(2, 2, Language.ENGLISH, 0.9)
+        empty.length shouldBeEqualTo 0
         assertFailsWith<IllegalArgumentException> {
             LanguageSegment(0, 2, Language.ENGLISH, -0.1)
         }
@@ -34,7 +33,7 @@ class LanguageSegmentContractTest: AbstractLinguaTest() {
         val segment = LanguageSegment(0, 2, Language.ENGLISH, 0.9)
 
         assertFailsWith<IllegalArgumentException> { segment.copy(start = -1) }
-        assertFailsWith<IllegalArgumentException> { segment.copy(endExclusive = 0) }
+        assertFailsWith<IllegalArgumentException> { segment.copy(endExclusive = -1) }
         assertFailsWith<IllegalArgumentException> { segment.copy(confidence = 1.1) }
     }
 

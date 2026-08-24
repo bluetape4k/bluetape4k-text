@@ -128,14 +128,21 @@ object KoreanDictionaryProvider: KLogging() {
 
     @PublishedApi
     internal val blockwordVersions = SuspendMemoized {
+        val loaded = loadBlockWords()
+        val exact = loaded.mapValues { (_, words) -> immutableSet(words.map { it.asDictionaryWord() }) }
+        exactBlockwordTiers = immutableMap(exact)
         VersionedDictionary(
             DictionarySnapshot(
                 DictionaryVersion("korean-blockwords", 0),
-                snapshotBlockwordValue(loadBlockWords()),
+                snapshotBlockwordValue(loaded),
             ),
             historyCapacity = 0,
         )
     }
+
+    /** cumulative 공개 view와 별도로 유지하는 source severity tier입니다. */
+    @Volatile
+    private var exactBlockwordTiers: Map<Severity, Set<String>>? = null
 
     private val koreanEntityFreqLoader = SuspendMemoized {
         runInterruptible(Dispatchers.IO) {
@@ -332,6 +339,9 @@ object KoreanDictionaryProvider: KLogging() {
             typoDictionaryByLengthLoader,
             predicateStemsLoader,
         ).forEach { it.resetForTesting() }
+        dictionaryMutationLock.withLock {
+            exactBlockwordTiers = null
+        }
     }
 
     /**
@@ -566,8 +576,8 @@ object KoreanDictionaryProvider: KLogging() {
 
     private suspend fun loadBlockWords(): Map<Severity, CharArraySet> =
         withContext(Dispatchers.IO) {
-            val low = async { readWords("block/block_low.txt", "block/block_middle.txt", "block/block_high.txt") }
-            val middle = async { readWords("block/block_middle.txt", "block/block_high.txt") }
+            val low = async { readWords("block/block_low.txt") }
+            val middle = async { readWords("block/block_middle.txt") }
             val high = async { readWords("block/block_high.txt") }
 
             mapOf(
@@ -595,7 +605,17 @@ object KoreanDictionaryProvider: KLogging() {
     ): DictionarySnapshot<Map<Severity, Set<String>>> =
         dictionaryMutationLock.withLock {
             require(version.name == "korean-blockwords") { "Expected korean-blockwords version" }
-            val replacement = canonicalBlockwordValue(wordsBySeverity)
+            val current = blockwordVersions.getBlocking().snapshot()
+            val currentExact = currentExactBlockwordValue(current.value)
+            val candidate = canonicalBlockwordValue(wordsBySeverity)
+            // 기존 cumulative snapshot을 다시 로드할 때는 source tier membership을 보존합니다.
+            val exact = if (candidate == current.value) {
+                currentExact
+            } else {
+                wordsBySeverity.mapValues { (_, words) -> immutableSet(words) }
+            }
+            exactBlockwordTiers = immutableMap(exact)
+            val replacement = canonicalBlockwordValue(exact, current.value)
             blockwordVersions.getBlocking().reload(version) { immutableMap(replacement) }
         }
 
@@ -610,10 +630,11 @@ object KoreanDictionaryProvider: KLogging() {
     ) {
         dictionaryMutationLock.withLock {
             val current = blockwordVersions.getBlocking().snapshot()
-            val exactTiers = exactBlockwordValue(current.value).toMutableMap()
+            val exactTiers = currentExactBlockwordValue(current.value).toMutableMap()
             val words = CharArraySet(exactTiers.getValue(severity).toList())
             if (words.action()) {
                 exactTiers[severity] = immutableSet(words.map { it.asDictionaryWord() })
+                exactBlockwordTiers = immutableMap(exactTiers)
                 publishBlockwordMutation(canonicalBlockwordValue(exactTiers, current.value))
             } else {
                 publishBlockwordMutation(current.value)
@@ -632,10 +653,11 @@ object KoreanDictionaryProvider: KLogging() {
             val blockwords = blockwordVersions.getBlocking().snapshot()
             val properNouns = properNounVersions.getBlocking().snapshot()
 
-            val exactTiers = exactBlockwordValue(blockwords.value).toMutableMap()
+            val exactTiers = currentExactBlockwordValue(blockwords.value).toMutableMap()
             val currentTier = exactTiers.getValue(severity)
             val nextTier = if (add) currentTier + words else currentTier - words.toSet()
             exactTiers[severity] = immutableSet(nextTier)
+            exactBlockwordTiers = immutableMap(exactTiers)
             val nextBlockwords = canonicalBlockwordValue(exactTiers, blockwords.value)
 
             val nextDictionary = dictionary.value[Noun]
@@ -816,5 +838,10 @@ object KoreanDictionaryProvider: KLogging() {
             Severity.MIDDLE to immutableSet(middle),
             Severity.HIGH to immutableSet(high),
         )
+    }
+
+    /** 현재 snapshot에 대응하는 source tier를 반환하고, legacy snapshot이면 한 번만 복원합니다. */
+    private fun currentExactBlockwordValue(value: Map<Severity, Set<String>>): Map<Severity, Set<String>> {
+        return exactBlockwordTiers ?: exactBlockwordValue(value).also { exactBlockwordTiers = it }
     }
 }

@@ -1,7 +1,7 @@
 package io.bluetape4k.lingua
 
 import com.github.pemistahl.lingua.api.Language
-import io.bluetape4k.support.requireGt
+import io.bluetape4k.support.requireGe
 import io.bluetape4k.support.requireInRange
 import io.bluetape4k.support.requireZeroOrPositiveNumber
 import java.io.Serializable
@@ -29,7 +29,7 @@ data class LanguageSegment(
 
     init {
         start.requireZeroOrPositiveNumber("start")
-        endExclusive.requireGt(start, "endExclusive")
+        endExclusive.requireGe(start, "endExclusive")
         confidence.requireInRange(0.0, 1.0, "confidence")
     }
 

@@ -31,6 +31,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -226,6 +227,42 @@ class AhoCorasickFlowTest {
         caught.shouldNotBeNull()
         caught.shouldBeInstanceOf<CancellationException>()
         log.debug { "CancellationException 정상 전파됨: ${caught.message}" }
+    }
+
+    @Test
+    fun `첫 match 이전의 대규모 no-match 순회도 취소를 관찰한다`() = runSuspendIO {
+        val started = CompletableDeferred<Unit>()
+        val release = AtomicBoolean(false)
+        val text = object: CharSequence {
+            private val size = 10_000_000
+
+            override val length: Int get() = size
+
+            override fun get(index: Int): Char = 'x'
+
+            override fun subSequence(startIndex: Int, endIndex: Int): CharSequence = this
+
+            override fun toString(): String {
+                started.complete(Unit)
+                while (!release.get()) Thread.yield()
+                return "x".repeat(size)
+            }
+        }
+
+        val producer = async(Dispatchers.Default) {
+            fixtureAutomaton().matchesAsFlow(text).toList()
+        }
+
+        try {
+            withTimeout(5.seconds) { started.await() }
+            producer.cancel()
+            release.set(true)
+            withTimeout(5.seconds) { producer.join() }
+            producer.isCancelled.shouldBeTrue()
+        } finally {
+            release.set(true)
+            producer.cancelAndJoin()
+        }
     }
 
     @Test

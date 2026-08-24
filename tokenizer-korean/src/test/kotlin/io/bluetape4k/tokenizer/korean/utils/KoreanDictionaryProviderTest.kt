@@ -282,6 +282,33 @@ class KoreanDictionaryProviderTest: TestBase() {
     }
 
     @Test
+    fun `같은 단어가 HIGH와 LOW에 있으면 한 tier 제거가 다른 threshold를 지우지 않는다`() {
+        val original = KoreanDictionaryProvider.currentBlockwordSnapshot()
+        val sharedWord = "issue295-shared-tier"
+
+        try {
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion("korean-blockwords", original.version.revision + 1),
+                mapOf(
+                    Severity.LOW to listOf(sharedWord),
+                    Severity.MIDDLE to emptyList(),
+                    Severity.HIGH to listOf(sharedWord),
+                ),
+            )
+
+            KoreanDictionaryProvider.mutateBlockwords(Severity.HIGH) {
+                remove(sharedWord)
+            }
+
+            KoreanDictionaryProvider.containsBlockword(sharedWord, Severity.HIGH).shouldBeFalse()
+            KoreanDictionaryProvider.containsBlockword(sharedWord, Severity.MIDDLE).shouldBeFalse()
+            KoreanDictionaryProvider.containsBlockword(sharedWord, Severity.LOW).shouldBeTrue()
+        } finally {
+            restoreBlockwords(original)
+        }
+    }
+
+    @Test
     fun `reload은 exact tier를 threshold view로 정규화한다`() {
         val original = KoreanDictionaryProvider.currentBlockwordSnapshot()
         val words = mapOf(

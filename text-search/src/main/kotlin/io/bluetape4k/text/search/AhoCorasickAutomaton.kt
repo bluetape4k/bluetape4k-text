@@ -2,12 +2,13 @@ package io.bluetape4k.text.search
 
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.support.requireNotBlank
-import io.bluetape4k.text.search.internal.InternalTrieConfig
+import io.bluetape4k.text.search.internal.CaseFoldedText
 import io.bluetape4k.text.search.internal.EmitHandler
+import io.bluetape4k.text.search.internal.InternalTrieConfig
 import io.bluetape4k.text.search.internal.OffsetMapping
 import io.bluetape4k.text.search.internal.TrieCore
 import io.bluetape4k.text.search.internal.applyPipeline
-import io.bluetape4k.text.search.internal.lowercaseCharByChar
+import io.bluetape4k.text.search.internal.lowercaseWithMapping
 
 /**
  * 키워드를 연결 값에 매핑하는 불변, 스레드 안전 Aho-Corasick automaton입니다.
@@ -65,17 +66,9 @@ class AhoCorasickAutomaton<V> internal constructor(
             return emptyList()
         }
 
-        // 1. 유니코드 정규화 + offset mapping 구축. NONE이면 mapping은 null입니다.
-        val (normalizedText, mapping) = OffsetMapping.build(text, options.normalization)
+        val processed = preprocess(text)
 
-        // 2. ignoreCase 적용. 등록 시점과 같은 문자 단위 소문자 파이프라인을 사용합니다.
-        val processedText: CharSequence = if (options.ignoreCase) {
-            normalizedText.lowercaseCharByChar()
-        } else {
-            normalizedText
-        }
-
-        val emits = core.parseText(processedText)
+        val emits = core.parseText(processed.text)
         if (emits.isEmpty()) {
             return emptyList()
         }
@@ -84,9 +77,9 @@ class AhoCorasickAutomaton<V> internal constructor(
         for (emit in emits) {
             val keyword = emit.keyword ?: continue
             val value = values[keyword] ?: continue
-            // 정규화된 offset을 원본 offset으로 복원합니다.
-            val origStart = mapping?.toOriginal(emit.start) ?: emit.start
-            val origEnd = mapping?.toOriginalEndInclusive(emit.end) ?: emit.end
+            // 전처리된 offset을 원본 offset으로 복원합니다.
+            val origStart = processed.toOriginalStart(emit.start)
+            val origEnd = processed.toOriginalEndInclusive(emit.end)
             matches.add(
                 AhoCorasickMatch(
                     start = origStart,
@@ -127,20 +120,15 @@ class AhoCorasickAutomaton<V> internal constructor(
             return
         }
 
-        val (normalizedText, mapping) = OffsetMapping.build(text, options.normalization)
-        val processedText: CharSequence = if (options.ignoreCase) {
-            normalizedText.lowercaseCharByChar()
-        } else {
-            normalizedText
-        }
+        val processed = preprocess(text)
 
         core.runParseTextSuspending(
-            processedText,
+            processed.text,
             { emit ->
                 val keyword = emit.keyword ?: return@runParseTextSuspending true
                 val value = values[keyword] ?: return@runParseTextSuspending true
-                val origStart = mapping?.toOriginal(emit.start) ?: emit.start
-                val origEnd = mapping?.toOriginalEndInclusive(emit.end) ?: emit.end
+                val origStart = processed.toOriginalStart(emit.start)
+                val origEnd = processed.toOriginalEndInclusive(emit.end)
                 onMatch(
                     AhoCorasickMatch(
                         start = origStart,
@@ -184,13 +172,33 @@ class AhoCorasickAutomaton<V> internal constructor(
      */
     fun containsMatch(text: CharSequence): Boolean {
         if (text.isEmpty() || values.isEmpty()) return false
-        val (normalizedText, _) = OffsetMapping.build(text, options.normalization)
-        val processedText: CharSequence = if (options.ignoreCase) {
-            normalizedText.lowercaseCharByChar()
-        } else {
-            normalizedText
+        return core.containsMatch(preprocess(text).text)
+    }
+
+    private data class ProcessedText(
+        val text: String,
+        val normalizationMapping: OffsetMapping?,
+        val caseMapping: CaseFoldedText?,
+    ) {
+        fun toOriginalStart(offset: Int): Int {
+            val normalizedOffset = caseMapping?.toSourceStart(offset) ?: offset
+            return normalizationMapping?.toOriginal(normalizedOffset) ?: normalizedOffset
         }
-        return core.containsMatch(processedText)
+
+        fun toOriginalEndInclusive(offset: Int): Int {
+            val normalizedOffset = caseMapping?.toSourceEndInclusive(offset) ?: offset
+            return normalizationMapping?.toOriginalEndInclusive(normalizedOffset) ?: normalizedOffset
+        }
+    }
+
+    private fun preprocess(text: CharSequence): ProcessedText {
+        val (normalizedText, normalizationMapping) = OffsetMapping.build(text, options.normalization)
+        val caseMapping = if (options.ignoreCase) normalizedText.lowercaseWithMapping() else null
+        return ProcessedText(
+            text = caseMapping?.text ?: normalizedText,
+            normalizationMapping = normalizationMapping,
+            caseMapping = caseMapping,
+        )
     }
 
     /**

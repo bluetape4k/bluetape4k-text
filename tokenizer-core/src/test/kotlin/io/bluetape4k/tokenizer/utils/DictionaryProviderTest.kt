@@ -67,7 +67,10 @@ class DictionaryProviderTest {
         }
 
         stream.closed.get().shouldBeTrue()
+        val readsBeforeConsumption = stream.readCalls.get()
+        (readsBeforeConsumption > 0).shouldBeTrue()
         words.take(1).toList() shouldBeEqualTo listOf("first")
+        stream.readCalls.get() shouldBeEqualTo readsBeforeConsumption
     }
 
     @Test
@@ -256,6 +259,17 @@ class DictionaryProviderTest {
 
     private class TrackingInputStream(delegate: InputStream): FilterInputStream(delegate) {
         val closed = AtomicBoolean(false)
+        val readCalls = java.util.concurrent.atomic.AtomicInteger()
+
+        override fun read(): Int {
+            readCalls.incrementAndGet()
+            return super.read()
+        }
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+            readCalls.incrementAndGet()
+            return super.read(buffer, offset, length)
+        }
 
         override fun close() {
             closed.set(true)

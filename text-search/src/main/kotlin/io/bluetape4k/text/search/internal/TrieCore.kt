@@ -6,6 +6,8 @@ import io.bluetape4k.logging.trace
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.*
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 
 /**
  * Aho-Corasick trie의 내부 검색 엔진입니다.
@@ -241,7 +243,9 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
     ) {
         var currentState = rootState
 
-        text.forEachIndexed { pos, ch ->
+        for (pos in text.indices) {
+            val ch = text[pos]
+            currentCoroutineContext().ensureActive()
             currentState = when {
                 config.ignoreCase -> getState(currentState, ch.lowercaseChar())
                 else -> getState(currentState, ch)

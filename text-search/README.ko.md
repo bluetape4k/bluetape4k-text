@@ -254,12 +254,11 @@ preload timing diagnostic은 별도의 `JavaExec` JVM에서 실행합니다. 각
 | 의존성 | 목적 |
 |---|---|
 | `bluetape4k-core` | 핵심 유틸리티 |
-| `kotlinx-coroutines-core` | Flow API 지원 (선택사항, `compileOnly`) |
+| `kotlinx-coroutines-core` | 공개 Flow API (`api` 전이 의존성) |
 
 ```kotlin
 // build.gradle.kts
 implementation("io.github.bluetape4k.text:text-search:<current release or snapshot>")
 
-// 선택사항: 코루틴 Flow 지원
-implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+// text-search가 공개 API를 통해 kotlinx-coroutines-core를 전이 제공합니다.
 ```

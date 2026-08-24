@@ -583,6 +583,9 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
         }
     }
 
+    /** Iterator가 노출할 key array를 선택합니다. read-only snapshot은 내부 배열을 복사합니다. */
+    protected open fun keyForIteration(key: CharArray): Any = key
+
     /**
      * Raw `CharArray` key reference를 copy 없이 노출하는 read-only key set입니다.
      *
@@ -616,7 +619,7 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
                 override fun hasNext(): Boolean = pos < _keys.size
                 override fun next(): Any {
                     goNext()
-                    return _keys[lastPos].requireNotNull("_keys[lastPos=$lastPos]")
+                    return keyForIteration(_keys[lastPos].requireNotNull("_keys[lastPos=$lastPos]"))
                 }
 
                 override fun remove() = throw UnsupportedOperationException()
@@ -709,7 +712,8 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
          */
         fun nextKey(): CharArray {
             goNext()
-            return _keys[lastPos].requireNotNull("_keys[lastPos=$lastPos]")
+            @Suppress("UNCHECKED_CAST")
+            return keyForIteration(_keys[lastPos].requireNotNull("_keys[lastPos=$lastPos]")) as CharArray
         }
 
         /**
@@ -984,6 +988,8 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
      * ```
      */
     open class UnmodifiableCharArrayMap<V>(map: CharArrayMap<V>): CharArrayMap<V>(map) {
+
+        override fun keyForIteration(key: CharArray): Any = key.copyOf()
 
         override fun clear() = throw UnsupportedOperationException()
 

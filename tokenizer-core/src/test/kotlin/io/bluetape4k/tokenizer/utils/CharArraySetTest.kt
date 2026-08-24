@@ -155,6 +155,18 @@ class CharArraySetTest {
     }
 
     @Test
+    fun `unmodifiable snapshot iterator does not expose mutable key arrays`() {
+        val source = CharArraySet(2).apply { add("token") }
+        val snapshot = CharArraySet.unmodifiableSet(source)
+
+        val key = snapshot.single() as CharArray
+        key[0] = 'X'
+
+        snapshot.contains("token").shouldBeTrue()
+        snapshot.contains("Xoken").shouldBeFalse()
+    }
+
+    @Test
     fun `rehash on many insertions`() {
         val set = CharArraySet(8)
 

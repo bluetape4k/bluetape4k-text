@@ -147,6 +147,27 @@ class AhoCorasickFirstMatchTest : AbstractAhoCorasickTest() {
         combiningDotMatches.single().start shouldBeEqualTo 0
         combiningDotMatches.single().end shouldBeEqualTo 1
 
+        val expanded = AhoCorasickAutomaton.builder<Unit>()
+            .add("İ", Unit)
+            .options(SearchOptions(ignoreCase = true))
+            .build()
+            .parseText("xİy")
+        expanded shouldHaveSize 1
+        expanded.single().keyword shouldBeEqualTo "i\u0307"
+        expanded.single().start shouldBeEqualTo 1
+        expanded.single().end shouldBeEqualTo 1
+
+        val deseretUpper = String(Character.toChars(0x10400))
+        val deseretLower = String(Character.toChars(0x10428))
+        val deseret = AhoCorasickAutomaton.builder<Unit>()
+            .add(deseretUpper, Unit)
+            .options(SearchOptions(ignoreCase = true))
+            .build()
+            .parseText("x${deseretLower}y")
+        deseret shouldHaveSize 1
+        deseret.single().start shouldBeEqualTo 1
+        deseret.single().end shouldBeEqualTo 2
+
         val first = automaton.firstMatch(text)
         first.shouldNotBeNull()
         first.start shouldBeEqualTo 0
