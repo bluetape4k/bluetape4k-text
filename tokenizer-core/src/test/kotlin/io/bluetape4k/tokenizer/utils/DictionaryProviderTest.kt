@@ -58,6 +58,19 @@ class DictionaryProviderTest {
     }
 
     @Test
+    fun `readWordsAsSequence eagerly closes the resource before returning`() = runSuspendIO {
+        val stream = TrackingInputStream("first\nsecond\n".byteInputStream())
+        val classLoader = ResourceClassLoader(mapOf(FIRST_PATH to { stream }))
+
+        val words = withContext(ContextClassLoader(classLoader)) {
+            DictionaryProvider.readWordsAsSequence(FIRST_PATH)
+        }
+
+        stream.closed.get().shouldBeTrue()
+        words.take(1).toList() shouldBeEqualTo listOf("first")
+    }
+
+    @Test
     fun `없는 파일 로드하면 예외가 발생한다`() = runSuspendIO {
         assertFailsWith<IllegalStateException> {
             DictionaryProvider.readWords("$BASE_PATH/noun/non-exists.txt")

@@ -13,7 +13,7 @@ Core abstractions, domain models, and utilities for building text tokenizers and
 - **Domain model layer** — `TokenizeRequest` / `TokenizeResponse` and `BlockwordRequest` / `BlockwordResponse` with automatic timestamp recording
 - **Configurable options** — `TokenizeOptions` (locale) and `BlockwordOptions` (mask character, locale, severity level)
 - **Severity enum** — `Severity.LOW` (slang/mild), `MIDDLE` (profanity), `HIGH` (hate speech / regional slurs) for fine-grained content policy
-- **Dictionary utilities** — `DictionaryProvider` loads classpath resource files (plain text or `.gz`) as lazy `Sequence`, word-frequency maps, or high-performance `CharArraySet`
+- **Dictionary utilities** — `DictionaryProvider` loads classpath resource files (plain text or `.gz`) as eager in-memory `Sequence` snapshots, word-frequency maps, or high-performance `CharArraySet`
 - **Parallel dictionary loading** — `readWordsAsSet` and `readWords` use `Flow.async` to load multiple dictionary files concurrently
 - **Efficient set/map structures** — `CharArraySet` and `CharArrayMap` optimised for high-throughput membership checks against large word lists
 - **Exception hierarchy** — `TokenizerException` and `InvalidTokenizeRequestException` extend `BluetapeException`
@@ -65,7 +65,7 @@ println(response.maskedText)        // 나쁜 ***가 포함된 문장
 import io.bluetape4k.tokenizer.utils.DictionaryProvider
 import kotlinx.coroutines.runBlocking
 
-// Lazy sequence — read line by line
+// Eager in-memory snapshot — the resource is fully read and closed before return
 val words: Sequence<String> = DictionaryProvider.readWordsAsSequence("dict/stopwords.txt")
 
 // Load multiple files in parallel into a CharArraySet
@@ -77,6 +77,11 @@ println(set.contains("foo"))  // true if "foo" is in either file
 // Read a word-frequency file (tab-separated: word\tfrequency)
 val freqMap: Map<CharSequence, Float> = DictionaryProvider.readWordFreqs("dict/freqs.txt")
 ```
+
+`readWordsAsSequence` reads the complete resource before returning and closes its
+stream. Calling `take(2)` limits sequence traversal after the read; it does not
+reduce file I/O or peak memory. Use `readWordsAsSet` when you need deduplicated
+membership lookup instead.
 
 ## Dependencies
 

@@ -2,7 +2,6 @@ package io.bluetape4k.tokenizer.utils
 
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.support.requireGe
-import io.bluetape4k.support.requireZeroOrPositiveNumber
 import io.bluetape4k.support.requireInRange
 import java.io.Reader
 import java.io.Serializable
@@ -66,7 +65,7 @@ abstract class CharacterUtils: Serializable {
          * ```
          */
         fun newCharacterBuffer(bufferSize: Int): CharacterBuffer {
-            require(bufferSize >= 2) { "buffer size must be >= 2" }
+            bufferSize.requireGe(2, "bufferSize")
             return CharacterBuffer(CharArray(bufferSize), 0, 0)
         }
 
@@ -93,6 +92,9 @@ abstract class CharacterUtils: Serializable {
          * ```
          */
         fun readFully(reader: Reader, dest: CharArray, offset: Int, len: Int): Int {
+            offset.requireInRange(0, dest.size, "offset")
+            len.requireInRange(0, dest.size - offset, "len")
+
             var read = 0
             while (read < len) {
                 val r = reader.read(dest, offset + read, len - read)
@@ -165,6 +167,7 @@ abstract class CharacterUtils: Serializable {
      *
      * ## 동작 계약
      * - [limit]이 buffer size를 넘으면 exception을 던집니다.
+     * - [offset]은 `0..limit` 범위, [limit]은 `0..buffer.size` 범위여야 합니다.
      * - [buffer]를 직접 수정하며 새 array를 할당하지 않습니다.
      * - Index는 `Character.toChars`가 반환하는 char count만큼 전진합니다.
      *
@@ -179,8 +182,8 @@ abstract class CharacterUtils: Serializable {
      * ```
      */
     fun toLowerCase(buffer: CharArray, offset: Int, limit: Int) {
-        buffer.size.requireGe(limit, "buffer size")
-        offset.requireInRange(0, buffer.size, "offset")
+        limit.requireInRange(0, buffer.size, "limit")
+        offset.requireInRange(0, limit, "offset")
 
         var i = offset
         while (i < limit) {
@@ -193,6 +196,7 @@ abstract class CharacterUtils: Serializable {
      *
      * ## 동작 계약
      * - [limit]과 [offset]을 buffer bounds에 대해 검증합니다.
+     * - [offset]은 `0..limit` 범위, [limit]은 `0..buffer.size` 범위여야 합니다.
      * - 결과를 같은 [buffer]에 다시 씁니다.
      *
      * @param buffer uppercase 결과를 직접 쓸 char array입니다.
@@ -206,8 +210,8 @@ abstract class CharacterUtils: Serializable {
      * ```
      */
     fun toUpperCase(buffer: CharArray, offset: Int, limit: Int) {
-        buffer.size.requireGe(limit, "buffer size")
-        offset.requireInRange(0, buffer.size, "offset")
+        limit.requireInRange(0, buffer.size, "limit")
+        offset.requireInRange(0, limit, "offset")
 
         var i = offset
         while (i < limit) {
@@ -219,7 +223,8 @@ abstract class CharacterUtils: Serializable {
      * Char-array slice를 code point로 변환해 [dest]에 씁니다.
      *
      * ## 동작 계약
-     * - [srcLen]은 0 이상이어야 하며, 음수이면 [IllegalArgumentException]을 던집니다.
+     * - `[srcOff, srcOff + srcLen)`은 source 범위 안이어야 합니다.
+     * - 변환된 code point를 모두 담을 수 있도록 [destOff]도 destination 범위 안이어야 합니다.
      * - 각 code point는 `dest[destOff + index]`에 순서대로 씁니다.
      * - 쓴 code point 수를 반환합니다.
      *
@@ -238,7 +243,10 @@ abstract class CharacterUtils: Serializable {
      * ```
      */
     fun toCodePoints(src: CharArray, srcOff: Int, srcLen: Int, dest: IntArray, destOff: Int): Int {
-        srcLen.requireZeroOrPositiveNumber("srcLen")
+        srcOff.requireInRange(0, src.size, "srcOff")
+        srcLen.requireInRange(0, src.size - srcOff, "srcLen")
+        val expectedCount = Character.codePointCount(src, srcOff, srcLen)
+        destOff.requireInRange(0, dest.size - expectedCount, "destOff")
 
         var codePointCount = 0
         var i = 0
@@ -255,7 +263,8 @@ abstract class CharacterUtils: Serializable {
      * Code-point array slice를 UTF-16 char로 변환해 [dest]에 씁니다.
      *
      * ## 동작 계약
-     * - [srcLen]은 0 이상이어야 합니다.
+     * - `[srcOff, srcOff + srcLen)`은 source 범위 안이어야 합니다.
+     * - 변환된 UTF-16 code unit을 모두 담을 수 있도록 [destOff]도 destination 범위 안이어야 합니다.
      * - 각 code point는 `Character.toChars`로 변환해 [dest]에 append합니다.
      * - 쓴 char 수, 즉 UTF-16 code unit 수를 반환합니다.
      *
@@ -274,7 +283,10 @@ abstract class CharacterUtils: Serializable {
      * ```
      */
     fun toChars(src: IntArray, srcOff: Int, srcLen: Int, dest: CharArray, destOff: Int): Int {
-        srcLen.requireZeroOrPositiveNumber("srcLen")
+        srcOff.requireInRange(0, src.size, "srcOff")
+        srcLen.requireInRange(0, src.size - srcOff, "srcLen")
+        val expectedLength = (srcOff until srcOff + srcLen).sumOf { Character.charCount(src[it]) }
+        destOff.requireInRange(0, dest.size - expectedLength, "destOff")
 
         var written = 0
         for (i in 0 until srcLen) {
@@ -309,6 +321,7 @@ abstract class CharacterUtils: Serializable {
      *
      * ## 동작 계약
      * - Implementation은 character boundary를 지키며 valid UTF-16 index를 반환합니다.
+     * - [start], [count], [index]가 지정한 range를 벗어나면 [IllegalArgumentException]을 던집니다.
      *
      * @param buf 기준 char array입니다.
      * @param start 검색 range의 시작 index입니다.
@@ -328,17 +341,19 @@ abstract class CharacterUtils: Serializable {
     private class Java5CharacterUtils: CharacterUtils() {
 
         override fun codePointAt(seq: CharSequence, offset: Int): Int {
+            offset.requireInRange(0, seq.length - 1, "offset")
             return Character.codePointAt(seq, offset)
         }
 
         override fun codePointAt(chars: CharArray, offset: Int, limit: Int): Int {
+            limit.requireInRange(0, chars.size, "limit")
+            offset.requireInRange(0, limit - 1, "offset")
             return Character.codePointAt(chars, offset, limit)
         }
 
         override fun fill(buffer: CharacterBuffer, reader: Reader, numChars: Int): Boolean {
             buffer.buffer.size.requireGe(2, "buffer size")
             numChars.requireInRange(2, buffer.buffer.size, "numChars")
-            // require(numChars in 2..buffer.buffer.size) { "numCharrs must be 2 .. buffer size" }
 
             val charBuffer = buffer.buffer
             buffer.offset = 0
@@ -373,6 +388,9 @@ abstract class CharacterUtils: Serializable {
         }
 
         override fun offsetByCodePoints(buf: CharArray, start: Int, count: Int, index: Int, offset: Int): Int {
+            start.requireInRange(0, buf.size, "start")
+            count.requireInRange(0, buf.size - start, "count")
+            index.requireInRange(start, start + count, "index")
             return Character.offsetByCodePoints(buf, start, count, index, offset)
         }
     }
@@ -380,19 +398,19 @@ abstract class CharacterUtils: Serializable {
     private class Java4CharacterUtils: CharacterUtils() {
 
         override fun codePointAt(seq: CharSequence, offset: Int): Int {
+            offset.requireInRange(0, seq.length - 1, "offset")
             return seq[offset].code
         }
 
         override fun codePointAt(chars: CharArray, offset: Int, limit: Int): Int {
-            require(offset < limit) { "offset[$offset] must be less than limit[$limit]" }
+            limit.requireInRange(0, chars.size, "limit")
+            offset.requireInRange(0, limit - 1, "offset")
             return chars[offset].code
         }
 
         override fun fill(buffer: CharacterBuffer, reader: Reader, numChars: Int): Boolean {
-            require(buffer.buffer.size >= 1)
-            require(numChars in 1..buffer.buffer.size) {
-                "numChars must be 1 .. the buffer size[${buffer.buffer.size}]"
-            }
+            buffer.buffer.size.requireGe(1, "buffer size")
+            numChars.requireInRange(1, buffer.buffer.size, "numChars")
 
             buffer.offset = 0
             val read = readFully(reader, buffer.buffer, 0, numChars)
@@ -406,8 +424,11 @@ abstract class CharacterUtils: Serializable {
         }
 
         override fun offsetByCodePoints(buf: CharArray, start: Int, count: Int, index: Int, offset: Int): Int {
+            start.requireInRange(0, buf.size, "start")
+            count.requireInRange(0, buf.size - start, "count")
+            index.requireInRange(start, start + count, "index")
             val result = index + offset
-            check(result in 0..count) { "index[$index]+offset[$offset] must be 0 .. count[$count]" }
+            result.requireInRange(start, start + count, "index+offset")
             return result
         }
 
@@ -456,6 +477,8 @@ abstract class CharacterUtils: Serializable {
              * ```
              */
             operator fun invoke(buffer: CharArray, offset: Int = 0, length: Int = 0): CharacterBuffer {
+                offset.requireInRange(0, buffer.size, "offset")
+                length.requireInRange(0, buffer.size - offset, "length")
                 return CharacterBuffer(buffer).apply {
                     this.offset = offset
                     this.length = length

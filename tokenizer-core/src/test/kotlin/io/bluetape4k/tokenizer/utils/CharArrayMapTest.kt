@@ -24,6 +24,12 @@ class CharArrayMapTest {
     }
 
     @Test
+    fun constructorsRejectNegativeCapacityHints() {
+        assertFailsWith<IllegalArgumentException> { CharArrayMap<String>(-1) }
+        assertFailsWith<IllegalArgumentException> { CharArraySet(-1) }
+    }
+
+    @Test
     fun `put and get values`() {
         val map = CharArrayMap<String>(16)
 
@@ -292,6 +298,20 @@ class CharArrayMapTest {
         assertFailsWith<UnsupportedOperationException> { readonly.clear() }
         assertFailsWith<UnsupportedOperationException> { readonly.entries.first().setValue("updated") }
         assertFailsWith<UnsupportedOperationException> { readonly.entries.clear() }
+    }
+
+    @Test
+    fun unmodifiableMapIsAnIndependentSnapshot() {
+        val source = CharArrayMap<String>(1)
+        source["alpha"] = "one"
+        val readonly = CharArrayMap.unmodifiableMap(source)
+
+        source.clear()
+        source["beta"] = "two"
+
+        readonly shouldHaveSize 1
+        readonly["alpha"] shouldBeEqualTo "one"
+        readonly.containsKey("beta").shouldBeFalse()
     }
 
     @Test

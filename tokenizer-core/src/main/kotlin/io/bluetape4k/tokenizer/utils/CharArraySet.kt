@@ -30,18 +30,20 @@ open class CharArraySet(val map: CharArrayMap<Any>): AbstractMutableSet<Any>(), 
         @Suppress("USELESS_IS_CHECK")
         @JvmStatic
         /**
-         * [set]의 read-only view를 반환합니다.
+         * [set]의 read-only snapshot을 반환합니다.
          *
          * ## 동작 계약
          * - Empty set은 공유 `EMPTY_SET` singleton을 반환합니다.
-         * - 그 외 set은 [CharArrayMap.UnmodifiableCharArrayMap] 기반 instance로 감쌉니다.
+         * - 그 외 set은 entry와 key array를 복사한 [CharArrayMap.UnmodifiableCharArrayMap] 기반 instance로 감쌉니다.
+         * - 반환값은 호출 시점의 상태를 고정하며 이후 source mutation은 반영하지 않습니다.
          *
-         * @param set read-only view로 감쌀 source set입니다.
-         * @return mutation을 허용하지 않는 [CharArraySet] view입니다.
+         * @param set read-only snapshot으로 복사할 source set입니다.
+         * @return mutation을 허용하지 않는 [CharArraySet] snapshot입니다.
          *
          * ```kotlin
          * val source = CharArraySet(2).apply { add("a") }
          * val readonly = CharArraySet.unmodifiableSet(source)
+         * source.clear()  // readonly keeps "a"
          * // readonly.contains("a") == true
          * // readonly.add("b") throws UnsupportedOperationException
          * ```

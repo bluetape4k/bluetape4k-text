@@ -44,7 +44,7 @@ class CharArraySetTest {
                     set.contains(key).shouldBeTrue()
                     count++
                 }
-                println("$file count=$count")
+                log.debug { "$file count=$count" }
             }
     }
 
@@ -304,6 +304,20 @@ class CharArraySetTest {
         assertFailsWith<UnsupportedOperationException> { readonly.add("beta".toCharArray()) }
         assertFailsWith<UnsupportedOperationException> { readonly.remove("alpha") }
         assertFailsWith<UnsupportedOperationException> { readonly.clear() }
+    }
+
+    @Test
+    fun unmodifiableSetIsAnIndependentSnapshot() {
+        val source = CharArraySet(1)
+        source.add("alpha")
+        val readonly = CharArraySet.unmodifiableSet(source)
+
+        source.clear()
+        source.add("beta")
+
+        readonly shouldHaveSize 1
+        readonly.contains("alpha").shouldBeTrue()
+        readonly.contains("beta").shouldBeFalse()
     }
 
     @Test

@@ -2,6 +2,7 @@ package io.bluetape4k.tokenizer.utils
 
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.support.requireNotNull
+import io.bluetape4k.support.requireZeroOrPositiveNumber
 import java.io.Serializable
 
 /**
@@ -32,25 +33,21 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
 
         @JvmStatic
         /**
-         * Mutation operation을 모두 막는 read-only view를 반환합니다.
+         * Mutation operation을 모두 막는 read-only snapshot을 반환합니다.
          *
          * ## 동작 계약
          * - Empty map은 공유 [emptyMap] singleton을 반환합니다.
          * - 이미 [UnmodifiableCharArrayMap]인 map은 그대로 반환합니다.
-         * - 그 외 map은 [UnmodifiableCharArrayMap]으로 감쌉니다.
-         *
-         * ## Aliasing 경고
-         * 반환된 view는 [java.util.Collections.unmodifiableMap]처럼 원본 map의 backing array를 공유합니다.
-         * Caller가 원본 mutable map reference를 보관한 채 계속 write하면 그 변경이 unmodifiable view에도
-         * 보입니다. 이를 막으려면 `unmodifiableMap` 호출 뒤 원본 reference를 버리세요.
+         * - 그 외 map은 entry와 key array를 복사한 [UnmodifiableCharArrayMap]으로 감쌉니다.
+         * - 반환값은 호출 시점의 상태를 고정한 snapshot이며, 이후 source mutation은 반영하지 않습니다.
          *
          * @param map read-only view로 감쌀 source map입니다.
          * @return mutation을 허용하지 않는 [CharArrayMap] view입니다.
          *
          * ```kotlin
-         * var source: CharArrayMap<Int> = CharArrayMap<Int>(2).apply { put("a", 1) }
+         * val source = CharArrayMap<Int>(2).apply { put("a", 1) }
          * val readonly = CharArrayMap.unmodifiableMap(source)
-         * source = CharArrayMap(0)  // discard original — readonly is now stable
+         * source.clear()  // readonly keeps the original snapshot
          * // readonly["a"] == 1
          * // readonly.put("b", 2) throws UnsupportedOperationException
          * ```
@@ -121,13 +118,14 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * [src]의 backing array를 공유하는 shallow copy를 만듭니다.
+     * [src]의 entry와 key array를 복사한 독립 map을 만듭니다.
      *
      * ## 동작 계약
-     * - `_keys`와 `_values` array reference를 직접 공유합니다.
-     * - 두 map이 모두 mutable 상태라면 한쪽 mutation이 다른 쪽에도 보입니다.
+     * - `_keys`와 `_values` array를 복사합니다.
+     * - key `CharArray`도 복사하므로 source의 key array mutation이 result에 영향을 주지 않습니다.
+     * - value object 자체는 일반적인 map copy와 같이 reference를 공유합니다.
      *
-     * @param src backing array를 공유할 source [CharArrayMap]입니다.
+     * @param src 복사할 source [CharArrayMap]입니다.
      *
      * ```kotlin
      * val source = CharArrayMap<Int>(2).apply { put("a", 1) }
@@ -136,8 +134,8 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
      * ```
      */
     constructor(src: CharArrayMap<V>): this(0) {
-        this._keys = src._keys
-        this._values = src._values
+        this._keys = src._keys.map { it?.copyOf() }.toTypedArray()
+        this._values = src._values.copyOf()
         this._count = src._count
         this.charUtils = src.charUtils
     }
@@ -148,6 +146,7 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     private var _values: Array<V?>
 
     init {
+        startSize.requireZeroOrPositiveNumber("startSize")
         var size = INIT_SIZE
         while (startSize + (startSize shr 2) > size) {
             size = size shl 1
@@ -405,7 +404,7 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     private fun rehash() {
-        require(_keys.size == _values.size) {
+        check(_keys.size == _values.size) {
             "keys size [${_keys.size}] must equals to _values size[${_values.size}"
         }
 
@@ -968,18 +967,15 @@ open class CharArrayMap<V>(startSize: Int): AbstractMutableMap<Any, V>(), Serial
     }
 
     /**
-     * 모든 mutation operation을 막는 read-only [CharArrayMap] wrapper입니다.
+     * 모든 mutation operation을 막는 read-only [CharArrayMap] snapshot입니다.
      *
      * ## 동작 계약
      * - [put], [remove], [clear]는 [UnsupportedOperationException]을 던집니다.
-     * - Read operation([get], [containsKey])은 underlying backing array를 반영합니다.
+     * - Read operation([get], [containsKey])은 생성 시점의 복사된 backing array를 반영합니다.
+     * - source map의 이후 put, remove, clear, rehash는 이 snapshot에 영향을 주지 않습니다.
+     * - 이 class를 직접 만들기보다 [unmodifiableMap]을 사용하세요.
      *
-     * ## Aliasing
-     * 이 class는 [java.util.Collections.unmodifiableMap]과 같은 계약으로 source map과 backing array를
-     * 공유합니다(shallow copy). Caller는 wrapping 후 원본 mutable reference를 보관하지 않아야 합니다.
-     * 이 class를 직접 만들기보다 [unmodifiableMap]을 사용하세요.
-     *
-     * @param map read-only wrapper가 backing array를 공유할 source map입니다.
+     * @param map snapshot을 만들 source map입니다.
      *
      * ```kotlin
      * val readonly = CharArrayMap.unmodifiableMap(CharArrayMap<Int>(2).apply { put("a", 1) })

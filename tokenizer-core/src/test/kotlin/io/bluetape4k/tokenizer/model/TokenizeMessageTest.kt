@@ -43,6 +43,13 @@ class TokenizeMessageTest: AbstractCoreTest() {
     }
 
     @Test
+    fun `tokenize length helper rejects negative input`() {
+        assertFailsWith<IllegalArgumentException> {
+            requireTokenizeTextLength(-1)
+        }
+    }
+
+    @Test
     fun `tokenize request rejects oversized text without leaking raw input`() {
         val rawText = "private-token-value-".repeat((MAX_TOKENIZE_TEXT_LENGTH / 20) + 1)
         val actualLength = rawText.length.toString()

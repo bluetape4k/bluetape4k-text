@@ -1,5 +1,9 @@
 package io.bluetape4k.tokenizer.utils
 
+import io.bluetape4k.support.requireEquals
+import io.bluetape4k.support.requireGt
+import io.bluetape4k.support.requireNotBlank
+import io.bluetape4k.support.requireZeroOrPositiveNumber
 import java.io.Serializable
 import java.util.ArrayDeque
 import java.util.concurrent.atomic.AtomicReference
@@ -17,8 +21,8 @@ data class DictionaryVersion(
     val revision: Long,
 ): Serializable {
     init {
-        require(name.isNotBlank()) { "Dictionary version name must not be blank" }
-        require(revision >= 0) { "Dictionary version revision must not be negative: $revision" }
+        name.requireNotBlank("name")
+        revision.requireZeroOrPositiveNumber("revision")
     }
 
     companion object {
@@ -27,7 +31,8 @@ data class DictionaryVersion(
 }
 
 /**
- * 사전 값과 해당 값이 생성된 버전을 함께 보관하는 불변 wrapper입니다.
+ * 사전 값과 해당 값이 생성된 버전을 함께 보관하는 직렬화 가능한 불변 wrapper입니다.
+ * 전체 object graph를 직렬화하려면 [T] 값도 [Serializable]이어야 합니다.
  *
  * @param T 사전 값의 타입입니다. 호출자는 값 자체도 불변으로 유지해야 합니다.
  * @property version snapshot을 만든 사전 버전입니다.
@@ -36,7 +41,11 @@ data class DictionaryVersion(
 data class DictionarySnapshot<out T>(
     val version: DictionaryVersion,
     val value: T,
-)
+): Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+}
 
 private const val DEFAULT_HISTORY_CAPACITY: Int = 1
 
@@ -61,9 +70,7 @@ class VersionedDictionary<T> @JvmOverloads constructor(
     private val historyCapacity: Int = DEFAULT_HISTORY_CAPACITY,
 ) {
     init {
-        require(historyCapacity >= 0) {
-            "Dictionary history capacity must not be negative: $historyCapacity"
-        }
+        historyCapacity.requireZeroOrPositiveNumber("historyCapacity")
     }
 
     private val current = AtomicReference(initial)
@@ -82,10 +89,10 @@ class VersionedDictionary<T> @JvmOverloads constructor(
      */
     fun reload(version: DictionaryVersion, loader: () -> T): DictionarySnapshot<T> = mutationLock.withLock {
         val previous = current.get()
-        require(version.name == previous.version.name) {
+        version.name.requireEquals(previous.version.name) {
             "Dictionary version name mismatch: ${previous.version.name} != ${version.name}"
         }
-        require(version.revision > previous.version.revision) {
+        version.revision.requireGt(previous.version.revision) {
             "Dictionary revision must increase: ${previous.version.revision} -> ${version.revision}"
         }
 
