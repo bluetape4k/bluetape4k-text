@@ -31,15 +31,16 @@ internal open class Interval(
     /** 이 구간이 비어 있으면, 즉 [start] > [end]이면 `true`입니다. */
     val isEmpty: Boolean get() = start > end
 
-    /** 이 구간이 [other]와 겹치면 `true`를 반환합니다. */
+    /** 이 구간이 [other]와 겹치면 `true`를 반환합니다. 두 구간 모두 inclusive입니다. */
     fun overlapsWith(other: Interval): Boolean {
-        return start < other.end && end >= other.start
+        if (isEmpty || other.isEmpty) {
+            return false
+        }
+        return start <= other.end && other.start <= end
     }
 
     /** [point]가 이 inclusive 구간 안에 있으면 `true`를 반환합니다. */
-    fun overlapsWith(point: Int): Boolean {
-        return point in start..end
-    }
+    fun overlapsWith(point: Int): Boolean = !isEmpty && point in start..end
 
     override fun compareTo(other: Intervalable): Int {
         var comparison = start - other.start

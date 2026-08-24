@@ -3,6 +3,8 @@ package io.bluetape4k.text.search.internal
 import io.bluetape4k.text.search.internal.interval.IntervalTree
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.trace
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import java.util.*
 
 /**
@@ -297,7 +299,7 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
                 }
             }
         }
-        log.trace { "Not found matches. text=$text" }
+        log.trace { "Not found matches. ${text.safeTraceSummary()}" }
         return null
     }
 
@@ -495,4 +497,29 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
             }
         }
     }
+}
+
+/**
+ * trace 로그에 사용할 입력 요약입니다. 원문은 기록하지 않고 길이, SHA-256 digest와 문자 분포만 남깁니다.
+ */
+internal fun CharSequence.safeTraceSummary(): String {
+    val value = toString()
+    val digest = MessageDigest.getInstance("SHA-256").digest(value.toByteArray(StandardCharsets.UTF_8))
+    val hash = digest.joinToString(separator = "") { byte ->
+        byte.toInt().and(0xff).toString(16).padStart(2, '0')
+    }
+    var letters = 0
+    var digits = 0
+    var whitespace = 0
+    var other = 0
+    value.forEach { character ->
+        when {
+            character.isLetter() -> letters++
+            character.isDigit() -> digits++
+            character.isWhitespace() -> whitespace++
+            else -> other++
+        }
+    }
+    return "length=${value.length}, sha256=$hash, " +
+        "classes=letters:$letters,digits:$digits,whitespace:$whitespace,other:$other"
 }

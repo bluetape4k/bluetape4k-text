@@ -3,11 +3,9 @@ package io.bluetape4k.text.search.flow
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeGreaterThan
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldHaveSize
-import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
@@ -127,18 +125,12 @@ class AhoCorasickFlowTest {
 
         // 실행
         val matches = automaton.matchesAsFlow(SAMPLE_TEXT).toList()
+        val eagerMatches = automaton.parseText(SAMPLE_TEXT)
 
-        // 검증: "ushers" 에서 겹침 제거 시 "she"(start=1, end=3) + "hers"(start=2, end=5) 의
-        // 겹침을 제거 → 더 긴 키워드 우선 → "hers" 만 남거나 비겹침 매치만 남는다.
-        // 정확한 결과는 IntervalTree 로직에 의해 결정되며, 핵심은 "겹치지 않는 결과만 emit" 됨을 확인하는 것.
-        matches.size shouldBeGreaterThan 0
-        // 겹침 검증: 정렬된 매치들 사이에 start/end 가 서로 겹치지 않아야 함
-        val sorted = matches.sortedBy { it.start }
-        for (i in 1 until sorted.size) {
-            val prev = sorted[i - 1]
-            val curr = sorted[i]
-            (curr.start > prev.end).shouldBeTrue()
-        }
+        eagerMatches shouldBeEqualTo matches
+        matches.map { Triple(it.start, it.end, it.keyword) } shouldBeEqualTo listOf(
+            Triple(2, 5, "hers"),
+        )
         log.debug { "allowOverlaps=false 매치: $matches" }
     }
 
@@ -153,12 +145,10 @@ class AhoCorasickFlowTest {
         // 실행 2: take(1) 로 첫 매치만 가져오기
         val firstFromFlow = automaton.matchesAsFlow(SAMPLE_TEXT).take(1).toList()
 
-        // 검증: take(1) 결과는 항상 1개
+        // 검증: Flow는 stopOnFirstMatch를 무시하고 raw match 전체를 방출하며 take(1)은 첫 항목만 남긴다.
+        allFromFlow.map { it.keyword } shouldBeEqualTo listOf("he", "she", "hers")
         firstFromFlow shouldHaveSize 1
-        // stopOnFirstMatch 가 적용된 경우 Flow 결과도 1개일 수 있음 → 두 결과의 첫 매치는 동일해야 함
-        if (allFromFlow.isNotEmpty()) {
-            allFromFlow.first() shouldBeEqualTo firstFromFlow.first()
-        }
+        allFromFlow.first() shouldBeEqualTo firstFromFlow.single()
         log.debug { "stopOnFirstMatch+Flow 전체: $allFromFlow, take(1): $firstFromFlow" }
     }
 
@@ -174,12 +164,23 @@ class AhoCorasickFlowTest {
         // 검증
         eagerMatches shouldHaveSize 1
         flowMatches shouldHaveSize 3
+        flowMatches.map { it.keyword } shouldBeEqualTo listOf("he", "she", "hers")
+    }
+
+    @Test
+    fun `기본 옵션에서는 synchronous parseText와 Flow 결과 순서가 같다`() = runTest(timeout = 30.seconds) {
+        val automaton = fixtureAutomaton()
+
+        val eagerMatches = automaton.parseText(SAMPLE_TEXT)
+        val flowMatches = automaton.matchesAsFlow(SAMPLE_TEXT).toList()
+
+        eagerMatches shouldBeEqualTo flowMatches
     }
 
     @Test
     fun `1만 매치 throughput micro-test`() = runTest(timeout = 30.seconds) {
         // 준비: 키워드 100개 + 동일 텍스트 100번 반복 → 다수의 매치 생성
-        val keywords = (0 until 100).map { "kw$it" }
+        val keywords = (0 until 100).map { "keyword${it.toString().padStart(3, '0')}" }
         val automaton = ahoCorasickOf(keywords)
         val text = buildString {
             repeat(100) {
@@ -190,8 +191,8 @@ class AhoCorasickFlowTest {
         // 실행
         val matches = automaton.matchesAsFlow(text).toList()
 
-        // 검증: 최소 1만 매치 (100 keywords × 100 repeats = 10_000)
-        matches.shouldNotBeEmpty()
+        // 검증: 100 keywords × 100 repeats = 정확히 10,000건
+        matches shouldHaveSize 10_000
         log.debug { "throughput micro-test 매치 개수: ${matches.size}" }
     }
 

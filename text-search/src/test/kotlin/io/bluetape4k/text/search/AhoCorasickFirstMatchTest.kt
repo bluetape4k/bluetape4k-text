@@ -6,6 +6,7 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldHaveSize
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -132,7 +133,7 @@ class AhoCorasickFirstMatchTest : AbstractAhoCorasickTest() {
         val text = "İ ΟΣ ПРИВЕТ"
 
         val matches = automaton.parseText(text)
-        matches.size shouldBeEqualTo 3
+        matches shouldHaveSize 3
         matches.map { it.start } shouldBeEqualTo listOf(0, 2, 5)
         matches.map { it.end } shouldBeEqualTo listOf(0, 3, 10)
 
@@ -141,7 +142,7 @@ class AhoCorasickFirstMatchTest : AbstractAhoCorasickTest() {
             .options(SearchOptions(ignoreCase = true, normalization = NormalizationForm.NONE))
             .build()
         val combiningDotMatches = combiningDotAutomaton.parseText("i\u0307")
-        combiningDotMatches.size shouldBeEqualTo 1
+        combiningDotMatches shouldHaveSize 1
         combiningDotMatches.single().keyword shouldBeEqualTo "i\u0307"
         combiningDotMatches.single().start shouldBeEqualTo 0
         combiningDotMatches.single().end shouldBeEqualTo 1

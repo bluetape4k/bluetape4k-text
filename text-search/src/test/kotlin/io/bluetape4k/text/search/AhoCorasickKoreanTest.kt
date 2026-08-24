@@ -73,11 +73,11 @@ class AhoCorasickKoreanTest {
         // 검증 — 공백으로 분리된 두 토큰만 매치
         matches shouldHaveSize 2
         val byValue = matches.associateBy { it.value }
-        byValue["APPLE"].shouldNotBeNull()
-        byValue["BANANA"].shouldNotBeNull()
+        val apple = byValue["APPLE"].shouldNotBeNull()
+        val banana = byValue["BANANA"].shouldNotBeNull()
         // 각 매치의 substring이 원본과 일치
-        input.substring(byValue["APPLE"]!!.start, byValue["APPLE"]!!.end + 1) shouldBeEqualTo "사과"
-        input.substring(byValue["BANANA"]!!.start, byValue["BANANA"]!!.end + 1) shouldBeEqualTo "바나나"
+        input.substring(apple.start, apple.end + 1) shouldBeEqualTo "사과"
+        input.substring(banana.start, banana.end + 1) shouldBeEqualTo "바나나"
         log.debug { "공백 경계 한글 매치: $matches" }
     }
 

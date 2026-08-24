@@ -3,7 +3,7 @@ package io.bluetape4k.text.search
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import org.junit.jupiter.api.Test
@@ -45,9 +45,9 @@ class AhoCorasickOptionsTest : AbstractAhoCorasickTest() {
         // 검증: "ushers" 에서 she(1), he(2), hers(2) 가 매치됨
         matches.shouldNotBeEmpty()
         val keywords = matches.map { it.keyword }.toSet()
-        keywords.contains("she").shouldBeTrue()
-        keywords.contains("he").shouldBeTrue()
-        keywords.contains("hers").shouldBeTrue()
+        keywords shouldContain "she"
+        keywords shouldContain "he"
+        keywords shouldContain "hers"
         log.debug { "기본 옵션 매치: $matches" }
     }
 
@@ -69,8 +69,8 @@ class AhoCorasickOptionsTest : AbstractAhoCorasickTest() {
         matches shouldHaveSize 2
         val keywords = matches.map { it.keyword }.toSet()
         // ignoreCase=true 시 키워드는 소문자로 정규화됨
-        keywords.contains("apple").shouldBeTrue()
-        keywords.contains("banana").shouldBeTrue()
+        keywords shouldContain "apple"
+        keywords shouldContain "banana"
         log.debug { "ignoreCase=true 매치: $matches" }
     }
 

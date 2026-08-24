@@ -82,12 +82,10 @@ benchmark {
 
 dependencies {
     api(bt4k.bluetape4k.core)
-    compileOnly(bt4k.bluetape4k.coroutines)
-    compileOnly(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.coroutines.core)
 
     testImplementation(bt4k.bluetape4k.junit5)
     testImplementation(bt4k.bluetape4k.coroutines)
-    testImplementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.kotlinx.coroutines.test)
 
     add("benchmarkImplementation", bt4k.kotlinx.benchmark.runtime)

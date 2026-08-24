@@ -2,7 +2,7 @@ package io.bluetape4k.text.search
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContainAll
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.logging.KLogging
@@ -33,7 +33,7 @@ class AhoCorasickDslTest {
         // 검증
         matches shouldHaveSize 5
         val keywords = matches.map { it.value }
-        keywords.containsAll(listOf("APPLE", "BANANA", "CHERRY", "DATE", "ELDERBERRY")).shouldBeTrue()
+        keywords shouldContainAll listOf("APPLE", "BANANA", "CHERRY", "DATE", "ELDERBERRY")
         log.debug { "DSL 매치 결과: $matches" }
     }
 
