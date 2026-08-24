@@ -49,6 +49,7 @@ class KoreanTokenizerTest: TestBase() {
     private val parsedChunkWithVerbs = ParsedChunk(listOf(HUMAN, HADA), 1)
     private val parsedChunkWithExactMatch = ParsedChunk(listOf(DOG), 1)
 
+    @Suppress("ExceptionRaisedInUnexpectedLocation")
     private class CancellingCharSequence: CharSequence {
         override val length: Int = 1
 

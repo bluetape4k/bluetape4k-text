@@ -135,6 +135,7 @@ object NounTokenizer: KLogging() {
      * // top.size >= 1
      * ```
      */
+    @Suppress("ThrowsCount")
     fun tokenizeTopN(
         text: CharSequence,
         topN: Int = 1,

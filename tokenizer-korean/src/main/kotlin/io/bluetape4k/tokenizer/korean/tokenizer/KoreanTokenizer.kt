@@ -120,6 +120,7 @@ object KoreanTokenizer: KLogging() {
         dictionary: Map<KoreanPos, Set<String>>,
     ): List<KoreanToken> = tokenizeWithDictionary(text, profile, dictionary)
 
+    @Suppress("ThrowsCount")
     private fun tokenizeWithDictionary(
         text: CharSequence,
         profile: TokenizerProfile,
@@ -156,6 +157,7 @@ object KoreanTokenizer: KLogging() {
      * // top.isNotEmpty() == true
      * ```
      */
+    @Suppress("ThrowsCount")
     fun tokenizeTopN(
         text: CharSequence,
         topN: Int = 1,

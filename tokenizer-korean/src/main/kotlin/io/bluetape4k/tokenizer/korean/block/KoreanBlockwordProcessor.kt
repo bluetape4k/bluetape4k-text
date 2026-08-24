@@ -68,6 +68,7 @@ object KoreanBlockwordProcessor: KLogging() {
      * @return 금칙어 사전에 걸린 [KoreanToken] list입니다. 입력이 blank이면 빈 list입니다.
      * @throws TokenizerException 처리 중 예외가 발생하면 원인을 감싸 던집니다.
      */
+    @Suppress("ThrowsCount")
     fun findBlockwords(text: String): List<KoreanToken> {
         requireBlockwordTextLength(text)
         if (text.isBlank()) {
