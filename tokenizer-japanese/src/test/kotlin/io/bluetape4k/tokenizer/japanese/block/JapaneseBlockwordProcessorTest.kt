@@ -10,6 +10,7 @@ import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.tokenizer.model.blockwordOptionsOf
 import io.bluetape4k.tokenizer.model.blockwordRequestOf
 import io.bluetape4k.assertions.shouldBeEmpty
+import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
@@ -49,6 +50,11 @@ class JapaneseBlockwordProcessorTest: AbstractTokenizerTest() {
         val text = "覚せい剤を注文できるサイトはありますか？"
         val blockwords = extractBlockword(text)
         blockwords.shouldNotBeEmpty()
+
+        val response = processBlockword(text)
+        response.maskedText shouldBeEqualTo "****を注文できるサイトはありますか？"
+        response.blockWords shouldContain "覚せい剤"
+        response.blockwordExists.shouldBeTrue()
     }
 
     @Test

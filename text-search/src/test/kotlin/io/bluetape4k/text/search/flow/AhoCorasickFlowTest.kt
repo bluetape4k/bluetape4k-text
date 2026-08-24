@@ -13,6 +13,7 @@ import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.text.search.SearchOptions
+import io.bluetape4k.text.search.NormalizationForm
 import io.bluetape4k.text.search.ahoCorasickOf
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -64,6 +65,32 @@ class AhoCorasickFlowTest {
         val keywords = matches.map { it.keyword }.toSet()
         keywords shouldBeEqualTo setOf("she", "he", "hers")
         log.debug { "정상 collect 매치: $matches" }
+    }
+
+    @Test
+    fun `Unicode ignoreCase Flow도 keyword와 동일한 pipeline을 사용한다`() = runTest(timeout = 30.seconds) {
+        val automaton = ahoCorasickOf(
+            "İ",
+            "ΟΣ",
+            "ПРИВЕТ",
+            options = SearchOptions(ignoreCase = true),
+        )
+
+        val matches = automaton.matchesAsFlow("İ ΟΣ ПРИВЕТ").toList()
+
+        matches shouldHaveSize 3
+        matches.map { it.start } shouldBeEqualTo listOf(0, 2, 5)
+        matches.map { it.end } shouldBeEqualTo listOf(0, 3, 10)
+
+        val combiningDotAutomaton = ahoCorasickOf(
+            "I\u0307",
+            options = SearchOptions(ignoreCase = true, normalization = NormalizationForm.NONE),
+        )
+        val combiningDotMatches = combiningDotAutomaton.matchesAsFlow("i\u0307").toList()
+        combiningDotMatches shouldHaveSize 1
+        combiningDotMatches.single().keyword shouldBeEqualTo "i\u0307"
+        combiningDotMatches.single().start shouldBeEqualTo 0
+        combiningDotMatches.single().end shouldBeEqualTo 1
     }
 
     @Test

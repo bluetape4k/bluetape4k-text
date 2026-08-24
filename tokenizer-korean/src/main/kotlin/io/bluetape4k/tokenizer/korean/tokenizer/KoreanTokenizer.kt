@@ -104,11 +104,35 @@ object KoreanTokenizer: KLogging() {
         text: CharSequence,
         profile: TokenizerProfile = TokenizerProfile.DefaultProfile,
     ): List<KoreanToken> {
-        requireTokenizeTextLength(text)
-        val tokenized = tokenizeTopN(text, 1, profile)
-            .flatMap { it.firstOrNull() ?: emptyList() }
+        return tokenizeWithDictionary(
+            text,
+            profile,
+            KoreanDictionaryProvider.currentDictionarySnapshot().value,
+        )
+    }
 
-        return KoreanStemmer.stem(tokenized)
+    /** 금칙어 aggregate snapshot에서 전달한 immutable 명사 사전으로 토큰화합니다. */
+    internal fun tokenize(
+        text: CharSequence,
+        profile: TokenizerProfile = TokenizerProfile.DefaultProfile,
+        dictionary: Map<KoreanPos, Set<String>>,
+    ): List<KoreanToken> = tokenizeWithDictionary(text, profile, dictionary)
+
+    private fun tokenizeWithDictionary(
+        text: CharSequence,
+        profile: TokenizerProfile,
+        dictionary: Map<KoreanPos, Set<String>>,
+    ): List<KoreanToken> {
+        requireTokenizeTextLength(text)
+        try {
+            val tokenized = tokenizeTopNWithDictionary(text, 1, profile, dictionary)
+                .flatMap { it.firstOrNull() ?: emptyList() }
+
+            return KoreanStemmer.stem(tokenized)
+        } catch (e: Exception) {
+            log.error(e) { "Error tokenizing a chunk. textLength=${text.length}" }
+            throw TokenizerException("Error tokenizing a chunk. textLength=${text.length}", e)
+        }
     }
 
     /**
@@ -135,22 +159,29 @@ object KoreanTokenizer: KLogging() {
 
         try {
             val dictionary = KoreanDictionaryProvider.currentDictionarySnapshot().value
-            return KoreanChunker.chunk(text).map {
-                when (it.pos) {
-                    Korean -> {
-                        // 각 청크의 최적 분석 후보를 구합니다.
-                        val parsed = parseKoreanChunk(it, profile, topN, dictionary)
-
-                        // 한 글자 명사가 이어진 구간을 하나의 unknown 명사로 접습니다: (가Noun 회Noun -> 가회Noun*)
-                        parsed.map(KoreanSubstantive::collapseNouns)
-                    }
-
-                    else -> listOf(listOf(it))
-                }
-            }
+            return tokenizeTopNWithDictionary(text, topN, profile, dictionary)
         } catch (e: Exception) {
             log.error(e) { "Error tokenizing a chunk. textLength=${text.length}" }
             throw TokenizerException("Error tokenizing a chunk. textLength=${text.length}", e)
+        }
+    }
+
+    private fun tokenizeTopNWithDictionary(
+        text: CharSequence,
+        topN: Int,
+        profile: TokenizerProfile,
+        dictionary: Map<KoreanPos, Set<String>>,
+    ): List<List<List<KoreanToken>>> = KoreanChunker.chunk(text).map {
+        when (it.pos) {
+            Korean -> {
+                // 각 청크의 최적 분석 후보를 구합니다.
+                val parsed = parseKoreanChunk(it, profile, topN, dictionary)
+
+                // 한 글자 명사가 이어진 구간을 하나의 unknown 명사로 접습니다: (가Noun 회Noun -> 가회Noun*)
+                parsed.map(KoreanSubstantive::collapseNouns)
+            }
+
+            else -> listOf(listOf(it))
         }
     }
 

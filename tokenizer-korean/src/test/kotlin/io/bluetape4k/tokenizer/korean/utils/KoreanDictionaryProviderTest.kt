@@ -433,13 +433,89 @@ class KoreanDictionaryProviderTest: TestBase() {
     }
 
     @Test
+    @Suppress("DEPRECATION")
+    fun `금칙어 facade mutation은 세 사전 snapshot을 함께 갱신하고 deprecated alias도 대칭이다`() {
+        val word = "P1원자금칙어_295"
+
+        try {
+            KoreanProcessor.addBlockwords(listOf(word), Severity.HIGH)
+            val added = KoreanDictionaryProvider.currentBlockwordBundleSnapshot()
+
+            added.blockwords.version.revision shouldBeEqualTo added.dictionary.version.revision
+            added.dictionary.version.revision shouldBeEqualTo added.properNouns.version.revision
+            added.blockwords.value.getValue(Severity.HIGH).contains(word).shouldBeTrue()
+            added.dictionary.value.getValue(Noun).contains(word).shouldBeTrue()
+            added.properNouns.value.contains(word).shouldBeTrue()
+
+            KoreanProcessor.removeBlockword(listOf(word), Severity.HIGH)
+            val removed = KoreanDictionaryProvider.currentBlockwordBundleSnapshot()
+            removed.blockwords.value.getValue(Severity.HIGH).contains(word).shouldBeFalse()
+            removed.dictionary.value.getValue(Noun).contains(word).shouldBeFalse()
+            removed.properNouns.value.contains(word).shouldBeFalse()
+        } finally {
+            KoreanProcessor.removeBlockwords(listOf(word), Severity.HIGH)
+        }
+    }
+
+    @Test
+    fun `동시 add remove 중 aggregate snapshot은 mixed revision을 노출하지 않는다`() {
+        val word = "P1동시원자금칙어_295"
+        val violations = Collections.synchronizedList(mutableListOf<String>())
+
+        fun observe() {
+            val snapshot = KoreanDictionaryProvider.currentBlockwordBundleSnapshot()
+            val blockword = snapshot.blockwords.value.getValue(Severity.HIGH).contains(word)
+            val noun = snapshot.dictionary.value.getValue(Noun).contains(word)
+            val properNoun = snapshot.properNouns.value.contains(word)
+            if (setOf(blockword, noun, properNoun).distinct().size != 1) {
+                violations.add("mixed aggregate snapshot: blockword=$blockword noun=$noun properNoun=$properNoun")
+            }
+            if (snapshot.blockwords.version.revision != snapshot.dictionary.version.revision ||
+                snapshot.dictionary.version.revision != snapshot.properNouns.version.revision
+            ) {
+                violations.add(
+                    "mixed aggregate revision: blockword=${snapshot.blockwords.version.revision} " +
+                            "dictionary=${snapshot.dictionary.version.revision} " +
+                            "properNouns=${snapshot.properNouns.version.revision}"
+                )
+            }
+        }
+
+        try {
+            // 이전 테스트의 독립 reload가 있더라도 aggregate mutation이 revision을 재정렬하도록 준비합니다.
+            KoreanProcessor.addBlockwords(listOf(word), Severity.HIGH)
+            KoreanProcessor.removeBlockwords(listOf(word), Severity.HIGH)
+
+            MultithreadingTester()
+                .workers(8)
+                .rounds(100)
+                .add {
+                    KoreanProcessor.addBlockwords(listOf(word), Severity.HIGH)
+                    observe()
+                }
+                .add {
+                    KoreanProcessor.removeBlockwords(listOf(word), Severity.HIGH)
+                    observe()
+                }
+                .add { observe() }
+                .run()
+        } finally {
+            KoreanProcessor.removeBlockwords(listOf(word), Severity.HIGH)
+        }
+
+        violations.shouldBeEmpty()
+    }
+
+    @Test
     fun `public dictionary view는 read-only이고 직접 변경을 snapshot에 기록하지 않는다`() {
         val directWord = "직접가변사전단어"
         val adverbs = KoreanDictionaryProvider.koreanDictionary.getValue(KoreanPos.Adverb)
         val highBlockwords = KoreanDictionaryProvider.blockWords.getValue(Severity.HIGH)
+        val properNouns = KoreanDictionaryProvider.properNouns
 
         assertFailsWith<UnsupportedOperationException> { adverbs.add(directWord) }
         assertFailsWith<UnsupportedOperationException> { highBlockwords.add(directWord) }
+        assertFailsWith<UnsupportedOperationException> { properNouns.add(directWord) }
         KoreanDictionaryProvider.currentDictionarySnapshot()
             .value[KoreanPos.Adverb]
             ?.contains(directWord)

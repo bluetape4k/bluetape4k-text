@@ -86,6 +86,13 @@ internal class SuspendMemoized<T: Any>(
     }
 }
 
+/** 금칙어 처리에서 함께 관찰해야 하는 한국어 세 사전의 immutable snapshot입니다. */
+internal data class KoreanDictionaryBundleSnapshot(
+    val dictionary: DictionarySnapshot<Map<KoreanPos, Set<String>>>,
+    val blockwords: DictionarySnapshot<Map<Severity, Set<String>>>,
+    val properNouns: DictionarySnapshot<Set<String>>,
+)
+
 /**
  * 토크나이저가 사용하는 한국어 사전과 파생 사전을 로드/조회합니다.
  *
@@ -157,6 +164,16 @@ object KoreanDictionaryProvider: KLogging() {
             "noun/brand.txt",
             "noun/fashion.txt",
             "noun/neologism.txt"
+        )
+    }
+
+    private val properNounVersions = SuspendMemoized {
+        VersionedDictionary(
+            DictionarySnapshot(
+                DictionaryVersion("korean-proper-nouns", 0),
+                immutableSet(properNounsLoader.get().map { it.asDictionaryWord() }),
+            ),
+            historyCapacity = 0,
         )
     }
 
@@ -273,7 +290,7 @@ object KoreanDictionaryProvider: KLogging() {
                 async { blockwordVersions.get() },
                 async { koreanEntityFreqLoader.get() },
                 async { spamNounsLoader.get() },
-                async { properNounsLoader.get() },
+                async { properNounVersions.get() },
                 async { nameDictionaryLoader.get() },
                 async { typoDictionaryByLengthLoader.get() },
                 async { predicateStemsLoader.get() },
@@ -286,6 +303,7 @@ object KoreanDictionaryProvider: KLogging() {
         blockwordVersions,
         koreanEntityFreqLoader,
         spamNounsLoader,
+        properNounVersions,
         properNounsLoader,
         nameDictionaryLoader,
         typoDictionaryByLengthLoader,
@@ -303,6 +321,7 @@ object KoreanDictionaryProvider: KLogging() {
             blockwordVersions,
             koreanEntityFreqLoader,
             spamNounsLoader,
+            properNounVersions,
             properNounsLoader,
             nameDictionaryLoader,
             typoDictionaryByLengthLoader,
@@ -398,6 +417,16 @@ object KoreanDictionaryProvider: KLogging() {
     /** 현재 품사 사전 snapshot과 버전을 반환합니다. */
     fun currentDictionarySnapshot(): DictionarySnapshot<Map<KoreanPos, Set<String>>> =
         koreanDictionaryVersions.getBlocking().snapshot()
+
+    /** 금칙어 처리 경로가 한 번에 읽는 세 사전의 immutable aggregate snapshot입니다. */
+    internal fun currentBlockwordBundleSnapshot(): KoreanDictionaryBundleSnapshot =
+        dictionaryMutationLock.withLock {
+            KoreanDictionaryBundleSnapshot(
+                dictionary = koreanDictionaryVersions.getBlocking().snapshot(),
+                blockwords = blockwordVersions.getBlocking().snapshot(),
+                properNouns = properNounVersions.getBlocking().snapshot(),
+            )
+        }
 
     /**
      * 품사별 사전을 새 버전으로 원자적으로 교체합니다.
@@ -587,6 +616,49 @@ object KoreanDictionaryProvider: KLogging() {
         }
     }
 
+    /** 금칙어·명사·고유명사를 하나의 revision bundle로 추가/삭제합니다. */
+    internal fun mutateBlockwordBundle(
+        words: Collection<String>,
+        severity: Severity,
+        add: Boolean,
+    ) {
+        dictionaryMutationLock.withLock {
+            val dictionary = koreanDictionaryVersions.getBlocking().snapshot()
+            val blockwords = blockwordVersions.getBlocking().snapshot()
+            val properNouns = properNounVersions.getBlocking().snapshot()
+
+            val exactTiers = exactBlockwordValue(blockwords.value).toMutableMap()
+            val currentTier = exactTiers.getValue(severity)
+            val nextTier = if (add) currentTier + words else currentTier - words.toSet()
+            exactTiers[severity] = immutableSet(nextTier)
+            val nextBlockwords = canonicalBlockwordValue(exactTiers, blockwords.value)
+
+            val nextDictionary = dictionary.value[Noun]
+                ?.takeIf { nouns -> words.any { if (add) it !in nouns else it in nouns } }
+                ?.let { nouns ->
+                    val nextNouns = if (add) nouns + words else nouns - words.toSet()
+                    immutableMap(dictionary.value + (Noun to immutableSet(nextNouns)))
+                }
+                ?: dictionary.value
+
+            val properChanged = words.any { if (add) it !in properNouns.value else it in properNouns.value }
+            val nextProperNouns = if (properChanged) {
+                immutableSet(if (add) properNouns.value + words else properNouns.value - words.toSet())
+            } else {
+                properNouns.value
+            }
+
+            val revision = maxOf(
+                dictionary.version.revision,
+                blockwords.version.revision,
+                properNouns.version.revision,
+            ) + 1
+            publishDictionaryMutation(nextDictionary, revision)
+            publishBlockwordMutation(nextBlockwords, revision)
+            publishProperNounMutation(nextProperNouns, revision)
+        }
+    }
+
     /**
      * 고유명사 중심 명사 사전입니다.
      *
@@ -600,7 +672,7 @@ object KoreanDictionaryProvider: KLogging() {
      * ```
      */
     val properNouns: CharArraySet
-        get() = properNounsLoader.getBlocking()
+        get() = publicProperNounView(properNounVersions.getBlocking().snapshot().value)
 
     /**
      * 성/이름/전체 이름 분류 사전입니다.
@@ -667,22 +739,32 @@ object KoreanDictionaryProvider: KLogging() {
             }
         )
 
+    private fun publicProperNounView(value: Set<String>): CharArraySet =
+        CharArraySet.unmodifiableSet(CharArraySet(value.toList()))
+
     private fun Any.asDictionaryWord(): String = when (this) {
         is CharArray -> concatToString()
         else -> toString()
     }
 
-    private fun publishDictionaryMutation(value: Map<KoreanPos, Set<String>>) {
+    private fun publishDictionaryMutation(value: Map<KoreanPos, Set<String>>, revision: Long? = null) {
         val current = koreanDictionaryVersions.getBlocking().snapshot()
         koreanDictionaryVersions.getBlocking().reload(
-            DictionaryVersion(current.version.name, current.version.revision + 1)
+            DictionaryVersion(current.version.name, revision ?: current.version.revision + 1)
         ) { value }
     }
 
-    private fun publishBlockwordMutation(value: Map<Severity, Set<String>>) {
+    private fun publishBlockwordMutation(value: Map<Severity, Set<String>>, revision: Long? = null) {
         val current = blockwordVersions.getBlocking().snapshot()
         blockwordVersions.getBlocking().reload(
-            DictionaryVersion(current.version.name, current.version.revision + 1)
+            DictionaryVersion(current.version.name, revision ?: current.version.revision + 1)
+        ) { value }
+    }
+
+    private fun publishProperNounMutation(value: Set<String>, revision: Long? = null) {
+        val current = properNounVersions.getBlocking().snapshot()
+        properNounVersions.getBlocking().reload(
+            DictionaryVersion(current.version.name, revision ?: current.version.revision + 1)
         ) { value }
     }
 

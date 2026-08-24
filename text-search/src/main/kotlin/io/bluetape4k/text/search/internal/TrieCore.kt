@@ -303,7 +303,7 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
 
     private fun addKeyword(keyword: String) {
         if (keyword.isNotEmpty()) {
-            val adder = if (ignoreCase) keyword.lowercase() else keyword
+            val adder = if (ignoreCase) keyword.lowercaseCharByChar() else keyword
             addState(adder).addEmit(adder)
         }
     }

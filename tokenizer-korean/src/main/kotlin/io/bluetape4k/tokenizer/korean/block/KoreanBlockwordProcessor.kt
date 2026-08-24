@@ -73,8 +73,9 @@ object KoreanBlockwordProcessor: KLogging() {
         }
         try {
             val punctuationRemoved = punctuationProcessor.removePunctuation(text)
-            val blockwordDictionary = KoreanDictionaryProvider.currentBlockwordSnapshot().value
-            val tokens = KoreanTokenizer.tokenize(punctuationRemoved)
+            val dictionaryBundle = KoreanDictionaryProvider.currentBlockwordBundleSnapshot()
+            val blockwordDictionary = dictionaryBundle.blockwords.value
+            val tokens = KoreanTokenizer.tokenize(punctuationRemoved, dictionary = dictionaryBundle.dictionary.value)
             val blockWords = mutableListOf<KoreanToken>()
             tokens
                 .onEach { token ->
@@ -132,8 +133,9 @@ object KoreanBlockwordProcessor: KLogging() {
         }
         try {
             val punctuationRemoved = punctuationProcessor.removePunctuation(request.text)
-            val blockwordDictionary = KoreanDictionaryProvider.currentBlockwordSnapshot().value
-            val tokens = KoreanTokenizer.tokenize(punctuationRemoved)
+            val dictionaryBundle = KoreanDictionaryProvider.currentBlockwordBundleSnapshot()
+            val blockwordDictionary = dictionaryBundle.blockwords.value
+            val tokens = KoreanTokenizer.tokenize(punctuationRemoved, dictionary = dictionaryBundle.dictionary.value)
 
             val maskStr = request.options.mask
             val blockWords = mutableListOf<String>()

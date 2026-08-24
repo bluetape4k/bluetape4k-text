@@ -5,6 +5,7 @@ import io.bluetape4k.logging.debug
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeNull
 import io.bluetape4k.assertions.shouldNotBeNull
+import io.bluetape4k.assertions.shouldBeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -118,5 +119,37 @@ class AhoCorasickFirstMatchTest : AbstractAhoCorasickTest() {
         firstWithOverlap.start shouldBeEqualTo firstNoOverlap.start
 
         log.debug { "allowOverlaps 비교 — 겹침 허용: $firstWithOverlap, 겹침 제거: $firstNoOverlap" }
+    }
+
+    @Test
+    fun `ignoreCase Unicode keyword와 text는 동일한 case fold pipeline을 사용한다`() {
+        val automaton = AhoCorasickAutomaton.builder<Unit>()
+            .add("İ", Unit)
+            .add("ΟΣ", Unit)
+            .add("ПРИВЕТ", Unit)
+            .options(SearchOptions(ignoreCase = true))
+            .build()
+        val text = "İ ΟΣ ПРИВЕТ"
+
+        val matches = automaton.parseText(text)
+        matches.size shouldBeEqualTo 3
+        matches.map { it.start } shouldBeEqualTo listOf(0, 2, 5)
+        matches.map { it.end } shouldBeEqualTo listOf(0, 3, 10)
+
+        val combiningDotAutomaton = AhoCorasickAutomaton.builder<Unit>()
+            .add("I\u0307", Unit)
+            .options(SearchOptions(ignoreCase = true, normalization = NormalizationForm.NONE))
+            .build()
+        val combiningDotMatches = combiningDotAutomaton.parseText("i\u0307")
+        combiningDotMatches.size shouldBeEqualTo 1
+        combiningDotMatches.single().keyword shouldBeEqualTo "i\u0307"
+        combiningDotMatches.single().start shouldBeEqualTo 0
+        combiningDotMatches.single().end shouldBeEqualTo 1
+
+        val first = automaton.firstMatch(text)
+        first.shouldNotBeNull()
+        first.start shouldBeEqualTo 0
+        first.end shouldBeEqualTo 0
+        automaton.containsMatch("ΟΣ").shouldBeTrue()
     }
 }

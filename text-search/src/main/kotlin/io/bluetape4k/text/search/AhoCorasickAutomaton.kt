@@ -7,6 +7,7 @@ import io.bluetape4k.text.search.internal.EmitHandler
 import io.bluetape4k.text.search.internal.OffsetMapping
 import io.bluetape4k.text.search.internal.TrieCore
 import io.bluetape4k.text.search.internal.applyPipeline
+import io.bluetape4k.text.search.internal.lowercaseCharByChar
 
 /**
  * 키워드를 연결 값에 매핑하는 불변, 스레드 안전 Aho-Corasick automaton입니다.
@@ -67,7 +68,7 @@ class AhoCorasickAutomaton<V> internal constructor(
         // 1. 유니코드 정규화 + offset mapping 구축. NONE이면 mapping은 null입니다.
         val (normalizedText, mapping) = OffsetMapping.build(text, options.normalization)
 
-        // 2. ignoreCase 적용. Locale.ROOT 기준 소문자로 변환합니다.
+        // 2. ignoreCase 적용. 등록 시점과 같은 문자 단위 소문자 파이프라인을 사용합니다.
         val processedText: CharSequence = if (options.ignoreCase) {
             normalizedText.lowercaseCharByChar()
         } else {
@@ -379,15 +380,4 @@ class AhoCorasickAutomaton<V> internal constructor(
             return AhoCorasickAutomaton(core, normalizedValues.toMap(), opts)
         }
     }
-}
-
-/**
- * [Char.lowercaseChar]를 사용해 문자열을 문자 단위로 소문자화합니다.
- *
- * [java.util.Locale.ROOT]를 쓰는 [String.lowercase]와 달리 `Char.lowercaseChar()`는 항상 단일
- * `Char`를 반환합니다(BMP-safe). 따라서 결과 문자열은 receiver와 같은 길이를 보장합니다.
- * 이 보장은 `ignoreCase = true`와 [OffsetMapping] 기반 정규화를 함께 사용할 때 offset 불일치를 막습니다.
- */
-private fun String.lowercaseCharByChar(): String = buildString(length) {
-    for (c in this@lowercaseCharByChar) append(c.lowercaseChar())
 }
