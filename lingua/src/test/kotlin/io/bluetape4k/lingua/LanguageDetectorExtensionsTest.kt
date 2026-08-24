@@ -115,6 +115,9 @@ class LanguageDetectorExtensionsTest: AbstractLinguaTest() {
     @Test
     fun `유효하지 않은 신뢰도 임계값은 거부한다`() {
         assertFailsWith<IllegalArgumentException> {
+            detector.detectLanguageSegments("Hello", minimumConfidence = -0.1)
+        }
+        assertFailsWith<IllegalArgumentException> {
             detector.detectLanguageSegments("Hello", minimumConfidence = 1.1)
         }
     }

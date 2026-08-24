@@ -8,6 +8,7 @@ import io.bluetape4k.logging.debug
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldNotBeEqualTo
 import org.junit.jupiter.api.Test
 
 class LanguageDetectorBuilderTest: AbstractLinguaTest() {
@@ -35,6 +36,8 @@ class LanguageDetectorBuilderTest: AbstractLinguaTest() {
         }
 
         detector.shouldNotBeNull()
+        detector.detectLanguageOf("Hello service users") shouldNotBeEqualTo Language.ENGLISH
+        detector.detectLanguageOf("안녕하세요") shouldNotBeEqualTo Language.KOREAN
         log.debug { "Detector: $detector" }
     }
 
