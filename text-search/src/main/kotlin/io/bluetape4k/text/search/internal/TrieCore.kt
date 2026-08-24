@@ -161,7 +161,31 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
      */
     fun parseText(text: CharSequence, emitHandler: StatefulEmitHandler = DefaultEmitHandler()): List<Emit> {
         runParseText(text, emitHandler)
-        var collectedEmits = emitHandler.emits
+        return postProcessEmits(text, emitHandler.emits)
+    }
+
+    /**
+     * [text]를 문자 단위로 suspending 순회한 뒤 [InternalTrieConfig] 필터를 적용합니다.
+     *
+     * [runParseTextSuspending]이 각 문자마다 취소를 확인하므로, 전체 결과 후처리가 필요한 Flow 경로도
+     * 동기 [parseText] 호출로 인해 대규모 no-match 입력에서 취소를 지연시키지 않습니다.
+     *
+     * @param text 검색할 텍스트입니다.
+     * @param emitHandler raw match를 누적할 emit handler입니다.
+     * @param stopOnHit 첫 match에서 중단할지 여부입니다.
+     * @return [InternalTrieConfig]의 필터를 적용한 [Emit] list입니다.
+     */
+    suspend fun parseTextSuspending(
+        text: CharSequence,
+        emitHandler: StatefulEmitHandler = DefaultEmitHandler(),
+        stopOnHit: Boolean = config.stopOnHit,
+    ): List<Emit> {
+        runParseTextSuspending(text, { emit -> emitHandler.emit(emit) }, stopOnHit)
+        return postProcessEmits(text, emitHandler.emits)
+    }
+
+    private fun postProcessEmits(text: CharSequence, emits: MutableList<Emit>): List<Emit> {
+        var collectedEmits = emits
 
         if (config.onlyWholeWords) {
             removePartialMatches(text, collectedEmits)

@@ -10,8 +10,9 @@ import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
-import io.bluetape4k.text.search.SearchOptions
 import io.bluetape4k.text.search.NormalizationForm
+import io.bluetape4k.text.search.SearchOptions
+import io.bluetape4k.text.search.WordBoundary
 import io.bluetape4k.text.search.ahoCorasickOf
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -21,6 +22,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.take
@@ -46,6 +48,8 @@ class AhoCorasickFlowTest {
     companion object : KLogging() {
         private const val SAMPLE_TEXT = "ushers"
         private const val REPEATED_MATCHES = 512
+        private const val EAGER_CANCELLATION_TEXT_SIZE = 50_000_000
+        private val EAGER_CANCELLATION_TEXT = "x".repeat(EAGER_CANCELLATION_TEXT_SIZE)
     }
 
     private fun fixtureAutomaton(options: SearchOptions = SearchOptions()) =
@@ -266,6 +270,16 @@ class AhoCorasickFlowTest {
     }
 
     @Test
+    fun `allowOverlaps=false 대규모 no-match eager 순회는 취소를 관찰한다`() = runSuspendIO {
+        assertEagerNoMatchCancellation(SearchOptions(allowOverlaps = false))
+    }
+
+    @Test
+    fun `wordBoundary eager 대규모 no-match 순회는 취소를 관찰한다`() = runSuspendIO {
+        assertEagerNoMatchCancellation(SearchOptions(wordBoundary = WordBoundary.LATIN_ALPHA))
+    }
+
+    @Test
     fun `take(1) 조기 종료가 upstream producer completion으로 전파된다`() = runSuspendIO {
         // 준비
         val producerCompletion = CompletableDeferred<Throwable?>()
@@ -353,6 +367,39 @@ class AhoCorasickFlowTest {
         // 충분히 큰 fixture로 producer가 channel buffer를 채우는 동안 collector 취소를 검증한다.
         repeat(REPEATED_MATCHES) {
             append("he ")
+        }
+    }
+
+    private suspend fun assertEagerNoMatchCancellation(options: SearchOptions) = coroutineScope {
+        val started = CompletableDeferred<Unit>()
+        val text = SignallingNoMatchText(EAGER_CANCELLATION_TEXT, started)
+        val producer = async(Dispatchers.Default) {
+            ahoCorasickOf("needle", options = options).matchesAsFlow(text).toList()
+        }
+
+        try {
+            withTimeout(5.seconds) { started.await() }
+            producer.cancel()
+            withTimeout(5.seconds) { producer.join() }
+            producer.isCancelled.shouldBeTrue()
+        } finally {
+            producer.cancelAndJoin()
+        }
+    }
+
+    private class SignallingNoMatchText(
+        private val value: String,
+        private val started: CompletableDeferred<Unit>,
+    ) : CharSequence {
+        override val length: Int get() = value.length
+
+        override fun get(index: Int): Char = value[index]
+
+        override fun subSequence(startIndex: Int, endIndex: Int): CharSequence = value.subSequence(startIndex, endIndex)
+
+        override fun toString(): String {
+            started.complete(Unit)
+            return value
         }
     }
 

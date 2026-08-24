@@ -3,7 +3,7 @@ package io.bluetape4k.text.search
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.support.requireNotBlank
 import io.bluetape4k.text.search.internal.CaseFoldedText
-import io.bluetape4k.text.search.internal.EmitHandler
+import io.bluetape4k.text.search.internal.Emit
 import io.bluetape4k.text.search.internal.InternalTrieConfig
 import io.bluetape4k.text.search.internal.OffsetMapping
 import io.bluetape4k.text.search.internal.TrieCore
@@ -69,6 +69,37 @@ class AhoCorasickAutomaton<V> internal constructor(
         val processed = preprocess(text)
 
         val emits = core.parseText(processed.text)
+        return mapEmits(processed, emits, options.stopOnFirstMatch)
+    }
+
+    /**
+     * 전체 결과 후처리가 필요한 Flow 경로를 문자 단위 취소 확인과 함께 수행합니다.
+     *
+     * [ignoreStopOnFirstMatch]가 `true`이면 Flow 계약에 따라 [SearchOptions.stopOnFirstMatch]를 무시합니다.
+     * 겹침 제거와 단어 경계 필터는 raw match를 모두 수집한 뒤 적용하지만, trie 순회 자체는
+     * [TrieCore.parseTextSuspending]을 통해 각 문자에서 협력 취소를 관찰합니다.
+     */
+    internal suspend fun parseTextSuspending(
+        text: CharSequence,
+        ignoreStopOnFirstMatch: Boolean,
+    ): List<AhoCorasickMatch<V>> {
+        if (text.isEmpty() || values.isEmpty()) {
+            return emptyList()
+        }
+
+        val processed = preprocess(text)
+        val emits = core.parseTextSuspending(
+            processed.text,
+            stopOnHit = !ignoreStopOnFirstMatch && options.stopOnFirstMatch,
+        )
+        return mapEmits(processed, emits, !ignoreStopOnFirstMatch && options.stopOnFirstMatch)
+    }
+
+    private fun mapEmits(
+        processed: ProcessedText,
+        emits: List<Emit>,
+        stopOnFirstMatch: Boolean,
+    ): List<AhoCorasickMatch<V>> {
         if (emits.isEmpty()) {
             return emptyList()
         }
@@ -88,7 +119,7 @@ class AhoCorasickAutomaton<V> internal constructor(
                     value = value,
                 )
             )
-            if (options.stopOnFirstMatch) {
+            if (stopOnFirstMatch) {
                 break
             }
         }

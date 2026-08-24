@@ -389,6 +389,94 @@ class KoreanDictionaryProviderTest: TestBase() {
         }
     }
 
+    @Test
+    fun `stale cumulative snapshot reload은 source tier provenance을 보존해 per-tier 제거를 안전하게 한다`() {
+        val original = KoreanDictionaryProvider.currentBlockwordSnapshot()
+        val staleWords = mapOf(
+            Severity.LOW to "issue306-stale-low",
+            Severity.MIDDLE to "issue306-stale-middle",
+            Severity.HIGH to "issue306-stale-high",
+        )
+
+        try {
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion("korean-blockwords", original.version.revision + 1),
+                staleWords.mapValues { (_, word) -> listOf(word) },
+            )
+            val stale = KoreanDictionaryProvider.currentBlockwordSnapshot()
+
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion("korean-blockwords", stale.version.revision + 1),
+                mapOf(
+                    Severity.LOW to listOf("issue306-current-low"),
+                    Severity.MIDDLE to emptyList(),
+                    Severity.HIGH to emptyList(),
+                ),
+            )
+
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion(
+                    "korean-blockwords",
+                    KoreanDictionaryProvider.currentBlockwordSnapshot().version.revision + 1,
+                ),
+                stale.value,
+            )
+            KoreanDictionaryProvider.mutateBlockwords(Severity.MIDDLE) {
+                remove(staleWords.getValue(Severity.MIDDLE))
+            }
+
+            assertBlockwordEntries(
+                KoreanDictionaryProvider.currentBlockwordSnapshot().value,
+                staleWords.values,
+                mapOf(
+                    Severity.LOW to setOf(staleWords.getValue(Severity.LOW), staleWords.getValue(Severity.HIGH)),
+                    Severity.MIDDLE to setOf(staleWords.getValue(Severity.HIGH)),
+                    Severity.HIGH to setOf(staleWords.getValue(Severity.HIGH)),
+                ),
+            )
+        } finally {
+            restoreBlockwords(original)
+        }
+    }
+
+    @Test
+    fun `exact map은 cumulative 값이 같아도 source tier를 추론하지 않는다`() {
+        val original = KoreanDictionaryProvider.currentBlockwordSnapshot()
+        val sharedWord = "issue306-explicit-tier"
+
+        try {
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion("korean-blockwords", original.version.revision + 1),
+                mapOf(
+                    Severity.LOW to listOf(sharedWord),
+                    Severity.MIDDLE to listOf(sharedWord),
+                    Severity.HIGH to emptyList(),
+                ),
+            )
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion(
+                    "korean-blockwords",
+                    KoreanDictionaryProvider.currentBlockwordSnapshot().version.revision + 1,
+                ),
+                mapOf(
+                    Severity.LOW to emptyList(),
+                    Severity.MIDDLE to listOf(sharedWord),
+                    Severity.HIGH to emptyList(),
+                ),
+            )
+
+            KoreanDictionaryProvider.mutateBlockwords(Severity.MIDDLE) {
+                remove(sharedWord)
+            }
+
+            Severity.values().forEach { severity ->
+                KoreanDictionaryProvider.containsBlockword(sharedWord, severity).shouldBeFalse()
+            }
+        } finally {
+            restoreBlockwords(original)
+        }
+    }
+
     private fun restoreBlockwords(
         original: DictionarySnapshot<Map<Severity, Set<String>>>,
     ) {
