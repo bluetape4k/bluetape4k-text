@@ -7,6 +7,7 @@ import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
 import org.junit.jupiter.api.Test
 
 class LanguageDetectorBuilderTest: AbstractLinguaTest() {
@@ -59,6 +60,7 @@ class LanguageDetectorBuilderTest: AbstractLinguaTest() {
 
         detector.shouldNotBeNull()
         log.debug { "Detector: $detector" }
+        detector.detectLanguageOf("안녕하세요") shouldBeEqualTo Language.KOREAN
     }
 
     @Test
@@ -71,6 +73,7 @@ class LanguageDetectorBuilderTest: AbstractLinguaTest() {
 
         detector.shouldNotBeNull()
         log.debug { "Detector: $detector" }
+        detector.detectLanguageOf("こんにちは") shouldBeEqualTo Language.JAPANESE
     }
 
     @Test
@@ -97,6 +100,19 @@ class LanguageDetectorBuilderTest: AbstractLinguaTest() {
         )
 
         detector.detectLanguageOf("Hello service users") shouldBeEqualTo Language.ENGLISH
+    }
+
+    @Test
+    fun `language detector respects an explicit language subset`() {
+        val detector = languageDetectorOf(
+            languages = setOf(Language.KOREAN, Language.JAPANESE),
+            minimumRelativeDistance = 0.0,
+            isEveryLanguageModelPreloaded = false,
+            isLowAccuracyModeEnabled = true,
+        )
+
+        detector.detectLanguageOf("안녕하세요") shouldBeEqualTo Language.KOREAN
+        (detector.detectLanguageOf("Hello") == Language.ENGLISH).shouldBeFalse()
     }
 
     @Test

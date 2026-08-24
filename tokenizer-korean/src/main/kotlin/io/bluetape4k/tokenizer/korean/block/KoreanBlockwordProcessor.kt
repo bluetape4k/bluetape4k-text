@@ -15,6 +15,8 @@ import io.bluetape4k.tokenizer.model.BlockwordResponse
 import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.tokenizer.model.blockwordResponseOf
 import io.bluetape4k.tokenizer.model.requireBlockwordTextLength
+import kotlinx.coroutines.CancellationException
+import java.lang.InterruptedException
 import java.util.*
 
 /**
@@ -98,6 +100,11 @@ object KoreanBlockwordProcessor: KLogging() {
             return blockWords
         } catch (e: Error) {
             throw e
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw e
         } catch (e: Exception) {
             log.error(e) { "Fail to mask block word. textLength=${text.length}" }
             throw TokenizerException("Fail to mask block word. textLength=${text.length}", e)
@@ -165,6 +172,11 @@ object KoreanBlockwordProcessor: KLogging() {
             }
             return blockwordResponseOf(request, result.toString(), blockWords)
         } catch (e: Error) {
+            throw e
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
             throw e
         } catch (e: Exception) {
             log.error(e) { "Fail to mask block word. textLength=${request.text.length}" }

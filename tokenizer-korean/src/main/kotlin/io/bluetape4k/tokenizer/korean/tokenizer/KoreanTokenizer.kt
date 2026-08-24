@@ -21,6 +21,8 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosx
 import io.bluetape4k.tokenizer.korean.utils.KoreanSubstantive
 import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
+import kotlinx.coroutines.CancellationException
+import java.lang.InterruptedException
 import org.eclipse.collections.api.multimap.MutableMultimap
 
 /**
@@ -129,6 +131,11 @@ object KoreanTokenizer: KLogging() {
                 .flatMap { it.firstOrNull() ?: emptyList() }
 
             return KoreanStemmer.stem(tokenized)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw e
         } catch (e: Exception) {
             log.error(e) { "Error tokenizing a chunk. textLength=${text.length}" }
             throw TokenizerException("Error tokenizing a chunk. textLength=${text.length}", e)
@@ -160,6 +167,11 @@ object KoreanTokenizer: KLogging() {
         try {
             val dictionary = KoreanDictionaryProvider.currentDictionarySnapshot().value
             return tokenizeTopNWithDictionary(text, topN, profile, dictionary)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw e
         } catch (e: Exception) {
             log.error(e) { "Error tokenizing a chunk. textLength=${text.length}" }
             throw TokenizerException("Error tokenizing a chunk. textLength=${text.length}", e)

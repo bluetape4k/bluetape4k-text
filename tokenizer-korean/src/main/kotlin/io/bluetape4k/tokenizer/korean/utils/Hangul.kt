@@ -1,6 +1,7 @@
 package io.bluetape4k.tokenizer.korean.utils
 
 import io.bluetape4k.logging.KLogging
+import io.bluetape4k.support.requireNotNull
 import java.io.Serializable
 
 /**
@@ -81,6 +82,7 @@ object Hangul: KLogging() {
     }
 
     private const val HANGUL_BASE: Int = 0xAC00
+    private const val HANGUL_LAST: Int = 0xD7A3
     private const val ONSET_BASE: Int = 21 * 28
     private const val VOWEL_BASE: Int = 28
 
@@ -126,7 +128,7 @@ object Hangul: KLogging() {
      * 한글 음절을 초성/중성/종성으로 분해합니다.
      *
      * ## 동작/계약
-     * - 자모 문자 입력은 허용하지 않으며 `assert` 실패 시 `AssertionError`가 발생한다(`-ea` 필요).
+     * - 유니코드 한글 음절 범위 밖의 입력은 [IllegalArgumentException]으로 거부한다.
      * - 유니코드 한글 음절 인덱스로 초성/중성/종성을 계산한다.
      *
      * ```kotlin
@@ -138,8 +140,8 @@ object Hangul: KLogging() {
      * @return 초성, 중성, 종성을 담은 [HangulChar]입니다.
      */
     fun decomposeHangul(c: Char): HangulChar {
-        require(!(ONSET_MAP.containsKey(c) || VOWEL_MAP.containsKey(c) || CODA_MAP.containsKey(c))) {
-            "입력 문자는 유효한 한글 음절이어야 합니다"
+        require(c.code in HANGUL_BASE..HANGUL_LAST) {
+            "입력 문자는 유효한 한글 음절이어야 합니다: $c"
         }
         val u = (c - HANGUL_BASE).code
         return HangulChar(
@@ -153,7 +155,7 @@ object Hangul: KLogging() {
      * 한글 음절에 종성(받침)이 있는지 확인합니다.
      *
      * ## 동작/계약
-     * - 유니코드 한글 음절 인덱스의 종성 영역 값으로 판정한다.
+     * - 유니코드 한글 음절이 아니면 `false`를 반환한다.
      *
      * ```kotlin
      * val has = Hangul.hasCoda('한')
@@ -163,13 +165,14 @@ object Hangul: KLogging() {
      * @param c 받침 여부를 확인할 유니코드 한글 음절입니다.
      * @return 종성 인덱스가 0보다 크면 `true`입니다.
      */
-    fun hasCoda(c: Char): Boolean = (c.code - HANGUL_BASE) % VOWEL_BASE > 0
+    fun hasCoda(c: Char): Boolean = c.code in HANGUL_BASE..HANGUL_LAST &&
+            (c.code - HANGUL_BASE) % VOWEL_BASE > 0
 
     /**
      * 초성/중성/종성으로 한글 음절을 조합합니다.
      *
      * ## 동작/계약
-     * - 초성과 중성이 공백이면 `assert` 실패 시 `AssertionError`가 발생한다(`-ea` 필요).
+     * - 초성/중성/종성이 유효한 자모가 아니면 [IllegalArgumentException]으로 거부한다.
      * - 종성은 기본값 공백(`' '`)을 사용하면 받침 없는 음절을 생성한다.
      *
      * ```kotlin
@@ -183,12 +186,14 @@ object Hangul: KLogging() {
      * @return 조합된 유니코드 한글 음절입니다.
      */
     fun composeHangul(onset: Char, vowel: Char, coda: Char = ' '): Char {
-        require(onset != ' ' && vowel != ' ') { "입력 초성과 중성은 유효해야 합니다" }
+        val onsetIndex = ONSET_MAP[onset].requireNotNull("유효한 초성 자모가 필요합니다: $onset")
+        val vowelIndex = VOWEL_MAP[vowel].requireNotNull("유효한 중성 자모가 필요합니다: $vowel")
+        val codaIndex = CODA_MAP[coda].requireNotNull("유효한 종성 자모가 필요합니다: $coda")
 
         return (HANGUL_BASE +
-                ((ONSET_MAP[onset] ?: 0) * ONSET_BASE) +
-                ((VOWEL_MAP[vowel] ?: 0) * VOWEL_BASE) +
-                (CODA_MAP[coda] ?: 0)).toChar()
+                (onsetIndex * ONSET_BASE) +
+                (vowelIndex * VOWEL_BASE) +
+                codaIndex).toChar()
     }
 
     /**

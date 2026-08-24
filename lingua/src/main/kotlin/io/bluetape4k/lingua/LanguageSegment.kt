@@ -1,6 +1,10 @@
 package io.bluetape4k.lingua
 
 import com.github.pemistahl.lingua.api.Language
+import io.bluetape4k.support.requireGt
+import io.bluetape4k.support.requireInRange
+import io.bluetape4k.support.requireZeroOrPositiveNumber
+import java.io.Serializable
 
 /**
  * 입력 문자열에서 하나의 언어로 판정된 연속 문자 구간입니다.
@@ -18,7 +22,17 @@ data class LanguageSegment(
     val endExclusive: Int,
     val language: Language,
     val confidence: Double,
-) {
+): Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+
+    init {
+        start.requireZeroOrPositiveNumber("start")
+        endExclusive.requireGt(start, "endExclusive")
+        confidence.requireInRange(0.0, 1.0, "confidence")
+    }
+
     /** 구간의 UTF-16 문자 길이입니다. */
     val length: Int get() = endExclusive - start
 }

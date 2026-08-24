@@ -16,6 +16,8 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPosTrie
 import io.bluetape4k.tokenizer.korean.utils.KoreanPosx
 import io.bluetape4k.tokenizer.korean.utils.KoreanSubstantive
 import io.bluetape4k.tokenizer.model.requireTokenizeTextLength
+import kotlinx.coroutines.CancellationException
+import java.lang.InterruptedException
 
 /**
  * 명사 중심 규칙으로 한국어 문장을 분석하는 토크나이저입니다.
@@ -157,6 +159,11 @@ object NounTokenizer: KLogging() {
                         else   -> listOf(listOf(it))
                     }
                 }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw e
         } catch (e: Exception) {
             log.error(e) { "Error tokenizing a chunk. textLength=${text.length}" }
             throw TokenizerException("Error tokenizing a chunk. textLength=${text.length}", e)

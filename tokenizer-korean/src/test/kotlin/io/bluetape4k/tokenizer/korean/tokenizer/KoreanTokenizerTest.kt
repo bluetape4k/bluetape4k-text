@@ -24,6 +24,7 @@ import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Space
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Suffix
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.Verb
 import io.bluetape4k.tokenizer.korean.utils.KoreanPos.VerbPrefix
+import kotlinx.coroutines.CancellationException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.ResourceLock
 
@@ -47,6 +48,16 @@ class KoreanTokenizerTest: TestBase() {
     private val parsedChunkWithCommonNouns = ParsedChunk(listOf(HUMAN, DOG), 1)
     private val parsedChunkWithVerbs = ParsedChunk(listOf(HUMAN, HADA), 1)
     private val parsedChunkWithExactMatch = ParsedChunk(listOf(DOG), 1)
+
+    private class CancellingCharSequence: CharSequence {
+        override val length: Int = 1
+
+        override fun get(index: Int): Char = throw CancellationException("tokenization cancelled")
+
+        override fun subSequence(startIndex: Int, endIndex: Int): CharSequence = this
+
+        override fun toString(): String = throw CancellationException("tokenization cancelled")
+    }
 
     @Test
     fun `should count unknowns`() {
@@ -223,6 +234,13 @@ class KoreanTokenizerTest: TestBase() {
     fun `tokenizeTopN should reject non positive topN`() {
         assertFailsWith<IllegalArgumentException> {
             KoreanTokenizer.tokenizeTopN("테스트", topN = 0)
+        }
+    }
+
+    @Test
+    fun `tokenize preserves cancellation`() {
+        assertFailsWith<CancellationException> {
+            KoreanTokenizer.tokenize(CancellingCharSequence())
         }
     }
 
