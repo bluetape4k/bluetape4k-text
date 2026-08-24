@@ -15,6 +15,7 @@
 - Lingua `LanguageDetector` 생성을 위한 Kotlin DSL 팩토리 함수
 - `Language`, `IsoCode639_1`, `IsoCode639_3` 기반 빌더 지원
 - 혼합 언어 텍스트용 `detectAllLanguagesOf(text): Set<Language>` 확장 함수
+- 겹치지 않는 UTF-16 offset과 `0.0..1.0` 신뢰도를 제공하는 `detectLanguageSegments(text): List<LanguageSegment>`
 - 짧은 Latin 토큰 오탐 보정 (예: `Hello → SOTHO` 오탐 억제)
 - `UnicodeDetector` — 스크립트 기반 문자 필터링 (한글, 일본어, 중국어, 태국어)
 - `UnicodeSupport` — 유니코드 블록 범위별 `Char` 확장 프로퍼티

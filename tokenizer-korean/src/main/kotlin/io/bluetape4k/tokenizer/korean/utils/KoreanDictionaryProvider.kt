@@ -72,7 +72,12 @@ internal class SuspendMemoized<T: Any>(
         return if (state !== Uninitialized) {
             currentValue()
         } else {
-            runBlocking(Dispatchers.IO) { get() }
+            try {
+                runBlocking(Dispatchers.IO) { get() }
+            } catch (e: InterruptedException) {
+                Thread.currentThread().interrupt()
+                throw e
+            }
         }
     }
 
