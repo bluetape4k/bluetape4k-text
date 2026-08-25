@@ -2,12 +2,32 @@ package io.bluetape4k.tokenizer.utils
 
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
 import org.junit.jupiter.api.Test
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 /** 버전 증가, 원자적 실패 및 rollback 계약을 검증합니다. */
 class VersionedDictionaryTest {
+
+    @Test
+    fun `dictionary snapshot round trips through Java serialization`() {
+        val expected = DictionarySnapshot(DictionaryVersion("test", 1), "value")
+        val bytes = ByteArrayOutputStream().also { output ->
+            ObjectOutputStream(output).use { it.writeObject(expected) }
+        }.toByteArray()
+
+        @Suppress("UNCHECKED_CAST")
+        val actual = ObjectInputStream(ByteArrayInputStream(bytes)).use {
+            it.readObject() as DictionarySnapshot<String>
+        }
+
+        actual shouldBeEqualTo expected
+    }
 
     @Test
     fun `높은 revision으로 reload하고 이전 snapshot으로 rollback한다`() {
@@ -141,7 +161,7 @@ class VersionedDictionaryTest {
             repeat(3) {
                 executor.submit {
                     repeat(100) {
-                        check(store.snapshot().value >= 1)
+                        (store.snapshot().value >= 1).shouldBeTrue()
                     }
                 }
             }

@@ -9,7 +9,8 @@ import java.util.*
 /**
  * 유니코드 블록 규칙으로 문자열에 특정 locale의 문자가 포함되는지 판정합니다.
  *
- * [SupportedLanguages]에 포함된 locale만 인식합니다. 아스키 문자는 모든 locale에서 통과합니다.
+ * [SupportedLanguages]에 포함된 locale만 비 ASCII 문자 범위를 인식합니다. 아스키 문자는
+ * 지원 여부와 관계없이 모든 locale에서 통과합니다.
  * 필터링은 입력 문자열을 변경하지 않고 항상 새 배열을 반환합니다.
  *
  * ```kotlin
@@ -45,7 +46,7 @@ class UnicodeDetector {
     /**
      * [char]가 [locale]에 속하면 그대로 반환하고, 아니면 `null`을 반환합니다.
      *
-     * 아스키 문자는 항상 반환합니다. 지원하지 않는 locale은 항상 `null`을 반환합니다.
+     * 아스키 문자는 항상 반환합니다. 지원하지 않는 locale은 비 ASCII 문자에 대해 `null`을 반환합니다.
      *
      * @param char 검사할 문자입니다.
      * @param locale 문자 범위를 결정하는 locale입니다.

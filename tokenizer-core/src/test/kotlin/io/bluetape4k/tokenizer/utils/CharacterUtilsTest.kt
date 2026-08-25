@@ -325,4 +325,47 @@ class CharacterUtilsTest {
         }
     }
 
+    @Test
+    fun publicRangeApisRejectInvalidBounds() {
+        assertFailsWith<IllegalArgumentException> {
+            CharacterUtils.readFully(StringReader("abc"), CharArray(3), offset = 2, len = 2)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            CharacterUtils.readFully(StringReader("abc"), CharArray(3), offset = -1, len = 1)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            charUtils.toLowerCase("abc".toCharArray(), offset = 2, limit = 1)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            charUtils.toUpperCase("abc".toCharArray(), offset = -1, limit = 3)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            charUtils.toCodePoints("abc".toCharArray(), srcOff = -1, srcLen = 1, IntArray(1), destOff = 0)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            charUtils.toCodePoints("abc".toCharArray(), srcOff = 1, srcLen = 3, IntArray(3), destOff = 0)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            charUtils.toCodePoints("abc".toCharArray(), srcOff = 0, srcLen = 3, IntArray(1), destOff = 1)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            charUtils.toChars(intArrayOf('a'.code), srcOff = -1, srcLen = 1, CharArray(1), destOff = 0)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            charUtils.toChars(intArrayOf('a'.code), srcOff = 0, srcLen = 1, CharArray(1), destOff = 1)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            charUtils.codePointAt("abc".toCharArray(), offset = 1, limit = 1)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            charUtils.codePointAt("abc", offset = 3)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            charUtils.offsetByCodePoints("abc".toCharArray(), start = 1, count = 2, index = 0, offset = 1)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            CharacterUtils.CharacterBuffer("abc".toCharArray(), offset = 2, length = 2)
+        }
+    }
+
 }

@@ -58,6 +58,24 @@ class DictionaryProviderTest {
     }
 
     @Test
+    fun `readWordsAsSequence eagerly closes the resource before returning`() = runSuspendIO {
+        val content = "first\nsecond\n"
+        val stream = TrackingInputStream(content.byteInputStream())
+        val classLoader = ResourceClassLoader(mapOf(FIRST_PATH to { stream }))
+
+        val words = withContext(ContextClassLoader(classLoader)) {
+            DictionaryProvider.readWordsAsSequence(FIRST_PATH)
+        }
+
+        stream.closed.get().shouldBeTrue()
+        val readsBeforeConsumption = stream.readCalls.get()
+        (readsBeforeConsumption > 0).shouldBeTrue()
+        stream.bytesRead.get() shouldBeEqualTo content.toByteArray().size
+        words.take(1).toList() shouldBeEqualTo listOf("first")
+        stream.readCalls.get() shouldBeEqualTo readsBeforeConsumption
+    }
+
+    @Test
     fun `없는 파일 로드하면 예외가 발생한다`() = runSuspendIO {
         assertFailsWith<IllegalStateException> {
             DictionaryProvider.readWords("$BASE_PATH/noun/non-exists.txt")
@@ -243,6 +261,22 @@ class DictionaryProviderTest {
 
     private class TrackingInputStream(delegate: InputStream): FilterInputStream(delegate) {
         val closed = AtomicBoolean(false)
+        val readCalls = java.util.concurrent.atomic.AtomicInteger()
+        val bytesRead = java.util.concurrent.atomic.AtomicInteger()
+
+        override fun read(): Int {
+            readCalls.incrementAndGet()
+            return super.read().also { value ->
+                if (value >= 0) bytesRead.incrementAndGet()
+            }
+        }
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+            readCalls.incrementAndGet()
+            return super.read(buffer, offset, length).also { count ->
+                if (count > 0) bytesRead.addAndGet(count)
+            }
+        }
 
         override fun close() {
             closed.set(true)

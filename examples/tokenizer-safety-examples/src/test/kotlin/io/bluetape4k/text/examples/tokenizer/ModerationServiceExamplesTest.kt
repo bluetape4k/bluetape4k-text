@@ -3,7 +3,6 @@ package io.bluetape4k.text.examples.tokenizer
 import com.github.pemistahl.lingua.api.Language
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeGreaterThan
-import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotContain
 import io.bluetape4k.tokenizer.model.MAX_TOKENIZE_TEXT_LENGTH
@@ -70,6 +69,6 @@ class ModerationServiceExamplesTest {
         output shouldContain "KEYWORD:password"
         output shouldContain "BLOCKWORD:비속어"
         output shouldContain "masked="
-        output.contains("password").shouldBeTrue()
+        output shouldContain "password"
     }
 }

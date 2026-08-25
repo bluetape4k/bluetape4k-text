@@ -15,6 +15,8 @@ import io.bluetape4k.tokenizer.model.BlockwordResponse
 import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.tokenizer.model.blockwordResponseOf
 import io.bluetape4k.tokenizer.model.requireBlockwordTextLength
+import kotlinx.coroutines.CancellationException
+import java.lang.InterruptedException
 import java.util.*
 
 /**
@@ -66,6 +68,7 @@ object KoreanBlockwordProcessor: KLogging() {
      * @return 금칙어 사전에 걸린 [KoreanToken] list입니다. 입력이 blank이면 빈 list입니다.
      * @throws TokenizerException 처리 중 예외가 발생하면 원인을 감싸 던집니다.
      */
+    @Suppress("ThrowsCount")
     fun findBlockwords(text: String): List<KoreanToken> {
         requireBlockwordTextLength(text)
         if (text.isBlank()) {
@@ -73,8 +76,9 @@ object KoreanBlockwordProcessor: KLogging() {
         }
         try {
             val punctuationRemoved = punctuationProcessor.removePunctuation(text)
-            val blockwordDictionary = KoreanDictionaryProvider.currentBlockwordSnapshot().value
-            val tokens = KoreanTokenizer.tokenize(punctuationRemoved)
+            val dictionaryBundle = KoreanDictionaryProvider.currentBlockwordBundleSnapshot()
+            val blockwordDictionary = dictionaryBundle.blockwords.value
+            val tokens = KoreanTokenizer.tokenize(punctuationRemoved, dictionary = dictionaryBundle.dictionary.value)
             val blockWords = mutableListOf<KoreanToken>()
             tokens
                 .onEach { token ->
@@ -96,6 +100,11 @@ object KoreanBlockwordProcessor: KLogging() {
                 }
             return blockWords
         } catch (e: Error) {
+            throw e
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
             throw e
         } catch (e: Exception) {
             log.error(e) { "Fail to mask block word. textLength=${text.length}" }
@@ -132,8 +141,9 @@ object KoreanBlockwordProcessor: KLogging() {
         }
         try {
             val punctuationRemoved = punctuationProcessor.removePunctuation(request.text)
-            val blockwordDictionary = KoreanDictionaryProvider.currentBlockwordSnapshot().value
-            val tokens = KoreanTokenizer.tokenize(punctuationRemoved)
+            val dictionaryBundle = KoreanDictionaryProvider.currentBlockwordBundleSnapshot()
+            val blockwordDictionary = dictionaryBundle.blockwords.value
+            val tokens = KoreanTokenizer.tokenize(punctuationRemoved, dictionary = dictionaryBundle.dictionary.value)
 
             val maskStr = request.options.mask
             val blockWords = mutableListOf<String>()
@@ -163,6 +173,11 @@ object KoreanBlockwordProcessor: KLogging() {
             }
             return blockwordResponseOf(request, result.toString(), blockWords)
         } catch (e: Error) {
+            throw e
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
             throw e
         } catch (e: Exception) {
             log.error(e) { "Fail to mask block word. textLength=${request.text.length}" }

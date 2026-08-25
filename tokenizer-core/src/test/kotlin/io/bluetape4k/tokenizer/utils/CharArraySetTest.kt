@@ -44,7 +44,7 @@ class CharArraySetTest {
                     set.contains(key).shouldBeTrue()
                     count++
                 }
-                println("$file count=$count")
+                log.debug { "$file count=$count" }
             }
     }
 
@@ -152,6 +152,18 @@ class CharArraySetTest {
         items.contains("a").shouldBeTrue()
         items.contains("b").shouldBeTrue()
         items.contains("c").shouldBeTrue()
+    }
+
+    @Test
+    fun `unmodifiable snapshot iterator does not expose mutable key arrays`() {
+        val source = CharArraySet(2).apply { add("token") }
+        val snapshot = CharArraySet.unmodifiableSet(source)
+
+        val key = snapshot.single() as CharArray
+        key[0] = 'X'
+
+        snapshot.contains("token").shouldBeTrue()
+        snapshot.contains("Xoken").shouldBeFalse()
     }
 
     @Test
@@ -304,6 +316,20 @@ class CharArraySetTest {
         assertFailsWith<UnsupportedOperationException> { readonly.add("beta".toCharArray()) }
         assertFailsWith<UnsupportedOperationException> { readonly.remove("alpha") }
         assertFailsWith<UnsupportedOperationException> { readonly.clear() }
+    }
+
+    @Test
+    fun unmodifiableSetIsAnIndependentSnapshot() {
+        val source = CharArraySet(1)
+        source.add("alpha")
+        val readonly = CharArraySet.unmodifiableSet(source)
+
+        source.clear()
+        source.add("beta")
+
+        readonly shouldHaveSize 1
+        readonly.contains("alpha").shouldBeTrue()
+        readonly.contains("beta").shouldBeFalse()
     }
 
     @Test

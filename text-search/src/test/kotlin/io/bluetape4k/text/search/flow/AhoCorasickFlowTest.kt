@@ -3,16 +3,16 @@ package io.bluetape4k.text.search.flow
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEmpty
 import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeGreaterThan
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldHaveSize
-import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
+import io.bluetape4k.text.search.NormalizationForm
 import io.bluetape4k.text.search.SearchOptions
+import io.bluetape4k.text.search.WordBoundary
 import io.bluetape4k.text.search.ahoCorasickOf
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -22,6 +22,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.take
@@ -32,6 +33,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -46,6 +48,8 @@ class AhoCorasickFlowTest {
     companion object : KLogging() {
         private const val SAMPLE_TEXT = "ushers"
         private const val REPEATED_MATCHES = 512
+        private const val EAGER_CANCELLATION_TEXT_SIZE = 50_000_000
+        private val EAGER_CANCELLATION_TEXT = "x".repeat(EAGER_CANCELLATION_TEXT_SIZE)
     }
 
     private fun fixtureAutomaton(options: SearchOptions = SearchOptions()) =
@@ -64,6 +68,32 @@ class AhoCorasickFlowTest {
         val keywords = matches.map { it.keyword }.toSet()
         keywords shouldBeEqualTo setOf("she", "he", "hers")
         log.debug { "정상 collect 매치: $matches" }
+    }
+
+    @Test
+    fun `Unicode ignoreCase Flow도 keyword와 동일한 pipeline을 사용한다`() = runTest(timeout = 30.seconds) {
+        val automaton = ahoCorasickOf(
+            "İ",
+            "ΟΣ",
+            "ПРИВЕТ",
+            options = SearchOptions(ignoreCase = true),
+        )
+
+        val matches = automaton.matchesAsFlow("İ ΟΣ ПРИВЕТ").toList()
+
+        matches shouldHaveSize 3
+        matches.map { it.start } shouldBeEqualTo listOf(0, 2, 5)
+        matches.map { it.end } shouldBeEqualTo listOf(0, 3, 10)
+
+        val combiningDotAutomaton = ahoCorasickOf(
+            "I\u0307",
+            options = SearchOptions(ignoreCase = true, normalization = NormalizationForm.NONE),
+        )
+        val combiningDotMatches = combiningDotAutomaton.matchesAsFlow("i\u0307").toList()
+        combiningDotMatches shouldHaveSize 1
+        combiningDotMatches.single().keyword shouldBeEqualTo "i\u0307"
+        combiningDotMatches.single().start shouldBeEqualTo 0
+        combiningDotMatches.single().end shouldBeEqualTo 1
     }
 
     @Test
@@ -100,18 +130,12 @@ class AhoCorasickFlowTest {
 
         // 실행
         val matches = automaton.matchesAsFlow(SAMPLE_TEXT).toList()
+        val eagerMatches = automaton.parseText(SAMPLE_TEXT)
 
-        // 검증: "ushers" 에서 겹침 제거 시 "she"(start=1, end=3) + "hers"(start=2, end=5) 의
-        // 겹침을 제거 → 더 긴 키워드 우선 → "hers" 만 남거나 비겹침 매치만 남는다.
-        // 정확한 결과는 IntervalTree 로직에 의해 결정되며, 핵심은 "겹치지 않는 결과만 emit" 됨을 확인하는 것.
-        matches.size shouldBeGreaterThan 0
-        // 겹침 검증: 정렬된 매치들 사이에 start/end 가 서로 겹치지 않아야 함
-        val sorted = matches.sortedBy { it.start }
-        for (i in 1 until sorted.size) {
-            val prev = sorted[i - 1]
-            val curr = sorted[i]
-            (curr.start > prev.end).shouldBeTrue()
-        }
+        eagerMatches shouldBeEqualTo matches
+        matches.map { Triple(it.start, it.end, it.keyword) } shouldBeEqualTo listOf(
+            Triple(2, 5, "hers"),
+        )
         log.debug { "allowOverlaps=false 매치: $matches" }
     }
 
@@ -126,12 +150,10 @@ class AhoCorasickFlowTest {
         // 실행 2: take(1) 로 첫 매치만 가져오기
         val firstFromFlow = automaton.matchesAsFlow(SAMPLE_TEXT).take(1).toList()
 
-        // 검증: take(1) 결과는 항상 1개
+        // 검증: Flow는 stopOnFirstMatch를 무시하고 raw match 전체를 방출하며 take(1)은 첫 항목만 남긴다.
+        allFromFlow.map { it.keyword } shouldBeEqualTo listOf("he", "she", "hers")
         firstFromFlow shouldHaveSize 1
-        // stopOnFirstMatch 가 적용된 경우 Flow 결과도 1개일 수 있음 → 두 결과의 첫 매치는 동일해야 함
-        if (allFromFlow.isNotEmpty()) {
-            allFromFlow.first() shouldBeEqualTo firstFromFlow.first()
-        }
+        allFromFlow.first() shouldBeEqualTo firstFromFlow.single()
         log.debug { "stopOnFirstMatch+Flow 전체: $allFromFlow, take(1): $firstFromFlow" }
     }
 
@@ -147,12 +169,23 @@ class AhoCorasickFlowTest {
         // 검증
         eagerMatches shouldHaveSize 1
         flowMatches shouldHaveSize 3
+        flowMatches.map { it.keyword } shouldBeEqualTo listOf("he", "she", "hers")
+    }
+
+    @Test
+    fun `기본 옵션에서는 synchronous parseText와 Flow 결과 순서가 같다`() = runTest(timeout = 30.seconds) {
+        val automaton = fixtureAutomaton()
+
+        val eagerMatches = automaton.parseText(SAMPLE_TEXT)
+        val flowMatches = automaton.matchesAsFlow(SAMPLE_TEXT).toList()
+
+        eagerMatches shouldBeEqualTo flowMatches
     }
 
     @Test
     fun `1만 매치 throughput micro-test`() = runTest(timeout = 30.seconds) {
         // 준비: 키워드 100개 + 동일 텍스트 100번 반복 → 다수의 매치 생성
-        val keywords = (0 until 100).map { "kw$it" }
+        val keywords = (0 until 100).map { "keyword${it.toString().padStart(3, '0')}" }
         val automaton = ahoCorasickOf(keywords)
         val text = buildString {
             repeat(100) {
@@ -163,8 +196,8 @@ class AhoCorasickFlowTest {
         // 실행
         val matches = automaton.matchesAsFlow(text).toList()
 
-        // 검증: 최소 1만 매치 (100 keywords × 100 repeats = 10_000)
-        matches.shouldNotBeEmpty()
+        // 검증: 100 keywords × 100 repeats = 정확히 10,000건
+        matches shouldHaveSize 10_000
         log.debug { "throughput micro-test 매치 개수: ${matches.size}" }
     }
 
@@ -198,6 +231,52 @@ class AhoCorasickFlowTest {
         caught.shouldNotBeNull()
         caught.shouldBeInstanceOf<CancellationException>()
         log.debug { "CancellationException 정상 전파됨: ${caught.message}" }
+    }
+
+    @Test
+    fun `첫 match 이전의 대규모 no-match 순회도 취소를 관찰한다`() = runSuspendIO {
+        val started = CompletableDeferred<Unit>()
+        val release = AtomicBoolean(false)
+        val text = object: CharSequence {
+            private val size = 10_000_000
+
+            override val length: Int get() = size
+
+            override fun get(index: Int): Char = 'x'
+
+            override fun subSequence(startIndex: Int, endIndex: Int): CharSequence = this
+
+            override fun toString(): String {
+                started.complete(Unit)
+                while (!release.get()) Thread.yield()
+                return "x".repeat(size)
+            }
+        }
+
+        val producer = async(Dispatchers.Default) {
+            fixtureAutomaton().matchesAsFlow(text).toList()
+        }
+
+        try {
+            withTimeout(5.seconds) { started.await() }
+            producer.cancel()
+            release.set(true)
+            withTimeout(5.seconds) { producer.join() }
+            producer.isCancelled.shouldBeTrue()
+        } finally {
+            release.set(true)
+            producer.cancelAndJoin()
+        }
+    }
+
+    @Test
+    fun `allowOverlaps=false 대규모 no-match eager 순회는 취소를 관찰한다`() = runSuspendIO {
+        assertEagerNoMatchCancellation(SearchOptions(allowOverlaps = false))
+    }
+
+    @Test
+    fun `wordBoundary eager 대규모 no-match 순회는 취소를 관찰한다`() = runSuspendIO {
+        assertEagerNoMatchCancellation(SearchOptions(wordBoundary = WordBoundary.LATIN_ALPHA))
     }
 
     @Test
@@ -288,6 +367,39 @@ class AhoCorasickFlowTest {
         // 충분히 큰 fixture로 producer가 channel buffer를 채우는 동안 collector 취소를 검증한다.
         repeat(REPEATED_MATCHES) {
             append("he ")
+        }
+    }
+
+    private suspend fun assertEagerNoMatchCancellation(options: SearchOptions) = coroutineScope {
+        val started = CompletableDeferred<Unit>()
+        val text = SignallingNoMatchText(EAGER_CANCELLATION_TEXT, started)
+        val producer = async(Dispatchers.Default) {
+            ahoCorasickOf("needle", options = options).matchesAsFlow(text).toList()
+        }
+
+        try {
+            withTimeout(5.seconds) { started.await() }
+            producer.cancel()
+            withTimeout(5.seconds) { producer.join() }
+            producer.isCancelled.shouldBeTrue()
+        } finally {
+            producer.cancelAndJoin()
+        }
+    }
+
+    private class SignallingNoMatchText(
+        private val value: String,
+        private val started: CompletableDeferred<Unit>,
+    ) : CharSequence {
+        override val length: Int get() = value.length
+
+        override fun get(index: Int): Char = value[index]
+
+        override fun subSequence(startIndex: Int, endIndex: Int): CharSequence = value.subSequence(startIndex, endIndex)
+
+        override fun toString(): String {
+            started.complete(Unit)
+            return value
         }
     }
 

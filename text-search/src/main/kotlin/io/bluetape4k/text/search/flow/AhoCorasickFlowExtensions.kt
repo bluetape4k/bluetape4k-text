@@ -38,7 +38,7 @@ import kotlinx.coroutines.flow.flowOn
 fun <V> AhoCorasickAutomaton<V>.matchesAsFlow(text: CharSequence): Flow<AhoCorasickMatch<V>> =
     channelFlow {
         if (options.requiresEagerFlowPostProcessing()) {
-            for (match in parseText(text)) {
+            for (match in parseTextSuspending(text, ignoreStopOnFirstMatch = true)) {
                 coroutineContext.ensureActive()
                 send(match)
             }

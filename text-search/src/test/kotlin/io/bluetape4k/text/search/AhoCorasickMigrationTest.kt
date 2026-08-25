@@ -304,7 +304,7 @@ class AhoCorasickMigrationTest {
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
-     * 케이스 8: `replaceAll { map[it.keyword]!! }` — 약어를 풀네임으로 치환.
+     * 케이스 8: `replaceAll { map.getValue(it.keyword) }` — 약어를 풀네임으로 치환.
      *
      * 구 API에는 직접 대응 케이스 없음; `food recipes` 변형으로 replaceAll 검증.
      */

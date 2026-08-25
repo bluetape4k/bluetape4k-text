@@ -24,6 +24,12 @@ class CharArrayMapTest {
     }
 
     @Test
+    fun constructorsRejectNegativeCapacityHints() {
+        assertFailsWith<IllegalArgumentException> { CharArrayMap<String>(-1) }
+        assertFailsWith<IllegalArgumentException> { CharArraySet(-1) }
+    }
+
+    @Test
     fun `put and get values`() {
         val map = CharArrayMap<String>(16)
 
@@ -170,6 +176,18 @@ class CharArrayMapTest {
     }
 
     @Test
+    fun `unmodifiable snapshot iterator does not expose mutable key arrays`() {
+        val source = CharArrayMap<Int>(2).apply { put("token", 1) }
+        val snapshot = CharArrayMap.unmodifiableMap(source)
+
+        val key = snapshot.keys.single() as CharArray
+        key[0] = 'X'
+
+        snapshot.containsKey("token").shouldBeTrue()
+        snapshot.containsKey("Xoken").shouldBeFalse()
+    }
+
+    @Test
     fun `copy from regular Map`() {
         val regularMap =
             mutableMapOf<Any, String>(
@@ -292,6 +310,20 @@ class CharArrayMapTest {
         assertFailsWith<UnsupportedOperationException> { readonly.clear() }
         assertFailsWith<UnsupportedOperationException> { readonly.entries.first().setValue("updated") }
         assertFailsWith<UnsupportedOperationException> { readonly.entries.clear() }
+    }
+
+    @Test
+    fun unmodifiableMapIsAnIndependentSnapshot() {
+        val source = CharArrayMap<String>(1)
+        source["alpha"] = "one"
+        val readonly = CharArrayMap.unmodifiableMap(source)
+
+        source.clear()
+        source["beta"] = "two"
+
+        readonly shouldHaveSize 1
+        readonly["alpha"] shouldBeEqualTo "one"
+        readonly.containsKey("beta").shouldBeFalse()
     }
 
     @Test

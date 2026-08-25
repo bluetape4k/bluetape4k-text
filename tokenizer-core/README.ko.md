@@ -13,7 +13,7 @@ bluetape4k 생태계에서 텍스트 토크나이저와 금칙어 처리기를 �
 - **도메인 모델 계층** — `TokenizeRequest` / `TokenizeResponse`와 `BlockwordRequest` / `BlockwordResponse` — 인스턴스 생성 시각 자동 기록
 - **설정 가능한 옵션** — `TokenizeOptions`(로캘)과 `BlockwordOptions`(마스크 문자, 로캘, 심각도 수준)
 - **심각도 열거형** — `Severity.LOW`(은어/속어), `MIDDLE`(욕설), `HIGH`(혐오 표현/지역 비하) 세 단계 콘텐츠 정책
-- **사전 유틸리티** — `DictionaryProvider`가 클래스패스 리소스 파일(일반 텍스트 또는 `.gz`)을 지연 `Sequence`, 단어 빈도 맵, 또는 고성능 `CharArraySet`으로 로드
+- **사전 유틸리티** — `DictionaryProvider`가 클래스패스 리소스 파일(일반 텍스트 또는 `.gz`)을 즉시 메모리에 적재한 `Sequence` 스냅샷, 단어 빈도 맵, 또는 고성능 `CharArraySet`으로 로드
 - **병렬 사전 로딩** — `readWordsAsSet`과 `readWords`가 `Flow.async`를 이용해 여러 사전 파일을 동시 적재
 - **고성능 집합/맵 구조** — 대용량 단어 목록 멤버십 검사에 최적화된 `CharArraySet`과 `CharArrayMap`
 - **예외 계층** — `TokenizerException`과 `InvalidTokenizeRequestException`이 `BluetapeException` 상속
@@ -65,7 +65,7 @@ println(response.maskedText)        // 나쁜 ***가 포함된 문장
 import io.bluetape4k.tokenizer.utils.DictionaryProvider
 import kotlinx.coroutines.runBlocking
 
-// 지연 시퀀스 — 라인 단위 읽기
+// 즉시 메모리 스냅샷 — 반환 전에 리소스를 모두 읽고 닫습니다
 val words: Sequence<String> = DictionaryProvider.readWordsAsSequence("dict/stopwords.txt")
 
 // 여러 파일을 병렬로 읽어 CharArraySet에 적재
@@ -77,6 +77,11 @@ println(set.contains("foo"))  // 두 파일 중 하나에 "foo"가 있으면 tru
 // 탭 구분 단어-빈도 파일 읽기 (형식: 단어\t빈도)
 val freqMap: Map<CharSequence, Float> = DictionaryProvider.readWordFreqs("dict/freqs.txt")
 ```
+
+`readWordsAsSequence`는 반환 전에 리소스 전체를 읽고 stream을 닫습니다.
+따라서 `take(2)`는 읽기가 끝난 뒤 Sequence 순회량만 줄이며, 파일 I/O나
+최대 메모리 사용량을 줄이지 않습니다. 중복을 제거한 membership 조회가
+필요하면 `readWordsAsSet`을 사용하세요.
 
 ## 의존성
 

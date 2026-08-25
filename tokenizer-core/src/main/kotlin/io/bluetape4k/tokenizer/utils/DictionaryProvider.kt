@@ -21,7 +21,7 @@ import java.util.zip.GZIPInputStream
  *
  * ```kotlin
  * val words = DictionaryProvider.readWordsAsSequence("dict/custom.txt").take(2).toList()
- * // words.size <= 2
+ * // words.size <= 2; the file was read and closed before this sequence was returned
  * ```
  */
 object DictionaryProvider: KLogging() {
@@ -33,7 +33,7 @@ object DictionaryProvider: KLogging() {
      * [InputStream]을 line 단위로 읽고 trim한 string을 [Sequence]로 반환합니다.
      *
      * ## 동작 계약
-     * - UTF-8로 decode하고 모든 line을 memory에 eager load합니다.
+     * - UTF-8로 decode하고 모든 line을 메모리에 즉시 적재합니다.
      * - Stream leak을 막기 위해 [Reader]를 `use {}`로 안전하게 닫습니다.
      * - 각 line은 `trim()`으로 변환합니다.
      *
@@ -150,14 +150,15 @@ object DictionaryProvider: KLogging() {
      *
      * ## 동작 계약
      * - [readFileByLineFromResources]에 직접 위임합니다.
-     * - Sequence는 in-memory list를 감싸므로 file-handle leak이 없습니다.
+     * - Sequence는 메모리 list를 감싸는 즉시 적재 스냅샷입니다.
+     * - 반환 전에 파일을 모두 읽고 닫으므로 `take(2)`도 파일 I/O 양을 줄이지 않습니다.
      *
      * @param filename 읽을 word dictionary resource filename입니다.
      * @return trim된 word sequence입니다.
      *
      * ```kotlin
      * val first = DictionaryProvider.readWordsAsSequence("dict/words.txt").first()
-     * // first.isNotBlank() == true
+     * // first.isNotBlank() == true; the complete file was loaded before first() ran
      * ```
      */
     fun readWordsAsSequence(filename: String): Sequence<String> {

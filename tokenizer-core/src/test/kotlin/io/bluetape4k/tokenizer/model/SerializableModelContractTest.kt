@@ -4,6 +4,9 @@ import io.bluetape4k.tokenizer.AbstractCoreTest
 import io.bluetape4k.tokenizer.utils.CharArrayMap
 import io.bluetape4k.tokenizer.utils.CharArraySet
 import io.bluetape4k.tokenizer.utils.CharacterUtils
+import io.bluetape4k.tokenizer.utils.DictionarySnapshot
+import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeTrue
 import org.junit.jupiter.api.Test
 import java.io.Serializable
 
@@ -23,16 +26,13 @@ class SerializableModelContractTest: AbstractCoreTest() {
             CharArrayMap::class.java,
             CharArraySet::class.java,
             CharacterUtils::class.java,
+            DictionarySnapshot::class.java,
         ).forEach(::assertSerialVersionUid)
     }
 
     private fun assertSerialVersionUid(type: Class<*>) {
-        check(Serializable::class.java.isAssignableFrom(type)) {
-            "${type.name} must remain Serializable"
-        }
+        Serializable::class.java.isAssignableFrom(type).shouldBeTrue()
         val field = type.getDeclaredField("serialVersionUID")
-        check(field.type == Long::class.javaPrimitiveType) {
-            "${type.name}.serialVersionUID must be a primitive long"
-        }
+        field.type shouldBeEqualTo Long::class.javaPrimitiveType
     }
 }

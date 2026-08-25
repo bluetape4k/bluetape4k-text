@@ -1,5 +1,6 @@
 package io.bluetape4k.tokenizer.model
 
+import io.bluetape4k.support.requireInRange
 import io.bluetape4k.support.requireNotBlank
 
 /**
@@ -19,7 +20,7 @@ const val MAX_TOKENIZE_TEXT_LENGTH: Int = 100_000
  * @param textLength 검증할 입력 문자열의 문자 수입니다.
  */
 fun requireTokenizeTextLength(textLength: Int) {
-    require(textLength <= MAX_TOKENIZE_TEXT_LENGTH) {
+    textLength.requireInRange(0, MAX_TOKENIZE_TEXT_LENGTH) {
         "text too long: $textLength chars (max $MAX_TOKENIZE_TEXT_LENGTH)"
     }
 }

@@ -2,11 +2,13 @@ package io.bluetape4k.text.search
 
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.support.requireNotBlank
+import io.bluetape4k.text.search.internal.CaseFoldedText
+import io.bluetape4k.text.search.internal.Emit
 import io.bluetape4k.text.search.internal.InternalTrieConfig
-import io.bluetape4k.text.search.internal.EmitHandler
 import io.bluetape4k.text.search.internal.OffsetMapping
 import io.bluetape4k.text.search.internal.TrieCore
 import io.bluetape4k.text.search.internal.applyPipeline
+import io.bluetape4k.text.search.internal.lowercaseWithMapping
 
 /**
  * 키워드를 연결 값에 매핑하는 불변, 스레드 안전 Aho-Corasick automaton입니다.
@@ -64,17 +66,40 @@ class AhoCorasickAutomaton<V> internal constructor(
             return emptyList()
         }
 
-        // 1. 유니코드 정규화 + offset mapping 구축. NONE이면 mapping은 null입니다.
-        val (normalizedText, mapping) = OffsetMapping.build(text, options.normalization)
+        val processed = preprocess(text)
 
-        // 2. ignoreCase 적용. Locale.ROOT 기준 소문자로 변환합니다.
-        val processedText: CharSequence = if (options.ignoreCase) {
-            normalizedText.lowercaseCharByChar()
-        } else {
-            normalizedText
+        val emits = core.parseText(processed.text)
+        return mapEmits(processed, emits, options.stopOnFirstMatch)
+    }
+
+    /**
+     * 전체 결과 후처리가 필요한 Flow 경로를 문자 단위 취소 확인과 함께 수행합니다.
+     *
+     * [ignoreStopOnFirstMatch]가 `true`이면 Flow 계약에 따라 [SearchOptions.stopOnFirstMatch]를 무시합니다.
+     * 겹침 제거와 단어 경계 필터는 raw match를 모두 수집한 뒤 적용하지만, trie 순회 자체는
+     * [TrieCore.parseTextSuspending]을 통해 각 문자에서 협력 취소를 관찰합니다.
+     */
+    internal suspend fun parseTextSuspending(
+        text: CharSequence,
+        ignoreStopOnFirstMatch: Boolean,
+    ): List<AhoCorasickMatch<V>> {
+        if (text.isEmpty() || values.isEmpty()) {
+            return emptyList()
         }
 
-        val emits = core.parseText(processedText)
+        val processed = preprocess(text)
+        val emits = core.parseTextSuspending(
+            processed.text,
+            stopOnHit = !ignoreStopOnFirstMatch && options.stopOnFirstMatch,
+        )
+        return mapEmits(processed, emits, !ignoreStopOnFirstMatch && options.stopOnFirstMatch)
+    }
+
+    private fun mapEmits(
+        processed: ProcessedText,
+        emits: List<Emit>,
+        stopOnFirstMatch: Boolean,
+    ): List<AhoCorasickMatch<V>> {
         if (emits.isEmpty()) {
             return emptyList()
         }
@@ -83,9 +108,9 @@ class AhoCorasickAutomaton<V> internal constructor(
         for (emit in emits) {
             val keyword = emit.keyword ?: continue
             val value = values[keyword] ?: continue
-            // 정규화된 offset을 원본 offset으로 복원합니다.
-            val origStart = mapping?.toOriginal(emit.start) ?: emit.start
-            val origEnd = mapping?.toOriginalEndInclusive(emit.end) ?: emit.end
+            // 전처리된 offset을 원본 offset으로 복원합니다.
+            val origStart = processed.toOriginalStart(emit.start)
+            val origEnd = processed.toOriginalEndInclusive(emit.end)
             matches.add(
                 AhoCorasickMatch(
                     start = origStart,
@@ -94,7 +119,7 @@ class AhoCorasickAutomaton<V> internal constructor(
                     value = value,
                 )
             )
-            if (options.stopOnFirstMatch) {
+            if (stopOnFirstMatch) {
                 break
             }
         }
@@ -126,20 +151,15 @@ class AhoCorasickAutomaton<V> internal constructor(
             return
         }
 
-        val (normalizedText, mapping) = OffsetMapping.build(text, options.normalization)
-        val processedText: CharSequence = if (options.ignoreCase) {
-            normalizedText.lowercaseCharByChar()
-        } else {
-            normalizedText
-        }
+        val processed = preprocess(text)
 
         core.runParseTextSuspending(
-            processedText,
+            processed.text,
             { emit ->
                 val keyword = emit.keyword ?: return@runParseTextSuspending true
                 val value = values[keyword] ?: return@runParseTextSuspending true
-                val origStart = mapping?.toOriginal(emit.start) ?: emit.start
-                val origEnd = mapping?.toOriginalEndInclusive(emit.end) ?: emit.end
+                val origStart = processed.toOriginalStart(emit.start)
+                val origEnd = processed.toOriginalEndInclusive(emit.end)
                 onMatch(
                     AhoCorasickMatch(
                         start = origStart,
@@ -183,13 +203,33 @@ class AhoCorasickAutomaton<V> internal constructor(
      */
     fun containsMatch(text: CharSequence): Boolean {
         if (text.isEmpty() || values.isEmpty()) return false
-        val (normalizedText, _) = OffsetMapping.build(text, options.normalization)
-        val processedText: CharSequence = if (options.ignoreCase) {
-            normalizedText.lowercaseCharByChar()
-        } else {
-            normalizedText
+        return core.containsMatch(preprocess(text).text)
+    }
+
+    private data class ProcessedText(
+        val text: String,
+        val normalizationMapping: OffsetMapping?,
+        val caseMapping: CaseFoldedText?,
+    ) {
+        fun toOriginalStart(offset: Int): Int {
+            val normalizedOffset = caseMapping?.toSourceStart(offset) ?: offset
+            return normalizationMapping?.toOriginal(normalizedOffset) ?: normalizedOffset
         }
-        return core.containsMatch(processedText)
+
+        fun toOriginalEndInclusive(offset: Int): Int {
+            val normalizedOffset = caseMapping?.toSourceEndInclusive(offset) ?: offset
+            return normalizationMapping?.toOriginalEndInclusive(normalizedOffset) ?: normalizedOffset
+        }
+    }
+
+    private fun preprocess(text: CharSequence): ProcessedText {
+        val (normalizedText, normalizationMapping) = OffsetMapping.build(text, options.normalization)
+        val caseMapping = if (options.ignoreCase) normalizedText.lowercaseWithMapping() else null
+        return ProcessedText(
+            text = caseMapping?.text ?: normalizedText,
+            normalizationMapping = normalizationMapping,
+            caseMapping = caseMapping,
+        )
     }
 
     /**
@@ -379,15 +419,4 @@ class AhoCorasickAutomaton<V> internal constructor(
             return AhoCorasickAutomaton(core, normalizedValues.toMap(), opts)
         }
     }
-}
-
-/**
- * [Char.lowercaseChar]를 사용해 문자열을 문자 단위로 소문자화합니다.
- *
- * [java.util.Locale.ROOT]를 쓰는 [String.lowercase]와 달리 `Char.lowercaseChar()`는 항상 단일
- * `Char`를 반환합니다(BMP-safe). 따라서 결과 문자열은 receiver와 같은 길이를 보장합니다.
- * 이 보장은 `ignoreCase = true`와 [OffsetMapping] 기반 정규화를 함께 사용할 때 offset 불일치를 막습니다.
- */
-private fun String.lowercaseCharByChar(): String = buildString(length) {
-    for (c in this@lowercaseCharByChar) append(c.lowercaseChar())
 }

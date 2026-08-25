@@ -1,5 +1,6 @@
 package io.bluetape4k.text.examples.search
 
+import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
@@ -34,6 +35,10 @@ class StreamingSearchExamplesTest {
 
     @Test
     fun `빈 chunk 크기는 거부한다`() {
-        check(runCatching { runStreamingSearchExample("secret", 0) }.isFailure)
+        val failure = assertFailsWith<IllegalArgumentException> {
+            runStreamingSearchExample("secret", chunkSize = 0)
+        }
+
+        failure.message shouldBeEqualTo "chunkSize must be positive"
     }
 }

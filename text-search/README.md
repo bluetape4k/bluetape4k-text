@@ -254,12 +254,11 @@ Run benchmarks locally:
 | Dependency | Purpose |
 |---|---|
 | `bluetape4k-core` | Core utilities |
-| `kotlinx-coroutines-core` | Flow API support (optional, `compileOnly`) |
+| `kotlinx-coroutines-core` | Public Flow API (transitive `api`) |
 
 ```kotlin
 // build.gradle.kts
 implementation("io.github.bluetape4k.text:text-search:<current release or snapshot>")
 
-// Optional: Coroutines Flow support
-implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+// text-search publishes kotlinx-coroutines-core transitively through its public API
 ```

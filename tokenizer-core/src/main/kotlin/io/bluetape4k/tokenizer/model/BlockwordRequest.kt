@@ -1,5 +1,6 @@
 package io.bluetape4k.tokenizer.model
 
+import io.bluetape4k.support.requireInRange
 import io.bluetape4k.support.requireNotBlank
 
 /**
@@ -19,7 +20,7 @@ const val MAX_BLOCKWORD_TEXT_LENGTH: Int = 100_000
  * @param text 길이를 검증할 blockword 입력 문자열입니다.
  */
 fun requireBlockwordTextLength(text: CharSequence) {
-    require(text.length <= MAX_BLOCKWORD_TEXT_LENGTH) {
+    text.length.requireInRange(0, MAX_BLOCKWORD_TEXT_LENGTH) {
         "text too long: ${text.length} chars (max $MAX_BLOCKWORD_TEXT_LENGTH)"
     }
 }

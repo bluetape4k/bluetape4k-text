@@ -282,6 +282,33 @@ class KoreanDictionaryProviderTest: TestBase() {
     }
 
     @Test
+    fun `같은 단어가 HIGH와 LOW에 있으면 한 tier 제거가 다른 threshold를 지우지 않는다`() {
+        val original = KoreanDictionaryProvider.currentBlockwordSnapshot()
+        val sharedWord = "issue295-shared-tier"
+
+        try {
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion("korean-blockwords", original.version.revision + 1),
+                mapOf(
+                    Severity.LOW to listOf(sharedWord),
+                    Severity.MIDDLE to emptyList(),
+                    Severity.HIGH to listOf(sharedWord),
+                ),
+            )
+
+            KoreanDictionaryProvider.mutateBlockwords(Severity.HIGH) {
+                remove(sharedWord)
+            }
+
+            KoreanDictionaryProvider.containsBlockword(sharedWord, Severity.HIGH).shouldBeFalse()
+            KoreanDictionaryProvider.containsBlockword(sharedWord, Severity.MIDDLE).shouldBeFalse()
+            KoreanDictionaryProvider.containsBlockword(sharedWord, Severity.LOW).shouldBeTrue()
+        } finally {
+            restoreBlockwords(original)
+        }
+    }
+
+    @Test
     fun `reload은 exact tier를 threshold view로 정규화한다`() {
         val original = KoreanDictionaryProvider.currentBlockwordSnapshot()
         val words = mapOf(
@@ -362,6 +389,94 @@ class KoreanDictionaryProviderTest: TestBase() {
         }
     }
 
+    @Test
+    fun `stale cumulative snapshot reload은 source tier provenance을 보존해 per-tier 제거를 안전하게 한다`() {
+        val original = KoreanDictionaryProvider.currentBlockwordSnapshot()
+        val staleWords = mapOf(
+            Severity.LOW to "issue306-stale-low",
+            Severity.MIDDLE to "issue306-stale-middle",
+            Severity.HIGH to "issue306-stale-high",
+        )
+
+        try {
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion("korean-blockwords", original.version.revision + 1),
+                staleWords.mapValues { (_, word) -> listOf(word) },
+            )
+            val stale = KoreanDictionaryProvider.currentBlockwordSnapshot()
+
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion("korean-blockwords", stale.version.revision + 1),
+                mapOf(
+                    Severity.LOW to listOf("issue306-current-low"),
+                    Severity.MIDDLE to emptyList(),
+                    Severity.HIGH to emptyList(),
+                ),
+            )
+
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion(
+                    "korean-blockwords",
+                    KoreanDictionaryProvider.currentBlockwordSnapshot().version.revision + 1,
+                ),
+                stale.value,
+            )
+            KoreanDictionaryProvider.mutateBlockwords(Severity.MIDDLE) {
+                remove(staleWords.getValue(Severity.MIDDLE))
+            }
+
+            assertBlockwordEntries(
+                KoreanDictionaryProvider.currentBlockwordSnapshot().value,
+                staleWords.values,
+                mapOf(
+                    Severity.LOW to setOf(staleWords.getValue(Severity.LOW), staleWords.getValue(Severity.HIGH)),
+                    Severity.MIDDLE to setOf(staleWords.getValue(Severity.HIGH)),
+                    Severity.HIGH to setOf(staleWords.getValue(Severity.HIGH)),
+                ),
+            )
+        } finally {
+            restoreBlockwords(original)
+        }
+    }
+
+    @Test
+    fun `exact map은 cumulative 값이 같아도 source tier를 추론하지 않는다`() {
+        val original = KoreanDictionaryProvider.currentBlockwordSnapshot()
+        val sharedWord = "issue306-explicit-tier"
+
+        try {
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion("korean-blockwords", original.version.revision + 1),
+                mapOf(
+                    Severity.LOW to listOf(sharedWord),
+                    Severity.MIDDLE to listOf(sharedWord),
+                    Severity.HIGH to emptyList(),
+                ),
+            )
+            KoreanDictionaryProvider.reloadBlockwords(
+                DictionaryVersion(
+                    "korean-blockwords",
+                    KoreanDictionaryProvider.currentBlockwordSnapshot().version.revision + 1,
+                ),
+                mapOf(
+                    Severity.LOW to emptyList(),
+                    Severity.MIDDLE to listOf(sharedWord),
+                    Severity.HIGH to emptyList(),
+                ),
+            )
+
+            KoreanDictionaryProvider.mutateBlockwords(Severity.MIDDLE) {
+                remove(sharedWord)
+            }
+
+            Severity.values().forEach { severity ->
+                KoreanDictionaryProvider.containsBlockword(sharedWord, severity).shouldBeFalse()
+            }
+        } finally {
+            restoreBlockwords(original)
+        }
+    }
+
     private fun restoreBlockwords(
         original: DictionarySnapshot<Map<Severity, Set<String>>>,
     ) {
@@ -433,13 +548,89 @@ class KoreanDictionaryProviderTest: TestBase() {
     }
 
     @Test
+    @Suppress("DEPRECATION")
+    fun `금칙어 facade mutation은 세 사전 snapshot을 함께 갱신하고 deprecated alias도 대칭이다`() {
+        val word = "P1원자금칙어_295"
+
+        try {
+            KoreanProcessor.addBlockwords(listOf(word), Severity.HIGH)
+            val added = KoreanDictionaryProvider.currentBlockwordBundleSnapshot()
+
+            added.blockwords.version.revision shouldBeEqualTo added.dictionary.version.revision
+            added.dictionary.version.revision shouldBeEqualTo added.properNouns.version.revision
+            added.blockwords.value.getValue(Severity.HIGH).contains(word).shouldBeTrue()
+            added.dictionary.value.getValue(Noun).contains(word).shouldBeTrue()
+            added.properNouns.value.contains(word).shouldBeTrue()
+
+            KoreanProcessor.removeBlockword(listOf(word), Severity.HIGH)
+            val removed = KoreanDictionaryProvider.currentBlockwordBundleSnapshot()
+            removed.blockwords.value.getValue(Severity.HIGH).contains(word).shouldBeFalse()
+            removed.dictionary.value.getValue(Noun).contains(word).shouldBeFalse()
+            removed.properNouns.value.contains(word).shouldBeFalse()
+        } finally {
+            KoreanProcessor.removeBlockwords(listOf(word), Severity.HIGH)
+        }
+    }
+
+    @Test
+    fun `동시 add remove 중 aggregate snapshot은 mixed revision을 노출하지 않는다`() {
+        val word = "P1동시원자금칙어_295"
+        val violations = Collections.synchronizedList(mutableListOf<String>())
+
+        fun observe() {
+            val snapshot = KoreanDictionaryProvider.currentBlockwordBundleSnapshot()
+            val blockword = snapshot.blockwords.value.getValue(Severity.HIGH).contains(word)
+            val noun = snapshot.dictionary.value.getValue(Noun).contains(word)
+            val properNoun = snapshot.properNouns.value.contains(word)
+            if (setOf(blockword, noun, properNoun).distinct().size != 1) {
+                violations.add("mixed aggregate snapshot: blockword=$blockword noun=$noun properNoun=$properNoun")
+            }
+            if (snapshot.blockwords.version.revision != snapshot.dictionary.version.revision ||
+                snapshot.dictionary.version.revision != snapshot.properNouns.version.revision
+            ) {
+                violations.add(
+                    "mixed aggregate revision: blockword=${snapshot.blockwords.version.revision} " +
+                            "dictionary=${snapshot.dictionary.version.revision} " +
+                            "properNouns=${snapshot.properNouns.version.revision}"
+                )
+            }
+        }
+
+        try {
+            // 이전 테스트의 독립 reload가 있더라도 aggregate mutation이 revision을 재정렬하도록 준비합니다.
+            KoreanProcessor.addBlockwords(listOf(word), Severity.HIGH)
+            KoreanProcessor.removeBlockwords(listOf(word), Severity.HIGH)
+
+            MultithreadingTester()
+                .workers(8)
+                .rounds(100)
+                .add {
+                    KoreanProcessor.addBlockwords(listOf(word), Severity.HIGH)
+                    observe()
+                }
+                .add {
+                    KoreanProcessor.removeBlockwords(listOf(word), Severity.HIGH)
+                    observe()
+                }
+                .add { observe() }
+                .run()
+        } finally {
+            KoreanProcessor.removeBlockwords(listOf(word), Severity.HIGH)
+        }
+
+        violations.shouldBeEmpty()
+    }
+
+    @Test
     fun `public dictionary view는 read-only이고 직접 변경을 snapshot에 기록하지 않는다`() {
         val directWord = "직접가변사전단어"
         val adverbs = KoreanDictionaryProvider.koreanDictionary.getValue(KoreanPos.Adverb)
         val highBlockwords = KoreanDictionaryProvider.blockWords.getValue(Severity.HIGH)
+        val properNouns = KoreanDictionaryProvider.properNouns
 
         assertFailsWith<UnsupportedOperationException> { adverbs.add(directWord) }
         assertFailsWith<UnsupportedOperationException> { highBlockwords.add(directWord) }
+        assertFailsWith<UnsupportedOperationException> { properNouns.add(directWord) }
         KoreanDictionaryProvider.currentDictionarySnapshot()
             .value[KoreanPos.Adverb]
             ?.contains(directWord)

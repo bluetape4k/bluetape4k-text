@@ -1,6 +1,7 @@
 package io.bluetape4k.text.examples.tokenizer
 
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import org.junit.jupiter.api.Test
@@ -38,7 +39,7 @@ class JapaneseBackendComparisonExamplesTest {
 
     @Test
     fun `comparison uses one approved corpus and exposes segmentation mismatches`() {
-        comparisonCorpus().map { runJapaneseBackendComparison(it) }.size shouldBeEqualTo 3
+        comparisonCorpus().map { runJapaneseBackendComparison(it) } shouldHaveSize 3
 
         val tokyo = runJapaneseBackendComparison("東京都へ行く")
         tokyo.current.tokens.map { it.surface } shouldBeEqualTo listOf("東京", "都", "へ", "行く")

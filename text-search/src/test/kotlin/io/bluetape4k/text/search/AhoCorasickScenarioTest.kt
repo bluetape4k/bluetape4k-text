@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
 import io.bluetape4k.assertions.shouldNotBeNull
@@ -140,16 +140,16 @@ class AhoCorasickScenarioTest : AbstractAhoCorasickTest() {
         val byKeyword = matches.associateBy { it.keyword }
 
         // http:// 시작 위치 검증
-        byKeyword["http://"].shouldNotBeNull()
-        text.substring(byKeyword["http://"]!!.start, byKeyword["http://"]!!.end + 1) shouldBeEqualTo "http://"
+        val http = byKeyword["http://"].shouldNotBeNull()
+        text.substring(http.start, http.end + 1) shouldBeEqualTo "http://"
 
         // https:// 시작 위치 검증
-        byKeyword["https://"].shouldNotBeNull()
-        text.substring(byKeyword["https://"]!!.start, byKeyword["https://"]!!.end + 1) shouldBeEqualTo "https://"
+        val https = byKeyword["https://"].shouldNotBeNull()
+        text.substring(https.start, https.end + 1) shouldBeEqualTo "https://"
 
         // ftp:// 시작 위치 검증
-        byKeyword["ftp://"].shouldNotBeNull()
-        text.substring(byKeyword["ftp://"]!!.start, byKeyword["ftp://"]!!.end + 1) shouldBeEqualTo "ftp://"
+        val ftp = byKeyword["ftp://"].shouldNotBeNull()
+        text.substring(ftp.start, ftp.end + 1) shouldBeEqualTo "ftp://"
 
         log.debug { "URL 스킴 추출 결과: $matches" }
     }
@@ -183,9 +183,9 @@ class AhoCorasickScenarioTest : AbstractAhoCorasickTest() {
         }
 
         // 검증: Kotlin 예약어 "fun", "val", "return"이 <b>...</b>로 감싸져야 함
-        html.contains("<b>fun</b>").shouldBeTrue()
-        html.contains("<b>val</b>").shouldBeTrue()
-        html.contains("<b>return</b>").shouldBeTrue()
+        html shouldContain "<b>fun</b>"
+        html shouldContain "<b>val</b>"
+        html shouldContain "<b>return</b>"
 
         // tokenize 결과에서 Match 토큰에 Kotlin 예약어가 포함됨을 검증
         val matchedKeywords = tokens
@@ -193,9 +193,9 @@ class AhoCorasickScenarioTest : AbstractAhoCorasickTest() {
             .map { it.match.keyword }
             .toSet()
 
-        matchedKeywords.contains("fun").shouldBeTrue()
-        matchedKeywords.contains("val").shouldBeTrue()
-        matchedKeywords.contains("return").shouldBeTrue()
+        matchedKeywords shouldContain "fun"
+        matchedKeywords shouldContain "val"
+        matchedKeywords shouldContain "return"
 
         log.debug { "HTML highlight 결과: $html" }
         log.debug { "매치된 예약어: $matchedKeywords" }

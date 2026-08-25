@@ -3,7 +3,7 @@ package io.bluetape4k.lingua
 import com.github.pemistahl.lingua.api.Language
 import io.bluetape4k.assertions.assertFailsWith
 import io.bluetape4k.assertions.shouldBeEqualTo
-import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldBeInRange
 import org.junit.jupiter.api.Test
 
 class LanguageDetectorExtensionsTest: AbstractLinguaTest() {
@@ -70,7 +70,7 @@ class LanguageDetectorExtensionsTest: AbstractLinguaTest() {
             Language.KOREAN,
             Language.JAPANESE,
         )
-        segments.forEach { (it.confidence in 0.55..1.0).shouldBeTrue() }
+        segments.forEach { it.confidence shouldBeInRange 0.55..1.0 }
     }
 
     @Test
@@ -114,6 +114,9 @@ class LanguageDetectorExtensionsTest: AbstractLinguaTest() {
 
     @Test
     fun `유효하지 않은 신뢰도 임계값은 거부한다`() {
+        assertFailsWith<IllegalArgumentException> {
+            detector.detectLanguageSegments("Hello", minimumConfidence = -0.1)
+        }
         assertFailsWith<IllegalArgumentException> {
             detector.detectLanguageSegments("Hello", minimumConfidence = 1.1)
         }

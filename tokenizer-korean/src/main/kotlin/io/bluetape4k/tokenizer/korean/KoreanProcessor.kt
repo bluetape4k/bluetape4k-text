@@ -204,12 +204,7 @@ object KoreanProcessor: KLogging() {
         words: List<String>,
         severity: Severity = Severity.DEFAULT,
     ) {
-        withBlockwordDictionary(severity) {
-            addAll(words)
-        }
-        // 복합명사의 경우 등록되지 않으면 형태소 분석을 못한다 (예: 분수쑈 -> `분수 + 쑈` 로 분석하면 `분수쑈` 라는 금칙어를 처리할 수 없다)
-        addNounsToDictionary(words)
-        KoreanDictionaryProvider.properNouns.addAll(words)
+        KoreanDictionaryProvider.mutateBlockwordBundle(words, severity, add = true)
     }
 
     /**
@@ -231,9 +226,7 @@ object KoreanProcessor: KLogging() {
         words: List<String>,
         severity: Severity = Severity.DEFAULT,
     ) {
-        withBlockwordDictionary(severity) {
-            removeAll(words)
-        }
+        removeBlockwords(words, severity)
     }
 
     /**
@@ -256,11 +249,7 @@ object KoreanProcessor: KLogging() {
         words: List<String>,
         severity: Severity = Severity.DEFAULT,
     ) {
-        withBlockwordDictionary(severity) {
-            removeAll(words)
-        }
-        KoreanDictionaryProvider.removeWordsFromDictionary(KoreanPos.Noun, words)
-        KoreanDictionaryProvider.properNouns.removeAll(words)
+        KoreanDictionaryProvider.mutateBlockwordBundle(words, severity, add = false)
     }
 
     /**

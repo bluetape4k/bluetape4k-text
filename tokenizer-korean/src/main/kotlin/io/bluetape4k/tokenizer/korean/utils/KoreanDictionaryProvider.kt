@@ -72,7 +72,12 @@ internal class SuspendMemoized<T: Any>(
         return if (state !== Uninitialized) {
             currentValue()
         } else {
-            runBlocking(Dispatchers.IO) { get() }
+            try {
+                runBlocking(Dispatchers.IO) { get() }
+            } catch (e: InterruptedException) {
+                Thread.currentThread().interrupt()
+                throw e
+            }
         }
     }
 
@@ -83,6 +88,30 @@ internal class SuspendMemoized<T: Any>(
         mutex.withLock {
             state = Uninitialized
         }
+    }
+}
+
+/** 금칙어 처리에서 함께 관찰해야 하는 한국어 세 사전의 immutable snapshot입니다. */
+internal data class KoreanDictionaryBundleSnapshot(
+    val dictionary: DictionarySnapshot<Map<KoreanPos, Set<String>>>,
+    val blockwords: DictionarySnapshot<Map<Severity, Set<String>>>,
+    val properNouns: DictionarySnapshot<Set<String>>,
+)
+
+/** cumulative 공개 view와 source severity tier를 함께 보존하는 immutable map입니다. */
+private class CumulativeBlockwordMap(
+    sourceTiers: Map<Severity, Set<String>>,
+    cumulative: Map<Severity, Set<String>>,
+): AbstractMap<Severity, Set<String>>(), java.io.Serializable {
+
+    val sourceTiers: Map<Severity, Set<String>> = sourceTiers
+    private val cumulative: Map<Severity, Set<String>> = cumulative
+
+    override val entries: Set<Map.Entry<Severity, Set<String>>>
+        get() = cumulative.entries
+
+    companion object {
+        private const val serialVersionUID: Long = 1L
     }
 }
 
@@ -116,10 +145,12 @@ object KoreanDictionaryProvider: KLogging() {
 
     @PublishedApi
     internal val blockwordVersions = SuspendMemoized {
+        val loaded = loadBlockWords()
+        val exact = loaded.mapValues { (_, words) -> immutableSet(words.map { it.asDictionaryWord() }) }
         VersionedDictionary(
             DictionarySnapshot(
                 DictionaryVersion("korean-blockwords", 0),
-                snapshotBlockwordValue(loadBlockWords()),
+                canonicalBlockwordValue(exact),
             ),
             historyCapacity = 0,
         )
@@ -157,6 +188,16 @@ object KoreanDictionaryProvider: KLogging() {
             "noun/brand.txt",
             "noun/fashion.txt",
             "noun/neologism.txt"
+        )
+    }
+
+    private val properNounVersions = SuspendMemoized {
+        VersionedDictionary(
+            DictionarySnapshot(
+                DictionaryVersion("korean-proper-nouns", 0),
+                immutableSet(properNounsLoader.get().map { it.asDictionaryWord() }),
+            ),
+            historyCapacity = 0,
         )
     }
 
@@ -273,7 +314,7 @@ object KoreanDictionaryProvider: KLogging() {
                 async { blockwordVersions.get() },
                 async { koreanEntityFreqLoader.get() },
                 async { spamNounsLoader.get() },
-                async { properNounsLoader.get() },
+                async { properNounVersions.get() },
                 async { nameDictionaryLoader.get() },
                 async { typoDictionaryByLengthLoader.get() },
                 async { predicateStemsLoader.get() },
@@ -286,6 +327,7 @@ object KoreanDictionaryProvider: KLogging() {
         blockwordVersions,
         koreanEntityFreqLoader,
         spamNounsLoader,
+        properNounVersions,
         properNounsLoader,
         nameDictionaryLoader,
         typoDictionaryByLengthLoader,
@@ -303,6 +345,7 @@ object KoreanDictionaryProvider: KLogging() {
             blockwordVersions,
             koreanEntityFreqLoader,
             spamNounsLoader,
+            properNounVersions,
             properNounsLoader,
             nameDictionaryLoader,
             typoDictionaryByLengthLoader,
@@ -398,6 +441,16 @@ object KoreanDictionaryProvider: KLogging() {
     /** 현재 품사 사전 snapshot과 버전을 반환합니다. */
     fun currentDictionarySnapshot(): DictionarySnapshot<Map<KoreanPos, Set<String>>> =
         koreanDictionaryVersions.getBlocking().snapshot()
+
+    /** 금칙어 처리 경로가 한 번에 읽는 세 사전의 immutable aggregate snapshot입니다. */
+    internal fun currentBlockwordBundleSnapshot(): KoreanDictionaryBundleSnapshot =
+        dictionaryMutationLock.withLock {
+            KoreanDictionaryBundleSnapshot(
+                dictionary = koreanDictionaryVersions.getBlocking().snapshot(),
+                blockwords = blockwordVersions.getBlocking().snapshot(),
+                properNouns = properNounVersions.getBlocking().snapshot(),
+            )
+        }
 
     /**
      * 품사별 사전을 새 버전으로 원자적으로 교체합니다.
@@ -532,8 +585,8 @@ object KoreanDictionaryProvider: KLogging() {
 
     private suspend fun loadBlockWords(): Map<Severity, CharArraySet> =
         withContext(Dispatchers.IO) {
-            val low = async { readWords("block/block_low.txt", "block/block_middle.txt", "block/block_high.txt") }
-            val middle = async { readWords("block/block_middle.txt", "block/block_high.txt") }
+            val low = async { readWords("block/block_low.txt") }
+            val middle = async { readWords("block/block_middle.txt") }
             val high = async { readWords("block/block_high.txt") }
 
             mapOf(
@@ -543,7 +596,10 @@ object KoreanDictionaryProvider: KLogging() {
             )
         }
 
-    /** 현재 심각도별 금칙어 snapshot과 버전을 반환합니다. */
+    /**
+     * 현재 심각도별 cumulative 금칙어 snapshot과 버전을 반환합니다.
+     * 반환 map을 그대로 `reloadBlockwords`에 전달하면 snapshot의 source tier provenance도 유지됩니다.
+     */
     fun currentBlockwordSnapshot(): DictionarySnapshot<Map<Severity, Set<String>>> =
         blockwordVersions.getBlocking().snapshot()
 
@@ -551,8 +607,10 @@ object KoreanDictionaryProvider: KLogging() {
      * 심각도별 금칙어 사전을 새 버전으로 교체합니다.
      *
      * @param version 현재 버전보다 큰 `korean-blockwords` 버전입니다.
-     * @param wordsBySeverity 심각도별 금칙어 목록입니다. exact-tier 입력과 기존 cumulative threshold
-     *   view 입력을 모두 허용하며, 공개 snapshot은 항상 cumulative threshold view로 정규화됩니다.
+     * @param wordsBySeverity 심각도별 금칙어 목록입니다. 일반 map은 exact source tier 입력으로
+     *   해석합니다. `currentBlockwordSnapshot().value`를 복사하지 않고 그대로 전달한 map은
+     *   snapshot이 보존한 source tier provenance을 사용하며, 공개 값은 항상 cumulative threshold
+     *   view로 정규화됩니다.
      * @return 공개된 금칙어 snapshot입니다.
      */
     fun reloadBlockwords(
@@ -561,8 +619,9 @@ object KoreanDictionaryProvider: KLogging() {
     ): DictionarySnapshot<Map<Severity, Set<String>>> =
         dictionaryMutationLock.withLock {
             require(version.name == "korean-blockwords") { "Expected korean-blockwords version" }
-            val replacement = canonicalBlockwordValue(wordsBySeverity)
-            blockwordVersions.getBlocking().reload(version) { immutableMap(replacement) }
+            val current = blockwordVersions.getBlocking().snapshot()
+            val replacement = canonicalBlockwordValue(exactBlockwordInput(wordsBySeverity), current.value)
+            blockwordVersions.getBlocking().reload(version) { replacement }
         }
 
     /** 지정 심각도에서 금칙어가 존재하는지 확인합니다. */
@@ -576,7 +635,7 @@ object KoreanDictionaryProvider: KLogging() {
     ) {
         dictionaryMutationLock.withLock {
             val current = blockwordVersions.getBlocking().snapshot()
-            val exactTiers = exactBlockwordValue(current.value).toMutableMap()
+            val exactTiers = currentExactBlockwordValue(current.value).toMutableMap()
             val words = CharArraySet(exactTiers.getValue(severity).toList())
             if (words.action()) {
                 exactTiers[severity] = immutableSet(words.map { it.asDictionaryWord() })
@@ -584,6 +643,49 @@ object KoreanDictionaryProvider: KLogging() {
             } else {
                 publishBlockwordMutation(current.value)
             }
+        }
+    }
+
+    /** 금칙어·명사·고유명사를 하나의 revision bundle로 추가/삭제합니다. */
+    internal fun mutateBlockwordBundle(
+        words: Collection<String>,
+        severity: Severity,
+        add: Boolean,
+    ) {
+        dictionaryMutationLock.withLock {
+            val dictionary = koreanDictionaryVersions.getBlocking().snapshot()
+            val blockwords = blockwordVersions.getBlocking().snapshot()
+            val properNouns = properNounVersions.getBlocking().snapshot()
+
+            val exactTiers = currentExactBlockwordValue(blockwords.value).toMutableMap()
+            val currentTier = exactTiers.getValue(severity)
+            val nextTier = if (add) currentTier + words else currentTier - words.toSet()
+            exactTiers[severity] = immutableSet(nextTier)
+            val nextBlockwords = canonicalBlockwordValue(exactTiers, blockwords.value)
+
+            val nextDictionary = dictionary.value[Noun]
+                ?.takeIf { nouns -> words.any { if (add) it !in nouns else it in nouns } }
+                ?.let { nouns ->
+                    val nextNouns = if (add) nouns + words else nouns - words.toSet()
+                    immutableMap(dictionary.value + (Noun to immutableSet(nextNouns)))
+                }
+                ?: dictionary.value
+
+            val properChanged = words.any { if (add) it !in properNouns.value else it in properNouns.value }
+            val nextProperNouns = if (properChanged) {
+                immutableSet(if (add) properNouns.value + words else properNouns.value - words.toSet())
+            } else {
+                properNouns.value
+            }
+
+            val revision = maxOf(
+                dictionary.version.revision,
+                blockwords.version.revision,
+                properNouns.version.revision,
+            ) + 1
+            publishDictionaryMutation(nextDictionary, revision)
+            publishBlockwordMutation(nextBlockwords, revision)
+            publishProperNounMutation(nextProperNouns, revision)
         }
     }
 
@@ -600,7 +702,7 @@ object KoreanDictionaryProvider: KLogging() {
      * ```
      */
     val properNouns: CharArraySet
-        get() = properNounsLoader.getBlocking()
+        get() = publicProperNounView(properNounVersions.getBlocking().snapshot().value)
 
     /**
      * 성/이름/전체 이름 분류 사전입니다.
@@ -650,9 +752,6 @@ object KoreanDictionaryProvider: KLogging() {
     private fun snapshotDictionaryValue(dictionary: Map<KoreanPos, CharArraySet>): Map<KoreanPos, Set<String>> =
         immutableMap(dictionary.mapValues { (_, words) -> immutableSet(words.map { it.asDictionaryWord() }) })
 
-    private fun snapshotBlockwordValue(wordsBySeverity: Map<Severity, CharArraySet>): Map<Severity, Set<String>> =
-        canonicalBlockwordValue(wordsBySeverity.mapValues { (_, words) -> words.map { it.asDictionaryWord() } })
-
     private fun publicDictionaryView(value: Map<KoreanPos, Set<String>>): Map<KoreanPos, CharArraySet> =
         Collections.unmodifiableMap(
             value.mapValues { (_, words) ->
@@ -667,22 +766,32 @@ object KoreanDictionaryProvider: KLogging() {
             }
         )
 
+    private fun publicProperNounView(value: Set<String>): CharArraySet =
+        CharArraySet.unmodifiableSet(CharArraySet(value.toList()))
+
     private fun Any.asDictionaryWord(): String = when (this) {
         is CharArray -> concatToString()
         else -> toString()
     }
 
-    private fun publishDictionaryMutation(value: Map<KoreanPos, Set<String>>) {
+    private fun publishDictionaryMutation(value: Map<KoreanPos, Set<String>>, revision: Long? = null) {
         val current = koreanDictionaryVersions.getBlocking().snapshot()
         koreanDictionaryVersions.getBlocking().reload(
-            DictionaryVersion(current.version.name, current.version.revision + 1)
+            DictionaryVersion(current.version.name, revision ?: current.version.revision + 1)
         ) { value }
     }
 
-    private fun publishBlockwordMutation(value: Map<Severity, Set<String>>) {
+    private fun publishBlockwordMutation(value: Map<Severity, Set<String>>, revision: Long? = null) {
         val current = blockwordVersions.getBlocking().snapshot()
         blockwordVersions.getBlocking().reload(
-            DictionaryVersion(current.version.name, current.version.revision + 1)
+            DictionaryVersion(current.version.name, revision ?: current.version.revision + 1)
+        ) { value }
+    }
+
+    private fun publishProperNounMutation(value: Set<String>, revision: Long? = null) {
+        val current = properNounVersions.getBlocking().snapshot()
+        properNounVersions.getBlocking().reload(
+            DictionaryVersion(current.version.name, revision ?: current.version.revision + 1)
         ) { value }
     }
 
@@ -701,7 +810,7 @@ object KoreanDictionaryProvider: KLogging() {
         current: Map<Severity, Set<String>>? = null,
     ): Map<Severity, Set<String>> {
         val exactTiers = Severity.values().associateWith { severity ->
-            wordsBySeverity[severity].orEmpty().toSet()
+            immutableSet(wordsBySeverity[severity].orEmpty())
         }
         val desired = mapOf(
             Severity.LOW to exactTiers.getValue(Severity.LOW) +
@@ -712,22 +821,25 @@ object KoreanDictionaryProvider: KLogging() {
         val next = desired.mapValues { (severity, words) ->
             current?.get(severity)?.takeIf { it == words } ?: immutableSet(words)
         }
-        return if (current != null && Severity.values().all { current[it] === next[it] }) {
+        val currentWithProvenance = current as? CumulativeBlockwordMap
+        return if (currentWithProvenance != null &&
+            currentWithProvenance.sourceTiers == exactTiers &&
+            Severity.values().all { current[it] === next[it] }
+        ) {
             current
         } else {
-            immutableMap(next)
+            CumulativeBlockwordMap(immutableMap(exactTiers), immutableMap(next))
         }
     }
 
-    /** 현재 cumulative threshold view를 mutation 가능한 exact-tier 집합으로 분해합니다. */
-    private fun exactBlockwordValue(value: Map<Severity, Set<String>>): Map<Severity, Set<String>> {
-        val high = value[Severity.HIGH].orEmpty().toSet()
-        val middle = value[Severity.MIDDLE].orEmpty().toSet() - high
-        val low = value[Severity.LOW].orEmpty().toSet() - middle - high
-        return mapOf(
-            Severity.LOW to immutableSet(low),
-            Severity.MIDDLE to immutableSet(middle),
-            Severity.HIGH to immutableSet(high),
-        )
-    }
+    /** map snapshot은 source tier를 보존하고, 일반 map은 새 exact-tier 입력으로 해석합니다. */
+    private fun exactBlockwordInput(
+        value: Map<Severity, Collection<String>>,
+    ): Map<Severity, Collection<String>> =
+        (value as? CumulativeBlockwordMap)?.sourceTiers ?: value
+
+    /** 현재 snapshot에 보존된 source tier를 반환합니다. */
+    private fun currentExactBlockwordValue(value: Map<Severity, Set<String>>): Map<Severity, Set<String>> =
+        (value as? CumulativeBlockwordMap)?.sourceTiers
+            ?: error("Blockword snapshot does not carry source tier provenance")
 }

@@ -3,7 +3,11 @@ package io.bluetape4k.text.search.internal
 import io.bluetape4k.text.search.internal.interval.IntervalTree
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.trace
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import java.util.*
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 
 /**
  * Aho-Corasick trie의 내부 검색 엔진입니다.
@@ -157,7 +161,31 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
      */
     fun parseText(text: CharSequence, emitHandler: StatefulEmitHandler = DefaultEmitHandler()): List<Emit> {
         runParseText(text, emitHandler)
-        var collectedEmits = emitHandler.emits
+        return postProcessEmits(text, emitHandler.emits)
+    }
+
+    /**
+     * [text]를 문자 단위로 suspending 순회한 뒤 [InternalTrieConfig] 필터를 적용합니다.
+     *
+     * [runParseTextSuspending]이 각 문자마다 취소를 확인하므로, 전체 결과 후처리가 필요한 Flow 경로도
+     * 동기 [parseText] 호출로 인해 대규모 no-match 입력에서 취소를 지연시키지 않습니다.
+     *
+     * @param text 검색할 텍스트입니다.
+     * @param emitHandler raw match를 누적할 emit handler입니다.
+     * @param stopOnHit 첫 match에서 중단할지 여부입니다.
+     * @return [InternalTrieConfig]의 필터를 적용한 [Emit] list입니다.
+     */
+    suspend fun parseTextSuspending(
+        text: CharSequence,
+        emitHandler: StatefulEmitHandler = DefaultEmitHandler(),
+        stopOnHit: Boolean = config.stopOnHit,
+    ): List<Emit> {
+        runParseTextSuspending(text, { emit -> emitHandler.emit(emit) }, stopOnHit)
+        return postProcessEmits(text, emitHandler.emits)
+    }
+
+    private fun postProcessEmits(text: CharSequence, emits: MutableList<Emit>): List<Emit> {
+        var collectedEmits = emits
 
         if (config.onlyWholeWords) {
             removePartialMatches(text, collectedEmits)
@@ -239,7 +267,9 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
     ) {
         var currentState = rootState
 
-        text.forEachIndexed { pos, ch ->
+        for (pos in text.indices) {
+            val ch = text[pos]
+            currentCoroutineContext().ensureActive()
             currentState = when {
                 config.ignoreCase -> getState(currentState, ch.lowercaseChar())
                 else -> getState(currentState, ch)
@@ -297,13 +327,13 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
                 }
             }
         }
-        log.trace { "Not found matches. text=$text" }
+        log.trace { "Not found matches. ${text.safeTraceSummary()}" }
         return null
     }
 
     private fun addKeyword(keyword: String) {
         if (keyword.isNotEmpty()) {
-            val adder = if (ignoreCase) keyword.lowercase() else keyword
+            val adder = if (ignoreCase) keyword.lowercaseCharByChar() else keyword
             addState(adder).addEmit(adder)
         }
     }
@@ -495,4 +525,29 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
             }
         }
     }
+}
+
+/**
+ * trace 로그에 사용할 입력 요약입니다. 원문은 기록하지 않고 길이, SHA-256 digest와 문자 분포만 남깁니다.
+ */
+internal fun CharSequence.safeTraceSummary(): String {
+    val value = toString()
+    val digest = MessageDigest.getInstance("SHA-256").digest(value.toByteArray(StandardCharsets.UTF_8))
+    val hash = digest.joinToString(separator = "") { byte ->
+        byte.toInt().and(0xff).toString(16).padStart(2, '0')
+    }
+    var letters = 0
+    var digits = 0
+    var whitespace = 0
+    var other = 0
+    value.forEach { character ->
+        when {
+            character.isLetter() -> letters++
+            character.isDigit() -> digits++
+            character.isWhitespace() -> whitespace++
+            else -> other++
+        }
+    }
+    return "length=${value.length}, sha256=$hash, " +
+        "classes=letters:$letters,digits:$digits,whitespace:$whitespace,other:$other"
 }

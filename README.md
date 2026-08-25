@@ -94,6 +94,10 @@ implementation("io.github.bluetape4k.text:text-search:$textVersion")
 implementation("io.github.bluetape4k.text:tokenizer-core:$textVersion")
 ```
 
+`text-search` exposes `matchesAsFlow` in its public API and therefore publishes
+`kotlinx-coroutines-core` as a required transitive compile/runtime dependency.
+Consumers do not need to add a separate coroutines dependency for the Flow API.
+
 For snapshots, add the Maven Central Snapshots repository:
 
 ```kotlin

@@ -41,6 +41,14 @@ class HangulTest: TestBase() {
         assertFailsWith<IllegalArgumentException> {
             Hangul.decomposeHangul('ㅀ')
         }
+
+        assertFailsWith<IllegalArgumentException> {
+            Hangul.decomposeHangul('A')
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            Hangul.decomposeHangul('\uD7A4')
+        }
     }
 
     @Test
@@ -56,6 +64,8 @@ class HangulTest: TestBase() {
         Hangul.hasCoda('ㅘ').shouldBeFalse()
         Hangul.hasCoda('ㅀ').shouldBeFalse()
         Hangul.hasCoda(' ').shouldBeFalse()
+        Hangul.hasCoda('A').shouldBeFalse()
+        Hangul.hasCoda('\uD7A4').shouldBeFalse()
     }
 
     @Test
@@ -84,6 +94,18 @@ class HangulTest: TestBase() {
 
         assertFailsWith<IllegalArgumentException> {
             Hangul.composeHangul(' ', ' ', 'ㄴ')
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            Hangul.composeHangul('A', 'ㅏ')
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            Hangul.composeHangul('ㄱ', 'A')
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            Hangul.composeHangul('ㄱ', 'ㅏ', 'A')
         }
     }
 }

@@ -5,6 +5,7 @@ import com.github.pemistahl.lingua.api.IsoCode639_3
 import com.github.pemistahl.lingua.api.Language
 import com.github.pemistahl.lingua.api.LanguageDetector
 import com.github.pemistahl.lingua.api.LanguageDetectorBuilder
+import io.bluetape4k.support.requireInRange
 
 private val mixedLanguageTokenRegex = Regex("\\p{L}+(?:['’-]\\p{L}+)*")
 private val mixedLanguagePhraseDelimiterRegex = Regex("[.!?\n]+")
@@ -297,9 +298,7 @@ fun LanguageDetector.detectLanguageSegments(
     text: String,
     minimumConfidence: Double = 0.55,
 ): List<LanguageSegment> {
-    require(minimumConfidence in 0.0..1.0) {
-        "minimumConfidence must be between 0.0 and 1.0: $minimumConfidence"
-    }
+    minimumConfidence.requireInRange(0.0, 1.0, "minimumConfidence")
     if (text.isEmpty()) {
         return emptyList()
     }

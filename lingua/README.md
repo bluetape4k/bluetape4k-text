@@ -15,6 +15,7 @@ A thin Kotlin DSL wrapper around `com.github.pemistahl:lingua` for language dete
 - Kotlin DSL factory functions for creating Lingua `LanguageDetector` instances
 - Builders from `Language`, `IsoCode639_1`, and `IsoCode639_3`
 - `detectAllLanguagesOf(text): Set<Language>` extension for mixed-language text
+- `detectLanguageSegments(text): List<LanguageSegment>` with non-overlapping UTF-16 offsets and `0.0..1.0` confidence
 - Short-Latin token ambiguity correction (e.g. `Hello → SOTHO` false-positive suppression)
 - `UnicodeDetector` — filters characters by script (Korean, Japanese, Chinese, Thai)
 - `UnicodeSupport` — `Char` extension properties per Unicode block range

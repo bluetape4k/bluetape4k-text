@@ -22,7 +22,7 @@ import java.util.Locale
 /**
  * Kuromoji IPADic 토크나이저로 일본어 문장의 금칙어를 탐지하고 마스킹합니다.
  *
- * 후보 토큰은 명사와 동사로 제한합니다. 단일 토큰 매치가 없으면 명사 + 명사/동사 복합어 조합도 검사합니다.
+ * 후보 토큰은 명사와 동사로 제한합니다. 단일 토큰과 명사 + 명사/동사 복합어 조합을 같은 match 모델로 검사합니다.
  *
  * ```kotlin
  * val blockwords = JapaneseBlockwordProcessor
@@ -38,7 +38,7 @@ object JapaneseBlockwordProcessor: KLogging() {
      * 문장에서 금칙어 사전에 매치되는 토큰을 반환합니다.
      *
      * Kuromoji 호출 전에 길이 초과 입력을 거부합니다.
-     * 공백 입력은 즉시 빈 목록을 반환합니다. 명사/동사 단일 토큰 매치가 없고 토큰이 2개 이상이면 복합어 매칭을 시도합니다.
+     * 공백 입력은 즉시 빈 목록을 반환합니다. 단일 토큰과 인접 복합어 후보가 겹치면 더 긴 match를 우선합니다.
      *
      * ```kotlin
      * val found = JapaneseBlockwordProcessor.findBlockwords("覚せい剤を注文できるサイトはありますか？")
@@ -55,64 +55,17 @@ object JapaneseBlockwordProcessor: KLogging() {
         if (text.isBlank()) {
             return emptyList()
         }
-        val blockwordDictionary = JapaneseDictionaryProvider.currentBlockwordSnapshot().value
         val tokens = JapaneseTokenizer.tokenize(text)
-        val blockwords = tokens
-            .onEach { token ->
-                log.trace {
-                    "금칙어 후보 토큰입니다. position=${token.position}, length=${token.surface.length}, featureCount=${token.featureCount}"
-                }
-            }
-            .filter { it.isNounOrVerb() }
-            .filter { isBlockword(it.surface, blockwordDictionary) }
-            .toMutableList()
-
-        if (blockwords.isEmpty() && tokens.size > 1) {
-            blockwords.addAll(processCompositBlockWords(tokens, blockwordDictionary))
-        }
-
-        return blockwords
-    }
-
-    /**
-     * 인접 토큰 쌍(명사 + 명사/동사)을 금칙어 사전과 대조합니다.
-     *
-     * 예: 覚せい剤(覚せい + 剤), 盗撮す(盗 + 撮す).
-     *
-     * ```kotlin
-     * val options = io.bluetape4k.tokenizer.model.blockwordOptionsOf(locale = java.util.Locale.JAPANESE)
-     * val request = io.bluetape4k.tokenizer.model.blockwordRequestOf("覚せい剤を注文できるサイトはありますか？", options)
-     * val response = JapaneseBlockwordProcessor.maskBlockwords(request)
-     *
-     * // response.blockwordExists == true
-     * ```
-     *
-     * @param tokens 복합어 후보를 만들 Kuromoji 토큰 목록입니다.
-     * @return 복합어 금칙어에 매치된 첫 번째 토큰 목록입니다.
-     */
-    private fun processCompositBlockWords(
-        tokens: List<Token>,
-        blockwordDictionary: Set<String>,
-    ): List<Token> {
-        if (tokens.size < 2) {
-            return emptyList()
-        }
-        return tokens.zipWithNext { t1, t2 ->
-            if (t1.isNoun() && t2.isNounOrVerb()) {
-                val composite = t1.surface + t2.surface
-                log.debug { "금칙어 복합어 후보를 확인합니다. length=${composite.length}" }
-                if (isBlockword(composite, blockwordDictionary)) t1 else null
-            } else {
-                null
-            }
-        }.filterNotNull()
+        val blockwordDictionary = JapaneseDictionaryProvider.currentBlockwordSnapshot().value
+        return collectBlockwordMatches(tokens) { isBlockword(it, blockwordDictionary) }
+            .map { it.token }
     }
 
     /**
      * 요청 텍스트의 금칙어 토큰을 설정된 마스크 문자열로 치환합니다.
      *
      * Kuromoji 호출 전에 길이 초과 입력을 거부합니다.
-     * 공백 입력은 빈 마스킹 텍스트 응답을 반환합니다. 매치된 토큰 표면형은 토큰 길이만큼 반복한 마스크 문자로 치환합니다.
+     * 공백 입력은 빈 마스킹 텍스트 응답을 반환합니다. 매치된 단일/복합 표면형은 match 길이만큼 반복한 마스크 문자로 치환합니다.
      * 요청 locale은 일본어만 허용하며, severity는 LOW(전체), MIDDLE(middle/high), HIGH(high) threshold로 적용합니다.
      * 처리 중 발생한 예외는 [io.bluetape4k.tokenizer.exceptions.TokenizerException]으로 감싸 다시 던집니다.
      *
@@ -142,24 +95,18 @@ object JapaneseBlockwordProcessor: KLogging() {
             val maskStr = request.options.mask
             val blockwords = mutableListOf<String>()
 
-            tokens
-                .onEach { token ->
-                    log.trace {
-                        "금칙어 후보 토큰입니다. position=${token.position}, length=${token.surface.length}, featureCount=${token.featureCount}"
-                    }
-                }
-                .filter { it.isNounOrVerb() }
-                .sortedByDescending { it.position }
-                .forEach { token ->
-                    if (canMask(token, blockwordDictionary, request.options.severity)) {
-                        log.trace { "금칙어를 마스킹합니다. position=${token.position}, length=${token.surface.length}" }
-                        maskedText = maskedText.replaceRange(
-                            token.position,
-                            token.position + token.surface.length,
-                            maskStr.repeat(token.surface.length)
-                        )
-                        blockwords.add(token.surface)
-                    }
+            collectBlockwordMatches(tokens) {
+                isBlockword(it, blockwordDictionary, request.options.severity)
+            }
+                .sortedByDescending { it.start }
+                .forEach { match ->
+                    log.trace { "금칙어를 마스킹합니다. position=${match.start}, length=${match.length}" }
+                    maskedText = maskedText.replaceRange(
+                        match.start,
+                        match.endExclusive,
+                        maskStr.repeat(match.length)
+                    )
+                    blockwords.add(match.surface)
                 }
             return blockwordResponseOf(request, maskedText, blockwords)
         } catch (e: Error) {
@@ -173,12 +120,48 @@ object JapaneseBlockwordProcessor: KLogging() {
         }
     }
 
-    private fun canMask(
-        token: Token,
-        blockwordDictionary: Map<Severity, Set<String>>,
-        severity: Severity,
-    ): Boolean {
-        return isBlockword(token.surface, blockwordDictionary, severity)
+    private fun collectBlockwordMatches(
+        tokens: List<Token>,
+        isBlockword: (String) -> Boolean,
+    ): List<BlockwordMatch> {
+        val candidates = tokens
+            .onEach { token ->
+                log.trace {
+                    "금칙어 후보 토큰입니다. position=${token.position}, length=${token.surface.length}, featureCount=${token.featureCount}"
+                }
+            }
+            .filter { it.isNounOrVerb() }
+            .filter { isBlockword(it.surface) }
+            .map { token ->
+                BlockwordMatch(token, token.surface, token.position, token.position + token.surface.length)
+            }
+            .toMutableList()
+
+        tokens.zipWithNext { first, second ->
+            if (first.isNoun() && second.isNounOrVerb()) {
+                val composite = first.surface + second.surface
+                log.debug { "금칙어 복합어 후보를 확인합니다. length=${composite.length}" }
+                if (isBlockword(composite)) {
+                    candidates.add(
+                        BlockwordMatch(
+                            token = first,
+                            surface = composite,
+                            start = first.position,
+                            endExclusive = second.position + second.surface.length,
+                        )
+                    )
+                }
+            }
+        }
+
+        return candidates
+            .sortedWith(compareBy<BlockwordMatch> { it.start }.thenByDescending { it.length })
+            .fold(mutableListOf()) { matches, candidate ->
+                if (matches.none { it.overlaps(candidate) }) {
+                    matches.add(candidate)
+                }
+                matches
+            }
     }
 
     private fun isBlockword(
@@ -199,4 +182,16 @@ object JapaneseBlockwordProcessor: KLogging() {
     }
 
     private val Token.featureCount: Int get() = allFeaturesArray.size
+
+    private data class BlockwordMatch(
+        val token: Token,
+        val surface: String,
+        val start: Int,
+        val endExclusive: Int,
+    ) {
+        val length: Int get() = endExclusive - start
+
+        fun overlaps(other: BlockwordMatch): Boolean =
+            start < other.endExclusive && other.start < endExclusive
+    }
 }
