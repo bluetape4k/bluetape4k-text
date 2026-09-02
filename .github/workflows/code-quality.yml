@@ -48,7 +48,7 @@ jobs:
       - name: Build with Gradle
         if: matrix.language == 'java-kotlin'
         # Keep the dormant java-kotlin build compile-only for the re-enable path.
-        run: ./gradlew assemble --no-daemon
+        run: ./gradlew assemble --no-daemon --no-build-cache
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
