@@ -99,7 +99,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-core:koverXmlReport --no-daemon --no-configuration-cache
+        run: ./gradlew :tokenizer-core:koverXmlReport --no-daemon --no-configuration-cache -x test
         continue-on-error: true
 
       - name: Upload test results
@@ -149,7 +149,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-japanese:koverXmlReport --no-daemon --no-configuration-cache
+        run: ./gradlew :tokenizer-japanese:koverXmlReport --no-daemon --no-configuration-cache -x test
         continue-on-error: true
 
       - name: Upload test results
@@ -199,7 +199,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-korean:koverXmlReport --no-daemon --no-configuration-cache
+        run: ./gradlew :tokenizer-korean:koverXmlReport --no-daemon --no-configuration-cache -x test
         continue-on-error: true
 
       - name: Upload test results
@@ -249,7 +249,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :lingua:koverXmlReport --no-daemon --no-configuration-cache
+        run: ./gradlew :lingua:koverXmlReport --no-daemon --no-configuration-cache -x test
         continue-on-error: true
 
       - name: Upload test results
@@ -299,7 +299,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :text-search:koverXmlReport --no-daemon --no-configuration-cache
+        run: ./gradlew :text-search:koverXmlReport --no-daemon --no-configuration-cache -x test
         continue-on-error: true
 
       - name: Upload test results
