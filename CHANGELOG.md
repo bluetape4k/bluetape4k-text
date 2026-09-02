@@ -7,6 +7,8 @@
 
 ## [미배포]
 
+## [1.0.0] - 2026-09-02
+
 ### 추가
 
 - Lingua 혼합 언어 예제가 detector를 pipeline 외부에서 한 번 생성해 여러 입력에 재사용하도록 보강됐다. preload와 lazy 모델 로딩 선택 기준과 동등한 결과를 검증하는 예제 테스트도 추가했다([#250](https://github.com/bluetape4k/bluetape4k-text/issues/250)).

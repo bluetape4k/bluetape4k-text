@@ -1,12 +1,19 @@
 # WIP - bluetape4k-text
 
-스냅샷: 2026-08-17 KST
-범위: 0.4.0 milestone의 예제 품질과 text-search 개선 큐 관리.
-0.4.0 열린 이슈 수: 0개.
-0.4.0 열린 PR 수: 0개.
+기준 시점: 2026-09-02 KST
+범위: 1.0.0 정식 배포 준비와 공개 이후 문서 후속 조치.
+1.0.0 열린 이슈 수: 1개([#314](https://github.com/bluetape4k/bluetape4k-text/issues/314)).
+1.0.0 열린 PR 수: 0개.
 현재 열린 Backlog 이슈 수: 0개.
 
-## 2026-08-17 GitHub 상태 갱신
+## 2026-09-02 GitHub 상태 갱신
+
+`develop`은 `baseVersion=1.0.0`을 사용하며, #314에서 정식 배포 source를
+stable Dependencies catalog commit에 고정한다. 새 기능이나 API 변경은 추가하지
+않고, release-prep exact head의 CI/Nightly와 publication POM을 검증한 뒤
+`1.0.0` tag를 생성한다.
+
+## 2026-08-17 작업 기록
 
 현재 근거: GitHub 기준 `0.4.0` milestone의 열린 issue와 PR은 모두 0건이다.
 #105, #116, #117, #118은 모두 CLOSED이며 현재 진행 중인 작업이나 다음 후보로
