@@ -8,6 +8,10 @@
 
 [한국어](./README.ko.md) | English
 
+Current stable version: `1.0.0`
+
+Current development line: `1.1.0-SNAPSHOT` on `develop`
+
 ![Bluetape4k text processing workbench](./docs/assets/text-workbench.png)
 
 Kotlin/JVM text processing library — Korean and Japanese morphological analyzers, multilingual language detection, and Aho-Corasick multi-keyword search — part of the bluetape4k ecosystem.
