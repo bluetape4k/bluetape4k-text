@@ -210,7 +210,10 @@ jobs:
       - name: Build (compile only)
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew build -x test --parallel && break
+            ./gradlew build -x test \
+              -x :text-search:compileBenchmarkKotlin \
+              -x :text-search:compileBenchmarkJava \
+              --parallel && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -244,7 +247,7 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-core:koverXmlReport --no-daemon
+        run: ./gradlew :tokenizer-core:koverXmlReport --no-daemon -x test
         continue-on-error: true
 
       - name: Upload coverage report
@@ -290,7 +293,7 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-japanese:koverXmlReport --no-daemon
+        run: ./gradlew :tokenizer-japanese:koverXmlReport --no-daemon -x test
         continue-on-error: true
 
       - name: Upload coverage report
@@ -336,7 +339,7 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-korean:koverXmlReport --no-daemon
+        run: ./gradlew :tokenizer-korean:koverXmlReport --no-daemon -x test
         continue-on-error: true
 
       - name: Upload coverage report
@@ -382,7 +385,7 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :lingua:koverXmlReport --no-daemon
+        run: ./gradlew :lingua:koverXmlReport --no-daemon -x test
         continue-on-error: true
 
       - name: Upload coverage report
@@ -428,7 +431,10 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :text-search:koverXmlReport --no-daemon
+        run: >-
+          ./gradlew :text-search:koverXmlReport --no-daemon -x test
+          -x :text-search:compileBenchmarkKotlin
+          -x :text-search:compileBenchmarkJava
         continue-on-error: true
 
       - name: Upload coverage report

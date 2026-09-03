@@ -44,7 +44,10 @@ jobs:
       - name: Build (compile only)
         run: |
           for attempt in 1 2 3 4 5; do
-            ./gradlew build -x test --parallel --no-configuration-cache && break
+            ./gradlew build -x test \
+              -x :text-search:compileBenchmarkKotlin \
+              -x :text-search:compileBenchmarkJava \
+              --parallel --no-configuration-cache && break
             echo "Attempt $attempt failed"
             [ $attempt -lt 5 ] && sleep 30 || exit 1
           done
@@ -99,7 +102,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-core:koverXmlReport --no-daemon --no-configuration-cache
+        run: ./gradlew :tokenizer-core:koverXmlReport --no-daemon --no-configuration-cache -x test
         continue-on-error: true
 
       - name: Upload test results
@@ -149,7 +152,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-japanese:koverXmlReport --no-daemon --no-configuration-cache
+        run: ./gradlew :tokenizer-japanese:koverXmlReport --no-daemon --no-configuration-cache -x test
         continue-on-error: true
 
       - name: Upload test results
@@ -199,7 +202,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :tokenizer-korean:koverXmlReport --no-daemon --no-configuration-cache
+        run: ./gradlew :tokenizer-korean:koverXmlReport --no-daemon --no-configuration-cache -x test
         continue-on-error: true
 
       - name: Upload test results
@@ -249,7 +252,7 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :lingua:koverXmlReport --no-daemon --no-configuration-cache
+        run: ./gradlew :lingua:koverXmlReport --no-daemon --no-configuration-cache -x test
         continue-on-error: true
 
       - name: Upload test results
@@ -299,7 +302,10 @@ jobs:
 
       - name: Generate Kover XML report
         if: always()
-        run: ./gradlew :text-search:koverXmlReport --no-daemon --no-configuration-cache
+        run: >-
+          ./gradlew :text-search:koverXmlReport --no-daemon --no-configuration-cache -x test
+          -x :text-search:compileBenchmarkKotlin
+          -x :text-search:compileBenchmarkJava
         continue-on-error: true
 
       - name: Upload test results
