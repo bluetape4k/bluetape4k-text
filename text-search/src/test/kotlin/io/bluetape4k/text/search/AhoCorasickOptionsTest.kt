@@ -3,6 +3,8 @@ package io.bluetape4k.text.search
 import io.bluetape4k.logging.KLogging
 import io.bluetape4k.logging.debug
 import io.bluetape4k.assertions.shouldBeEqualTo
+import io.bluetape4k.assertions.shouldBeFalse
+import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeEmpty
@@ -136,6 +138,8 @@ class AhoCorasickOptionsTest : AbstractAhoCorasickTest() {
         noMatch shouldHaveSize 0
         matched shouldHaveSize 1
         matched[0].keyword shouldBeEqualTo "run"
+        automaton.containsMatch("running fast").shouldBeFalse()
+        automaton.containsMatch("please run now").shouldBeTrue()
         log.debug { "WHITESPACE_SEPARATED 경계 검증 — noMatch: $noMatch, matched: $matched" }
     }
 

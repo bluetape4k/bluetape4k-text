@@ -55,7 +55,8 @@ class AhoCorasickAutomaton<V> internal constructor(
      * [text]에서 등록된 모든 키워드를 검색하고 match 결과를 반환합니다.
      *
      * [SearchOptions.ignoreCase]가 `true`이면 검색 전에 [text]를 소문자로 바꿉니다.
-     * [SearchOptions.stopOnFirstMatch]가 `true`이면 첫 match만 반환합니다.
+     * [SearchOptions.stopOnFirstMatch]가 `true`이면 이 메서드는 첫 raw match 뒤에 탐색을 중단합니다.
+     * [firstMatch]는 leftmost-longest 계약을 위해 이 설정을 무시하고 모든 후보를 확인합니다.
      * 결과의 [AhoCorasickMatch.keyword]는 정규화된 형태와, 필요하면 소문자 형태를 반영합니다.
      *
      * @param text 검색할 입력 문자열입니다.
@@ -178,15 +179,20 @@ class AhoCorasickAutomaton<V> internal constructor(
      * [text]에서 leftmost-longest match를 반환합니다. Match가 없으면 `null`을 반환합니다.
      *
      * Leftmost-longest는 start가 가장 이른 match를 고르고, start가 같으면 가장 긴 match를 고르는 규칙입니다.
+     * 이 계약을 보장하기 위해 [SearchOptions.stopOnFirstMatch] 설정과 관계없이 모든 후보를 확인합니다.
      *
      * @param text 검색할 입력 문자열입니다.
      * @return leftmost-longest [AhoCorasickMatch]입니다. Match가 없으면 `null`입니다.
      */
     fun firstMatch(text: CharSequence): AhoCorasickMatch<V>? {
-        val matches = parseText(text)
-        if (matches.isEmpty()) {
+        if (text.isEmpty() || values.isEmpty()) {
             return null
         }
+
+        // firstMatch는 leftmost-longest 계약을 위해 stopOnFirstMatch와 무관하게 모든 후보를 확인합니다.
+        val processed = preprocess(text)
+        val emits = core.parseText(processed.text, stopOnHit = false)
+        val matches = mapEmits(processed, emits, stopOnFirstMatch = false)
         // 가장 왼쪽(start ASC)을 우선하고, start가 같으면 더 긴 match(length DESC)를 우선합니다.
         return matches.minWithOrNull(
             compareBy<AhoCorasickMatch<V>> { it.start }.thenByDescending { it.length }
@@ -196,7 +202,7 @@ class AhoCorasickAutomaton<V> internal constructor(
     /**
      * [text]에 등록된 키워드 match가 하나 이상 있으면 `true`를 반환합니다.
      *
-     * 존재 여부만 확인할 때는 [parseText]보다 적은 작업으로 끝납니다. 첫 match에서 중단합니다.
+     * 존재 여부만 확인할 때는 [parseText]보다 적은 작업으로 끝납니다. 단어 경계에 맞는 첫 match에서 중단합니다.
      *
      * @param text 검색할 입력 문자열입니다.
      * @return match가 하나 이상 있으면 `true`, 없으면 `false`입니다.
@@ -384,6 +390,7 @@ class AhoCorasickAutomaton<V> internal constructor(
          *
          * [SearchOptions.ignoreCase]가 `true`이면 모든 키워드를 소문자로 바꾼 뒤 trie에 추가합니다.
          * 이렇게 해야 검색 시점 정규화와 생성 시점 정규화가 일치합니다.
+         * 서로 다른 원본 키워드가 같은 정규화 key가 되면 value 소실을 막기 위해 예외를 던집니다.
          *
          * @return 생성이 끝난 불변 [AhoCorasickAutomaton]입니다.
          */
@@ -391,8 +398,17 @@ class AhoCorasickAutomaton<V> internal constructor(
             // 검색 시점과 동일한 파이프라인(NFC/NFKC 정규화 + ignoreCase)을 키워드에도 적용해야
             // 매치 일관성이 보장된다.
             val normalizedValues = HashMap<String, V>(entries.size)
+            val normalizedKeywords = HashMap<String, String>(entries.size)
             entries.forEach { (keyword, value) ->
                 val normalized = applyPipeline(keyword, opts)
+                val previousKeyword = normalizedKeywords[normalized]
+                if (previousKeyword != null) {
+                    throw IllegalArgumentException(
+                        "Normalization collision: keywords '$previousKeyword' and '$keyword' " +
+                            "both normalize to '$normalized'"
+                    )
+                }
+                normalizedKeywords[normalized] = keyword
                 normalizedValues[normalized] = value
             }
 

@@ -5,6 +5,7 @@ import io.bluetape4k.assertions.shouldBeEqualTo
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeInstanceOf
 import io.bluetape4k.assertions.shouldBeTrue
+import io.bluetape4k.assertions.shouldContain
 import io.bluetape4k.assertions.shouldHaveSize
 import io.bluetape4k.assertions.shouldNotBeNull
 import io.bluetape4k.logging.KLogging
@@ -167,6 +168,34 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
             AhoCorasickAutomaton.builder<String>().add("   ", "value")
         }
         log.debug { "빈 keyword 검증 완료" }
+    }
+
+    @Test
+    fun `Builder build - 정규화 후 keyword 충돌을 명시적으로 거부`() {
+        // 준비: ignoreCase, NFC, NFKC pipeline 각각에서 서로 다른 원문이 같은 key가 된다.
+        val cases = listOf(
+            SearchOptions(ignoreCase = true) to listOf("A" to "upper", "a" to "lower"),
+            SearchOptions(normalization = NormalizationForm.NFC) to listOf(
+                "é" to "composed",
+                "e\u0301" to "decomposed",
+            ),
+            SearchOptions(normalization = NormalizationForm.NFKC) to listOf(
+                "Ａ" to "fullwidth",
+                "A" to "ascii",
+            ),
+        )
+
+        cases.forEach { (options, entries) ->
+            // 실행 및 검증
+            val failure = assertFailsWith<IllegalArgumentException> {
+                AhoCorasickAutomaton.builder<String>()
+                    .add(entries[0].first, entries[0].second)
+                    .add(entries[1].first, entries[1].second)
+                    .options(options)
+                    .build()
+            }
+            failure.message.orEmpty() shouldContain "Normalization collision"
+        }
     }
 
     // ──────────────────────────────── Serializable round-trip ────────────────────────────────

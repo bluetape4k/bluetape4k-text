@@ -64,6 +64,61 @@ class AhoCorasickFirstMatchTest : AbstractAhoCorasickTest() {
         log.debug { "동일 start 더 긴 keyword 우선: $first" }
     }
 
+    @Test
+    fun `stopOnFirstMatch=true에서도 firstMatch는 동일 start의 longest keyword를 반환한다`() {
+        // 준비: 짧은 keyword가 먼저 emit되더라도 firstMatch는 leftmost-longest 계약을 유지해야 한다.
+        val automaton = AhoCorasickAutomaton.builder<String>()
+            .add("he", "HE")
+            .add("hers", "HERS")
+            .options(SearchOptions(stopOnFirstMatch = true))
+            .build()
+
+        // 실행
+        val first = automaton.firstMatch("hers")
+
+        // 검증: stopOnFirstMatch는 parseText의 결과 수만 제한하고 firstMatch 선택에는 영향을 주지 않는다.
+        first.shouldNotBeNull()
+        first.keyword shouldBeEqualTo "hers"
+        first.start shouldBeEqualTo 0
+        first.length shouldBeEqualTo 4
+    }
+
+    @Test
+    fun `stopOnFirstMatch=true와 allowOverlaps=false에서도 longest keyword를 반환한다`() {
+        // 준비: 겹침 제거 경로도 모든 후보를 본 뒤 leftmost-longest를 선택해야 한다.
+        val automaton = AhoCorasickAutomaton.builder<String>()
+            .add("hot", "HOT")
+            .add("hotel", "HOTEL")
+            .options(SearchOptions(allowOverlaps = false, stopOnFirstMatch = true))
+            .build()
+
+        // 실행 및 검증
+        val first = automaton.firstMatch("hotel")
+        first.shouldNotBeNull()
+        first.keyword shouldBeEqualTo "hotel"
+        first.length shouldBeEqualTo 5
+    }
+
+    @Test
+    fun `stopOnFirstMatch=true와 whitespace boundary에서 뒤의 유효한 match를 찾는다`() {
+        // 준비: 첫 raw emit은 부분 문자열이므로 탈락하고, 뒤의 독립 단어는 유효하다.
+        val automaton = AhoCorasickAutomaton.builder<String>()
+            .add("run", "RUN")
+            .options(
+                SearchOptions(
+                    wordBoundary = WordBoundary.WHITESPACE_SEPARATED,
+                    stopOnFirstMatch = true,
+                )
+            )
+            .build()
+
+        // 실행 및 검증
+        val first = automaton.firstMatch("running run")
+        first.shouldNotBeNull()
+        first.keyword shouldBeEqualTo "run"
+        first.start shouldBeEqualTo 8
+    }
+
     // ──────────────────────────────── Test 3 ────────────────────────────────
 
     @Test

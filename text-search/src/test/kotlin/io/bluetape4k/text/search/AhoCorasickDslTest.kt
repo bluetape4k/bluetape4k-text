@@ -115,4 +115,18 @@ class AhoCorasickDslTest {
             }
         }
     }
+
+    @Test
+    fun `DSL build - normalization collision을 조용히 덮어쓰지 않고 거부`() {
+        // 실행 및 검증: DSL도 동일한 Builder 충돌 정책을 적용한다.
+        val failure = assertFailsWith<IllegalArgumentException> {
+            ahoCorasick<String> {
+                ignoreCase = true
+                keyword("A", "upper")
+                keyword("a", "lower")
+            }
+        }
+        failure.message.orEmpty() shouldBeEqualTo
+            "Normalization collision: keywords 'A' and 'a' both normalize to 'a'"
+    }
 }

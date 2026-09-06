@@ -155,12 +155,17 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
      *
      * @param text 검색할 입력 문자열입니다.
      * @param emitHandler raw match를 수집할 emit handler입니다. 기본값은 [DefaultEmitHandler]입니다.
+     * @param stopOnHit `true`이면 첫 raw match에서 순회를 중단합니다. 기본값은 [InternalTrieConfig.stopOnHit]입니다.
      * @return [InternalTrieConfig]의 필터를 적용한 [Emit] list입니다.
      *
      * 원시 parsing 뒤 [InternalTrieConfig]에 따라 부분 단어 match와 겹치는 match를 제거합니다.
      */
-    fun parseText(text: CharSequence, emitHandler: StatefulEmitHandler = DefaultEmitHandler()): List<Emit> {
-        runParseText(text, emitHandler)
+    fun parseText(
+        text: CharSequence,
+        emitHandler: StatefulEmitHandler = DefaultEmitHandler(),
+        stopOnHit: Boolean = config.stopOnHit,
+    ): List<Emit> {
+        runParseText(text, emitHandler, stopOnHit)
         return postProcessEmits(text, emitHandler.emits)
     }
 
@@ -301,11 +306,11 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
      * @return 첫 [Emit] match입니다. Match가 없으면 `null`입니다.
      *
      * [InternalTrieConfig.allowOverlaps]가 `false`이면 [parseText]에 위임한 뒤 첫 결과를 반환합니다.
-     * [InternalTrieConfig.onlyWholeWords] 필터도 동일하게 적용합니다.
+     * [InternalTrieConfig.onlyWholeWords]와 [InternalTrieConfig.onlyWholeWordsWhiteSpaceSeparated] 필터도 동일하게 적용합니다.
      */
     fun firstMatch(text: CharSequence): Emit? {
         if (!config.allowOverlaps) {
-            return parseText(text).firstOrNull()
+            return parseText(text, stopOnHit = false).firstOrNull()
         }
 
         var currentState = rootState
@@ -318,11 +323,7 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
 
             currentState.emit().forEach { emitStr ->
                 val emit = Emit(pos - emitStr.length + 1, pos, emitStr)
-                if (config.onlyWholeWords) {
-                    if (!isPartialMatch(text, emit)) {
-                        return emit
-                    }
-                } else {
+                if (isAllowedMatch(text, emit)) {
                     return emit
                 }
             }
@@ -375,17 +376,19 @@ internal class TrieCore(private val config: InternalTrieConfig = InternalTrieCon
     }
 
     private fun removePartialMatchesWhiteSpaceSeparated(searchText: CharSequence, collectedEmits: MutableList<Emit>) {
-        val size = searchText.length
+        collectedEmits.removeIf { !isWhitespaceSeparatedMatch(searchText, it) }
+    }
 
-        collectedEmits.removeIf { emit ->
-            val isEmptyStart = emit.start == 0 || Character.isWhitespace(searchText[emit.start - 1])
-            if (!isEmptyStart) {
-                true
-            } else {
-                val isEmptyEnd = emit.end + 1 == size || Character.isWhitespace(searchText[emit.end + 1])
-                !isEmptyEnd
-            }
+    private fun isAllowedMatch(searchText: CharSequence, emit: Emit): Boolean =
+        (!config.onlyWholeWords || !isPartialMatch(searchText, emit)) &&
+            (!config.onlyWholeWordsWhiteSpaceSeparated || isWhitespaceSeparatedMatch(searchText, emit))
+
+    private fun isWhitespaceSeparatedMatch(searchText: CharSequence, emit: Emit): Boolean {
+        val isEmptyStart = emit.start == 0 || Character.isWhitespace(searchText[emit.start - 1])
+        if (!isEmptyStart) {
+            return false
         }
+        return emit.end + 1 == searchText.length || Character.isWhitespace(searchText[emit.end + 1])
     }
 
     private fun getState(currentState: State, ch: Char): State {
