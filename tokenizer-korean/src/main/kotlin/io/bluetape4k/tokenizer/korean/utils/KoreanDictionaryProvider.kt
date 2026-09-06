@@ -21,75 +21,17 @@ import io.bluetape4k.tokenizer.utils.CharArraySet
 import io.bluetape4k.tokenizer.utils.DictionarySnapshot
 import io.bluetape4k.tokenizer.utils.DictionaryProvider
 import io.bluetape4k.tokenizer.utils.DictionaryVersion
+import io.bluetape4k.tokenizer.utils.SuspendMemoized
 import io.bluetape4k.tokenizer.utils.VersionedDictionary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.runInterruptible
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.Collections
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
-
-/** suspend 초기화와 동기 facade가 같은 단일 성공 값을 공유하도록 합니다. */
-@PublishedApi
-internal class SuspendMemoized<T: Any>(
-    private val initializer: suspend () -> T,
-) {
-    private object Uninitialized
-
-    private val mutex = Mutex()
-
-    @Volatile
-    private var state: Any = Uninitialized
-
-    @Suppress("UNCHECKED_CAST")
-    private fun currentValue(): T = state as T
-
-    suspend fun get(): T {
-        val current = state
-        if (current !== Uninitialized) {
-            @Suppress("UNCHECKED_CAST")
-            return current as T
-        }
-
-        return mutex.withLock {
-            val initialized = state
-            if (initialized !== Uninitialized) {
-                @Suppress("UNCHECKED_CAST")
-                initialized as T
-            } else {
-                initializer().also { state = it }
-            }
-        }
-    }
-
-    fun getBlocking(): T {
-        return if (state !== Uninitialized) {
-            currentValue()
-        } else {
-            try {
-                runBlocking(Dispatchers.IO) { get() }
-            } catch (e: InterruptedException) {
-                Thread.currentThread().interrupt()
-                throw e
-            }
-        }
-    }
-
-    internal fun isInitialized(): Boolean = state !== Uninitialized
-
-    /** 테스트에서 memoized lifecycle을 격리하기 위해 초기화 상태를 되돌립니다. */
-    internal suspend fun resetForTesting() {
-        mutex.withLock {
-            state = Uninitialized
-        }
-    }
-}
 
 /** 금칙어 처리에서 함께 관찰해야 하는 한국어 세 사전의 immutable snapshot입니다. */
 internal data class KoreanDictionaryBundleSnapshot(
@@ -306,6 +248,8 @@ object KoreanDictionaryProvider: KLogging() {
      * 동기 facade를 직접 처음 조회하면 기존 API 호환성을 위해 호출 스레드를 잠시 차단할 수
      * 있으므로 애플리케이션 시작 단계에서 이 함수를 호출하는 것을 권장합니다. 동시 호출은
      * 각 loader의 단일 초기화 결과를 공유하고, 취소/실패한 초기화는 다음 호출에서 재시도합니다.
+     * 동기 facade가 초기화를 기다리는 중 interrupt되면 `InterruptedException`을 전달하고
+     * 호출 스레드의 interrupt flag를 복구합니다.
      */
     suspend fun preload() {
         withContext(Dispatchers.IO) {
@@ -350,7 +294,7 @@ object KoreanDictionaryProvider: KLogging() {
             nameDictionaryLoader,
             typoDictionaryByLengthLoader,
             predicateStemsLoader,
-        ).forEach { it.resetForTesting() }
+        ).forEach { it.clear() }
     }
 
     /**

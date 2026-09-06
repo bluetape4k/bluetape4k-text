@@ -10,6 +10,7 @@ import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.tokenizer.utils.CharArraySet
 import io.bluetape4k.tokenizer.utils.DictionarySnapshot
 import io.bluetape4k.tokenizer.utils.DictionaryVersion
+import io.bluetape4k.tokenizer.utils.SuspendMemoized
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred

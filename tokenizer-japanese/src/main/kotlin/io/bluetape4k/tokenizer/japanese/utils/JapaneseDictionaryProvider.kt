@@ -7,60 +7,15 @@ import io.bluetape4k.tokenizer.utils.CharArraySet
 import io.bluetape4k.tokenizer.utils.DictionarySnapshot
 import io.bluetape4k.tokenizer.utils.DictionaryProvider
 import io.bluetape4k.tokenizer.utils.DictionaryVersion
+import io.bluetape4k.tokenizer.utils.SuspendMemoized
 import io.bluetape4k.tokenizer.utils.VersionedDictionary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.Collections
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
-
-/** suspend 초기화와 동기 facade가 같은 단일 성공 값을 공유하도록 합니다. */
-internal class SuspendMemoized<T: Any>(
-    private val initializer: suspend () -> T,
-) {
-    private object Uninitialized
-
-    private val mutex = Mutex()
-
-    @Volatile
-    private var state: Any = Uninitialized
-
-    @Suppress("UNCHECKED_CAST")
-    private fun currentValue(): T = state as T
-
-    suspend fun get(): T {
-        val current = state
-        if (current !== Uninitialized) {
-            @Suppress("UNCHECKED_CAST")
-            return current as T
-        }
-
-        return mutex.withLock {
-            val initialized = state
-            if (initialized !== Uninitialized) {
-                @Suppress("UNCHECKED_CAST")
-                initialized as T
-            } else {
-                initializer().also { state = it }
-            }
-        }
-    }
-
-    fun getBlocking(): T {
-        return if (state !== Uninitialized) {
-            currentValue()
-        } else {
-            runBlocking(Dispatchers.IO) { get() }
-        }
-    }
-
-    internal fun isInitialized(): Boolean = state !== Uninitialized
-}
 
 private class JapaneseBlockwordValue(
     val wordsBySeverity: Map<Severity, Set<String>>,
@@ -145,7 +100,8 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      * `blockWordDictionary`를 처음 직접 조회하면 기존 동기 facade 호환성을 위해
      * 호출 스레드를 잠시 차단할 수 있으므로, 애플리케이션 시작 단계에서 이 함수를
      * 호출하는 것을 권장합니다. 동시 호출은 하나의 초기화만 수행하고 같은 snapshot을
-     * 공유합니다.
+     * 공유합니다. 동기 facade가 초기화를 기다리는 중 interrupt되면
+     * `InterruptedException`을 전달하고 호출 스레드의 interrupt flag를 복구합니다.
      */
     suspend fun preload() {
         withContext(Dispatchers.IO) {
@@ -154,6 +110,11 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
     }
 
     internal fun allDictionariesInitialized(): Boolean = blockwordVersions.isInitialized()
+
+    /** 테스트마다 singleton loader lifecycle을 격리하기 위해 초기화 상태를 되돌립니다. */
+    internal suspend fun resetForTesting() {
+        blockwordVersions.clear()
+    }
 
     private suspend fun readWordsBySeverity(): Map<Severity, Set<String>> = coroutineScope {
         val allWords = async {
