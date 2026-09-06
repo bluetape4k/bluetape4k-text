@@ -19,6 +19,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.awaitCancellation
 import io.bluetape4k.tokenizer.utils.DictionaryVersion
+import io.bluetape4k.tokenizer.utils.SuspendMemoized
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.ResourceLock
 import java.util.Collections
