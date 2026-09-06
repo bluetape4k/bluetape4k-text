@@ -46,13 +46,14 @@ class UnicodeSupportTest: AbstractLinguaTest() {
     @Nested
     inner class Thai {
         @Test
-        fun thaiBlocksReturnTrue() {
-            listOf('\u0E01', '\u1950', '\u1980', '\u1A20').forEach { it.isThai.shouldBeTrue() }
+        fun thaiScriptReturnsTrue() {
+            '\u0E01'.isThai.shouldBeTrue()
         }
 
         @Test
-        fun nonThaiBlocksReturnFalse() {
-            listOf('A', '가', 'あ', '中', 'م').forEach { it.isThai.shouldBeFalse() }
+        fun nonThaiScriptsReturnFalse() {
+            listOf('\u1950', '\u1980', '\u1A20', 'A', '가', 'あ', '中', 'م')
+                .forEach { it.isThai.shouldBeFalse() }
         }
     }
 
