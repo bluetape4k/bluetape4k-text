@@ -29,6 +29,7 @@ Kotlin/JVM용 Aho-Corasick 다중 키워드 검색 라이브러리입니다. N�
 | **첫 번째 매치** | `firstMatch()` — `stopOnFirstMatch`와 무관한 leftmost-longest (R5 규칙) |
 | **토크나이즈** | `tokenize()` — Match/Fragment 토큰으로 분해 |
 | **치환** | `replaceAll(text) { match → 치환값 }` |
+| **Keyword·regex redaction** | `TextRedactor` — 원문 UTF-16 span, overlap merge, same-length masking |
 | **Flow API** | `matchesAsFlow(text)` — Kotlin 코루틴 Flow |
 | **DSL 빌더** | `ahoCorasick { }` 최상위 함수 |
 | **스레드 안전** | 빌드 후 불변(immutable) |
@@ -82,6 +83,32 @@ val automaton = AhoCorasickAutomaton.builder<String>()
 val masked = automaton.replaceAll("너는 바보야! 멍청이처럼 굴지 마.") { match -> match.value }
 // "너는 [검열됨]야! [검열됨]처럼 굴지 마."
 ```
+
+### Keyword·regex redaction
+
+`TextRedactor`는 기존 Aho-Corasick 검색과 선택적 regex 규칙을 하나의 불변 정책으로
+조합합니다. 겹치는 match는 merge하고 인접한 span은 분리하며, 반환 범위와 masked text는
+원문 UTF-16 code-unit offset과 길이를 유지합니다.
+
+```kotlin
+val redactor = TextRedactor.of(
+    RedactionPolicy.of(
+        rules = listOf(
+            RedactionRule.keyword("keyword.account", "keyword", "account number", priority = 30),
+            RedactionRule.regex("regex.email", "contact", "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+", priority = 10),
+        )
+    )
+)
+
+val result = redactor.redact("account number: user@example.test")
+// result.redactedText 는 원문과 같은 길이이며 result.spans 는 원문 half-open 범위입니다.
+```
+
+`RedactionPolicy`는 rule list를 방어적으로 복사하고 입력 길이와 rule 수를 제한합니다.
+`RedactionRule.toString()`과 결과 metadata에는 keyword·regex 원문을 저장하지 않습니다.
+regex 규칙은 신뢰된 입력을 대상으로 하며 이 API는 일반적인 ReDoS 방지를 보장하지 않습니다.
+Redactor는 발견하지 못한 민감정보가 없음을 보장하지 않으므로 업무별 검증과 별도 DLP 정책이
+필요합니다.
 
 ### 코드 구문 하이라이트 (토크나이즈)
 
@@ -152,6 +179,18 @@ val result = automaton.parseText("아름다운 나라")
 | `containsMatch(text)` | 설정한 단어 경계에 맞는 매치 존재 여부 반환 (유효한 매치에서 조기 종료) |
 | `tokenize(text)` | `Match`/`Fragment` 토큰으로 분해; `allowOverlaps` 설정과 무관하게 항상 비겹침 시퀀스 반환 |
 | `replaceAll(text) { }` | 변환 람다로 모든 매치 치환 |
+
+### Redaction API
+
+| 타입/메서드 | 설명 |
+|--------|------|
+| `RedactionRule.keyword/regex` | 안전한 metadata와 priority를 가진 keyword·regex 규칙 |
+| `RedactionPolicy.of` | 불변 rule snapshot, mask 문자, 입력/rule 상한, keyword 정규화 정책 |
+| `TextRedactor.redact` | overlap merge와 원문 길이 보존 masking을 적용한 `RedactionResult` 반환 |
+| `RedactionSpan` | 원문 UTF-16 half-open 범위, 우선순위로 정렬된 rule id, 대표 category |
+
+낮은 priority 값이 우선하며 동률은 rule id와 category 순서로 결정됩니다. 인접한 span은
+병합하지 않습니다. `redactedText`가 모든 민감정보를 제거했다는 의미는 아닙니다.
 
 ### `SearchOptions`
 

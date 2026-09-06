@@ -29,6 +29,7 @@ Aho-Corasick multi-keyword search library for Kotlin/JVM. Searches N keywords si
 | **First match** | `firstMatch()` — leftmost-longest (R5 rule), regardless of `stopOnFirstMatch` |
 | **Tokenize** | `tokenize()` — split into Match/Fragment tokens |
 | **Replace** | `replaceAll(text) { match → replacement }` |
+| **Keyword·regex redaction** | `TextRedactor` — original UTF-16 spans, overlap merge, same-length masking |
 | **Flow API** | `matchesAsFlow(text)` — Kotlin coroutines Flow |
 | **DSL builder** | `ahoCorasick { }` top-level function |
 | **Thread-safe** | Immutable after build |
@@ -81,6 +82,32 @@ val automaton = AhoCorasickAutomaton.builder<String>()
 val masked = automaton.replaceAll("That's bad and worse!") { match -> match.value }
 // "That's *** and ***!"
 ```
+
+### Keyword·regex redaction
+
+`TextRedactor` combines the existing Aho-Corasick matcher with optional regular-expression
+rules behind one immutable policy. Overlapping matches are merged while adjacent spans stay
+separate; ranges and masked output preserve the original UTF-16 offsets and length.
+
+```kotlin
+val redactor = TextRedactor.of(
+    RedactionPolicy.of(
+        rules = listOf(
+            RedactionRule.keyword("keyword.account", "keyword", "account number", priority = 30),
+            RedactionRule.regex("regex.email", "contact", "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+", priority = 10),
+        )
+    )
+)
+
+val result = redactor.redact("account number: user@example.test")
+// result.redactedText keeps the input length; result.spans use original half-open offsets.
+```
+
+`RedactionPolicy` defensively copies its rules and bounds input length and rule count.
+`RedactionRule.toString()` and result metadata do not retain keyword or regex source text.
+Regex rules are intended for trusted inputs; this API does not claim general ReDoS protection.
+The redactor does not guarantee that undetected sensitive data is absent, so domain-specific
+validation or a dedicated DLP policy remains the caller's responsibility.
 
 ### Code Syntax Highlight (Tokenize)
 
@@ -151,6 +178,18 @@ use distinct normalized keys.
 | `containsMatch(text)` | Returns `true` if any keyword matches the configured word boundary; short-circuits after an accepted match |
 | `tokenize(text)` | Splits into `Match` and `Fragment` tokens; always returns non-overlapping sequence |
 | `replaceAll(text) { }` | Replaces all matches via transform lambda |
+
+### Redaction API
+
+| Type/method | Description |
+|--------|-------------|
+| `RedactionRule.keyword/regex` | Keyword or regex rule with safe metadata and priority |
+| `RedactionPolicy.of` | Immutable rule snapshot, mask character, input/rule bounds, and keyword normalization |
+| `TextRedactor.redact` | Returns a `RedactionResult` after overlap merging and same-length masking |
+| `RedactionSpan` | Original UTF-16 half-open range, priority-ordered rule ids, and representative category |
+
+Lower priority values win; ties are resolved by rule id and category. Adjacent spans are not
+merged. `redactedText` is not a guarantee that every sensitive value was removed.
 
 ### `SearchOptions`
 
