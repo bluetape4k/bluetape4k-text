@@ -313,7 +313,7 @@ class TextRedactor private constructor(
         regex
             ?.findAll(text)
             ?.mapNotNull { match ->
-                if (match.range.first > match.range.last) {
+                if (match.range.first >= match.range.last) {
                     null
                 } else {
                     RedactionMatch(

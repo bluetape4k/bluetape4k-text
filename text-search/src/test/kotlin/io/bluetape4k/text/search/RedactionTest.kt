@@ -129,4 +129,16 @@ class RedactionTest {
         metadata.toString() shouldNotContain "secret"
         metadata.toString().contains("safe").shouldBeTrue()
     }
+
+    @Test
+    fun `zero length regex matches are ignored`() {
+        val policy = RedactionPolicy.of(
+            listOf(RedactionRule.regex("regex.empty", "empty", "(?=secret)"))
+        )
+
+        val result = TextRedactor.of(policy).redact("secret")
+
+        result.redactedText shouldBeEqualTo "secret"
+        result.spans shouldHaveSize 0
+    }
 }
