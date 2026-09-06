@@ -1,5 +1,7 @@
 package io.bluetape4k.lingua
 
+import java.lang.Character.UnicodeScript
+
 /**
  * 문자가 ASCII 문자(`0..127` 코드 포인트)인지 확인합니다.
  */
@@ -29,13 +31,12 @@ val Char.isArabic: Boolean
             this.code in 0xFE70..0xFEFF
 
 /**
- * 문자가 태국어 유니코드 블록 범위에 속하는지 확인합니다.
+ * 문자가 태국어 유니코드 스크립트에 속하는지 확인합니다.
+ *
+ * [Character.UnicodeScript.THAI]와 일치하는 코드 포인트만 태국어로 판정합니다.
  */
 val Char.isThai: Boolean
-    get() = this.code in 0x0E00..0x0E7F ||      // 타이 문자
-            this.code in 0x1950..0x197F ||      // 타이 확장
-            this.code in 0x1980..0x19DF ||      // 타이 확장 B
-            this.code in 0x1A20..0x1AAF         // 타이 확장 추가
+    get() = UnicodeScript.of(this.code) == UnicodeScript.THAI
 
 /**
  * 문자가 한국어(한글) 유니코드 블록 범위에 속하는지 확인합니다.

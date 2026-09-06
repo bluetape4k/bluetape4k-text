@@ -94,6 +94,18 @@ class UnicodeDetectorTest: AbstractLinguaTest() {
         }
 
         @Test
+        fun thaiFilteringExcludesOtherTaiScripts() {
+            val thaiLocale = Locale.of("th")
+            val taiText = "\u1950\u1980\u1A20"
+
+            unicodeDetector.filterChar('\u1950', thaiLocale).shouldBeNull()
+            String(unicodeDetector.filterString("ก$taiText", thaiLocale)) shouldBeEqualTo "ก"
+            unicodeDetector.containsAny(taiText, thaiLocale).shouldBeFalse()
+            unicodeDetector.containsAll("ก$taiText", thaiLocale).shouldBeFalse()
+            unicodeDetector.containsAll("ก", thaiLocale) shouldBeEqualTo true
+        }
+
+        @Test
         fun `supplementary CJK code point is ignored by Char based filtering`() {
             val supplementaryCjk = String(Character.toChars(0x20000))
 
