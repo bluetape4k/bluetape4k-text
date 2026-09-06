@@ -15,6 +15,7 @@ Core abstractions, domain models, and utilities for building text tokenizers and
 - **Severity enum** — `Severity.LOW` (slang/mild), `MIDDLE` (profanity), `HIGH` (hate speech / regional slurs) for fine-grained content policy
 - **Dictionary utilities** — `DictionaryProvider` loads classpath resource files (plain text or `.gz`) as eager in-memory `Sequence` snapshots, word-frequency maps, or high-performance `CharArraySet`
 - **Parallel dictionary loading** — `readWordsAsSet` and `readWords` use `Flow.async` to load multiple dictionary files concurrently
+- **Success-only suspend memoization** — `SuspendMemoized` coalesces concurrent initialization, reuses successful values, retries after failure/cancellation, and restores the blocking caller's interruption flag
 - **Efficient set/map structures** — `CharArraySet` and `CharArrayMap` optimised for high-throughput membership checks against large word lists
 - **Exception hierarchy** — `TokenizerException` and `InvalidTokenizeRequestException` extend `BluetapeException`
 - **Serializable models** — all options and message types implement `java.io.Serializable`
@@ -82,6 +83,31 @@ val freqMap: Map<CharSequence, Float> = DictionaryProvider.readWordFreqs("dict/f
 stream. Calling `take(2)` limits sequence traversal after the read; it does not
 reduce file I/O or peak memory. Use `readWordsAsSet` when you need deduplicated
 membership lookup instead.
+
+### Success-only suspend initialization
+
+`SuspendMemoized` coalesces concurrent calls into one initialization and stores only
+successful results. If the initializer fails or the calling coroutine is cancelled,
+the result is not stored and the next call retries. Synchronous facades can use
+`getBlocking()`; if the caller thread is interrupted while waiting, the method
+propagates `InterruptedException` and restores the thread's interruption flag.
+
+```kotlin
+import io.bluetape4k.tokenizer.utils.SuspendMemoized
+import kotlinx.coroutines.runBlocking
+
+val dictionary = SuspendMemoized {
+    mapOf("sample" to "value")
+}
+
+val value = runBlocking { dictionary.get() }
+val sameValue = dictionary.getBlocking()
+// value == sameValue
+```
+
+`clear()` explicitly removes a successful value so the next call runs the initializer
+again. `isInitialized()` reports whether a successful value is currently published.
+
 
 ## Dependencies
 

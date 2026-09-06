@@ -15,6 +15,7 @@ bluetape4k 생태계에서 텍스트 토크나이저와 금칙어 처리기를 �
 - **심각도 열거형** — `Severity.LOW`(은어/속어), `MIDDLE`(욕설), `HIGH`(혐오 표현/지역 비하) 세 단계 콘텐츠 정책
 - **사전 유틸리티** — `DictionaryProvider`가 클래스패스 리소스 파일(일반 텍스트 또는 `.gz`)을 즉시 메모리에 적재한 `Sequence` 스냅샷, 단어 빈도 맵, 또는 고성능 `CharArraySet`으로 로드
 - **병렬 사전 로딩** — `readWordsAsSet`과 `readWords`가 `Flow.async`를 이용해 여러 사전 파일을 동시 적재
+- **성공 전용 suspend memoization** — `SuspendMemoized`가 동시 초기화를 하나로 합치고 성공 값만 재사용하며, 실패·취소 후 재시도와 blocking interruption flag 복구를 보장
 - **고성능 집합/맵 구조** — 대용량 단어 목록 멤버십 검사에 최적화된 `CharArraySet`과 `CharArrayMap`
 - **예외 계층** — `TokenizerException`과 `InvalidTokenizeRequestException`이 `BluetapeException` 상속
 - **직렬화 가능 모델** — 모든 옵션 및 메시지 타입이 `java.io.Serializable` 구현
@@ -82,6 +83,30 @@ val freqMap: Map<CharSequence, Float> = DictionaryProvider.readWordFreqs("dict/f
 따라서 `take(2)`는 읽기가 끝난 뒤 Sequence 순회량만 줄이며, 파일 I/O나
 최대 메모리 사용량을 줄이지 않습니다. 중복을 제거한 membership 조회가
 필요하면 `readWordsAsSet`을 사용하세요.
+
+### 성공 전용 suspend 초기화
+
+`SuspendMemoized`는 동시 호출을 하나의 초기화로 합치고 성공한 값만 저장합니다.
+initializer가 실패하거나 호출 코루틴이 취소되면 결과를 저장하지 않아 다음 호출이
+재시도합니다. 동기 facade에서는 `getBlocking()`을 사용하며, 초기화 대기 중 호출
+스레드가 interrupt되면 `InterruptedException`을 전달하면서 interrupt flag를 복구합니다.
+
+```kotlin
+import io.bluetape4k.tokenizer.utils.SuspendMemoized
+import kotlinx.coroutines.runBlocking
+
+val dictionary = SuspendMemoized {
+    mapOf("sample" to "value")
+}
+
+val value = runBlocking { dictionary.get() }
+val sameValue = dictionary.getBlocking()
+// value == sameValue
+```
+
+`clear()`는 명시적으로 성공 값을 제거하고 다음 호출에서 initializer를 다시 실행하도록
+합니다. `isInitialized()`는 성공 값의 공개 여부를 확인합니다.
+
 
 ## 의존성
 
