@@ -26,7 +26,7 @@ Kotlin/JVM용 Aho-Corasick 다중 키워드 검색 라이브러리입니다. N�
 | **겹침 제어** | `allowOverlaps = false` — 더 긴 키워드 우선 |
 | **단어 경계** | `LATIN_ALPHA` 또는 `WHITESPACE_SEPARATED` |
 | **유니코드 NFC/NFKC** | 매칭 전 정규화 (오프셋 매핑 자동 처리) |
-| **첫 번째 매치** | `firstMatch()` — leftmost-longest (R5 규칙) |
+| **첫 번째 매치** | `firstMatch()` — `stopOnFirstMatch`와 무관한 leftmost-longest (R5 규칙) |
 | **토크나이즈** | `tokenize()` — Match/Fragment 토큰으로 분해 |
 | **치환** | `replaceAll(text) { match → 치환값 }` |
 | **Flow API** | `matchesAsFlow(text)` — Kotlin 코루틴 Flow |
@@ -133,6 +133,14 @@ val result = automaton.parseText("아름다운 나라")
 // 자모 분리 형태의 입력도 "나라" 매치
 ```
 
+### 정규화된 키워드 충돌
+
+빌더는 등록 키워드와 검색 텍스트에 동일한 유니코드 정규화 및 대소문자
+변환 pipeline을 적용합니다. 서로 다른 원본 키워드가 같은 정규화 key가
+되면 한 value를 조용히 덮어쓰지 않고 `build()`에서
+`IllegalArgumentException`을 던집니다. 하나의 표준 표기를 등록하거나 서로
+다른 정규화 key를 사용하세요.
+
 ## API 참조
 
 ### `AhoCorasickAutomaton<V>`
@@ -140,8 +148,8 @@ val result = automaton.parseText("아름다운 나라")
 | 메서드 | 설명 |
 |--------|------|
 | `parseText(text)` | 텍스트에서 모든 매치 반환 |
-| `firstMatch(text)` | leftmost-longest 매치 1건 반환 (R5 규칙) |
-| `containsMatch(text)` | 매치 존재 여부 반환 (첫 매치 즉시 반환) |
+| `firstMatch(text)` | `stopOnFirstMatch = true`여도 모든 후보를 확인해 leftmost-longest 매치 1건 반환 (R5 규칙) |
+| `containsMatch(text)` | 설정한 단어 경계에 맞는 매치 존재 여부 반환 (유효한 매치에서 조기 종료) |
 | `tokenize(text)` | `Match`/`Fragment` 토큰으로 분해; `allowOverlaps` 설정과 무관하게 항상 비겹침 시퀀스 반환 |
 | `replaceAll(text) { }` | 변환 람다로 모든 매치 치환 |
 
@@ -153,7 +161,7 @@ val result = automaton.parseText("아름다운 나라")
 | `allowOverlaps` | `true` | 겹치는 매치 허용 |
 | `wordBoundary` | `NONE` | 단어 경계 탐지 방식 |
 | `normalization` | `NONE` | 유니코드 정규화 형식 |
-| `stopOnFirstMatch` | `false` | 첫 매치 후 중단 (`matchesAsFlow`에서는 무시됨) |
+| `stopOnFirstMatch` | `false` | `parseText`의 첫 매치 후 중단; `firstMatch`에는 적용되지 않으며 `matchesAsFlow`에서는 무시됨 |
 
 ### `WordBoundary`
 

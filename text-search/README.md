@@ -26,7 +26,7 @@ Aho-Corasick multi-keyword search library for Kotlin/JVM. Searches N keywords si
 | **No overlaps** | `allowOverlaps = false` — longer keyword wins |
 | **Word boundaries** | `LATIN_ALPHA` or `WHITESPACE_SEPARATED` |
 | **Unicode NFC/NFKC** | Normalize before matching (with offset mapping) |
-| **First match** | `firstMatch()` — leftmost-longest (R5 rule) |
+| **First match** | `firstMatch()` — leftmost-longest (R5 rule), regardless of `stopOnFirstMatch` |
 | **Tokenize** | `tokenize()` — split into Match/Fragment tokens |
 | **Replace** | `replaceAll(text) { match → replacement }` |
 | **Flow API** | `matchesAsFlow(text)` — Kotlin coroutines Flow |
@@ -132,6 +132,14 @@ val result = automaton.parseText("아름다운 나라")
 // matches "나라" even when input uses decomposed Jamo
 ```
 
+### Normalized Keyword Collisions
+
+The builder applies the same Unicode normalization and case-folding pipeline
+to registered keywords and searched text. If two distinct source keywords
+produce the same normalized key, `build()` throws `IllegalArgumentException`
+instead of silently replacing one value. Register one canonical spelling or
+use distinct normalized keys.
+
 ## API Reference
 
 ### `AhoCorasickAutomaton<V>`
@@ -139,8 +147,8 @@ val result = automaton.parseText("아름다운 나라")
 | Method | Description |
 |--------|-------------|
 | `parseText(text)` | Returns all matches in the text |
-| `firstMatch(text)` | Returns leftmost-longest match (R5 rule) |
-| `containsMatch(text)` | Returns `true` if any keyword matches (short-circuits on first match) |
+| `firstMatch(text)` | Returns the leftmost-longest match (R5 rule); always evaluates all candidates even when `stopOnFirstMatch = true` |
+| `containsMatch(text)` | Returns `true` if any keyword matches the configured word boundary; short-circuits after an accepted match |
 | `tokenize(text)` | Splits into `Match` and `Fragment` tokens; always returns non-overlapping sequence |
 | `replaceAll(text) { }` | Replaces all matches via transform lambda |
 
@@ -152,7 +160,7 @@ val result = automaton.parseText("아름다운 나라")
 | `allowOverlaps` | `true` | Allow overlapping matches |
 | `wordBoundary` | `NONE` | Word boundary detection mode |
 | `normalization` | `NONE` | Unicode normalization form |
-| `stopOnFirstMatch` | `false` | Stop after first match (ignored in `matchesAsFlow`) |
+| `stopOnFirstMatch` | `false` | Stop `parseText` after its first match; does not limit `firstMatch` and is ignored in `matchesAsFlow` |
 
 ### `WordBoundary`
 
