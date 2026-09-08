@@ -173,11 +173,26 @@ use distinct normalized keys.
 
 | Method | Description |
 |--------|-------------|
-| `parseText(text)` | Returns all matches in the text |
+| `parseText(text)` | Returns all matches ordered by `start ASC`, then `length DESC`, then `keyword ASC` |
 | `firstMatch(text)` | Returns the leftmost-longest match (R5 rule); always evaluates all candidates even when `stopOnFirstMatch = true` |
 | `containsMatch(text)` | Returns `true` if any keyword matches the configured word boundary; short-circuits after an accepted match |
 | `tokenize(text)` | Splits into `Match` and `Fragment` tokens; always returns non-overlapping sequence |
 | `replaceAll(text) { }` | Replaces all matches via transform lambda |
+
+### Match order and streaming APIs
+
+`parseText(text)` is the eager API. It materializes the accepted matches and
+orders them by `start ASC`, `length DESC` for equal starts, and `keyword ASC`
+as the deterministic final tie-breaker. With `stopOnFirstMatch = true`, the
+trie still stops at the first raw match before this ordering step, so
+`ahoCorasickOf("a", "ba", options = SearchOptions(stopOnFirstMatch = true))`
+returns `"a"` first for `"ba"`.
+
+The default `matchesAsFlow(text)` path preserves raw trie traversal order and
+does not materialize or globally sort the result. When overlap removal or a
+word-boundary filter requires eager post-processing, the Flow uses the same
+ordered result as `parseText`. `AhoCorasickScanner` preserves raw traversal
+order within each emitted chunk so callers can consume results incrementally.
 
 ### Redaction API
 
@@ -199,7 +214,7 @@ merged. `redactedText` is not a guarantee that every sensitive value was removed
 | `allowOverlaps` | `true` | Allow overlapping matches |
 | `wordBoundary` | `NONE` | Word boundary detection mode |
 | `normalization` | `NONE` | Unicode normalization form |
-| `stopOnFirstMatch` | `false` | Stop `parseText` after its first match; does not limit `firstMatch` and is ignored in `matchesAsFlow` |
+| `stopOnFirstMatch` | `false` | Stop `parseText` at the first raw match before eager ordering; does not limit `firstMatch` and is ignored in `matchesAsFlow` |
 
 ### `WordBoundary`
 
@@ -226,7 +241,10 @@ console sample covering the builder API, `ahoCorasick` DSL, replacement, and
 
 Throughput is measured with JMH through the repo-local kotlinx-benchmark task.
 Higher `ops/s` is better. The 0.2.1 baseline covers large dictionaries, dense
-matches, no-match input, Unicode normalization, and Flow collection.
+matches, eager result ordering, no-match input, Unicode normalization, and Flow
+collection. `parseTextOrderedMatches` is a bounded large-match scenario for
+the eager sorting cost; its result should be compared only with runs using the
+same benchmark source and environment.
 
 Run condition:
 

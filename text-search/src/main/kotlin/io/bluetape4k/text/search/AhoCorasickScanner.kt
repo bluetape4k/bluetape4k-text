@@ -9,6 +9,8 @@ package io.bluetape4k.text.search
  *
  * 정규화는 청크 경계에서 원문 매핑을 보장할 수 없으므로 [NormalizationForm.NONE]만 지원한다.
  * `ignoreCase`, overlap, word-boundary 옵션은 일반 [AhoCorasickAutomaton.parseText]와 같은 규칙으로 적용한다.
+ * 결과 순서는 eager API의 start ASC 정렬을 다시 적용하지 않고, 각 청크에서 확정된 raw trie traversal 순서를
+ * 유지한다.
  *
  * @param V 키워드에 연결된 값의 타입입니다.
  * @property automaton 청크를 검색할 불변 automaton입니다.
@@ -99,7 +101,7 @@ class AhoCorasickScanner<V> internal constructor(
         baseOffset: Int,
         maxEndExclusive: Int?,
     ): List<AhoCorasickMatch<V>> {
-        return automaton.parseText(text).mapNotNull { match ->
+        return automaton.parseTextStreaming(text).mapNotNull { match ->
             if (maxEndExclusive != null && match.end + 1 > maxEndExclusive) {
                 return@mapNotNull null
             }

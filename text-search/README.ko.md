@@ -174,11 +174,26 @@ val result = automaton.parseText("아름다운 나라")
 
 | 메서드 | 설명 |
 |--------|------|
-| `parseText(text)` | 텍스트에서 모든 매치 반환 |
+| `parseText(text)` | `start ASC`, 동일 start의 `length DESC`, `keyword ASC` 순서로 모든 매치 반환 |
 | `firstMatch(text)` | `stopOnFirstMatch = true`여도 모든 후보를 확인해 leftmost-longest 매치 1건 반환 (R5 규칙) |
 | `containsMatch(text)` | 설정한 단어 경계에 맞는 매치 존재 여부 반환 (유효한 매치에서 조기 종료) |
 | `tokenize(text)` | `Match`/`Fragment` 토큰으로 분해; `allowOverlaps` 설정과 무관하게 항상 비겹침 시퀀스 반환 |
 | `replaceAll(text) { }` | 변환 람다로 모든 매치 치환 |
+
+### 매치 순서와 streaming API
+
+`parseText(text)`는 eager API입니다. 허용된 매치를 모두 materialize한 뒤
+`start ASC`, 동일 start에서는 `length DESC`, 길이까지 같으면 결정적인
+최종 tie-breaker인 `keyword ASC` 순서로 정렬합니다. `stopOnFirstMatch = true`이면
+이 정렬 전에 trie가 첫 raw match에서 중단하므로,
+`ahoCorasickOf("a", "ba", options = SearchOptions(stopOnFirstMatch = true))`는
+`"ba"`에서 먼저 발견한 `"a"`를 반환합니다.
+
+기본 `matchesAsFlow(text)` 경로는 raw trie traversal 순서를 유지하며 전체
+결과를 materialize하거나 전역 정렬하지 않습니다. overlap 제거 또는 단어 경계
+필터에 eager 후처리가 필요하면 `parseText`와 같은 정렬된 결과를 Flow로
+방출합니다. `AhoCorasickScanner`는 결과를 점진적으로 소비할 수 있도록 각
+방출 chunk 안에서 raw traversal 순서를 유지합니다.
 
 ### Redaction API
 
@@ -200,7 +215,7 @@ val result = automaton.parseText("아름다운 나라")
 | `allowOverlaps` | `true` | 겹치는 매치 허용 |
 | `wordBoundary` | `NONE` | 단어 경계 탐지 방식 |
 | `normalization` | `NONE` | 유니코드 정규화 형식 |
-| `stopOnFirstMatch` | `false` | `parseText`의 첫 매치 후 중단; `firstMatch`에는 적용되지 않으며 `matchesAsFlow`에서는 무시됨 |
+| `stopOnFirstMatch` | `false` | eager 정렬 전 `parseText`의 첫 raw match에서 중단; `firstMatch`에는 적용되지 않으며 `matchesAsFlow`에서는 무시됨 |
 
 ### `WordBoundary`
 
@@ -226,8 +241,10 @@ console 예제가 있습니다.
 ## 벤치마크
 
 처리량은 저장소의 kotlinx-benchmark Gradle 태스크를 통해 JMH로 측정합니다.
-`ops/s`는 높을수록 좋습니다. 0.2.1 기준선은 큰 사전, dense match, no-match
-입력, Unicode 정규화, Flow 수집 비용을 함께 다룹니다.
+`ops/s`는 높을수록 좋습니다. 0.2.1 기준선은 큰 사전, dense match, eager 결과
+정렬, no-match 입력, Unicode 정규화, Flow 수집 비용을 함께 다룹니다.
+`parseTextOrderedMatches`는 eager 정렬 비용을 측정하는 bounded large-match
+시나리오이며, 동일한 benchmark 소스와 실행 환경의 결과만 비교해야 합니다.
 
 실행 조건:
 
