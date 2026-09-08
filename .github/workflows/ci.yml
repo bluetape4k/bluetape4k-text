@@ -95,6 +95,7 @@ jobs:
               - '.github/scripts/**'
             tokenizer-japanese:
               - 'tokenizer-japanese/**'
+              - 'tokenizer-core/**'
               - 'settings.gradle.kts'
               - 'build.gradle.kts'
               - 'buildSrc/**'
@@ -106,6 +107,7 @@ jobs:
               - '.github/scripts/**'
             tokenizer-korean:
               - 'tokenizer-korean/**'
+              - 'tokenizer-core/**'
               - 'settings.gradle.kts'
               - 'build.gradle.kts'
               - 'buildSrc/**'
@@ -154,7 +156,9 @@ jobs:
               - 'tokenizer-korean/**'
               - 'tokenizer-japanese/**'
       - name: Validate CI path-filter policy
-        run: python3 .github/scripts/validate-ci-path-filters.py
+        run: |
+          PYTHONDONTWRITEBYTECODE=1 python3 .github/scripts/test_validate_ci_path_filters.py
+          PYTHONDONTWRITEBYTECODE=1 python3 .github/scripts/validate-ci-path-filters.py
 
   catalog-governance:
     name: Central Catalog Governance
