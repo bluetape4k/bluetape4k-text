@@ -41,6 +41,9 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
 
     private val dictionaryMutationLock = ReentrantLock()
 
+    // 마지막 불변 사전 값의 공개 뷰만 보관하여 과거 revision이 누적되지 않게 합니다.
+    private var blockwordViewCache: Pair<JapaneseBlockwordValue, CharArraySet>? = null
+
     private val blockwordVersions = SuspendMemoized {
         VersionedDictionary(
             DictionarySnapshot(
@@ -163,9 +166,14 @@ object JapaneseDictionaryProvider: KLoggingChannel() {
      * ```
      */
     val blockWordDictionary: CharArraySet
-        get() = CharArraySet.unmodifiableSet(
-            CharArraySet(blockwordVersions.getBlocking().snapshot().value.words.toList())
-        )
+        get() {
+            val value = blockwordVersions.getBlocking().snapshot().value
+            return dictionaryMutationLock.withLock {
+                blockwordViewCache?.takeIf { it.first === value }?.second
+                    ?: CharArraySet.unmodifiableSet(CharArraySet(value.words.toList()))
+                        .also { blockwordViewCache = value to it }
+            }
+        }
 
     /**
      * 인메모리 금칙어 사전에 단어를 추가합니다. 중복 단어는 무시됩니다.
