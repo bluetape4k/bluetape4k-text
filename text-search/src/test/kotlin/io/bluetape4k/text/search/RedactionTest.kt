@@ -12,6 +12,45 @@ import org.junit.jupiter.api.Test
 class RedactionTest {
 
     @Test
+    fun `single character regex matches mask ASCII and Hangul with original offsets`() {
+        val policy = RedactionPolicy.of(
+            rules = listOf(
+                RedactionRule.regex("regex.ascii", "ascii", "X"),
+                RedactionRule.regex("regex.hangul", "hangul", "한"),
+            )
+        )
+
+        val result = TextRedactor.of(policy).redact("X 한")
+
+        result.redactedText shouldBeEqualTo "* *"
+        result.spans shouldHaveSize 2
+        result.spans[0].range shouldBeEqualTo RedactionRange.of(0, 1)
+        result.spans[0].matchedLength shouldBeEqualTo 1
+        result.spans[1].range shouldBeEqualTo RedactionRange.of(2, 3)
+        result.spans[1].matchedLength shouldBeEqualTo 1
+    }
+
+    @Test
+    fun `regex matches merge overlaps but preserve adjacent spans`() {
+        val policy = RedactionPolicy.of(
+            rules = listOf(
+                RedactionRule.regex("regex.overlap", "overlap", "ab", priority = 10),
+                RedactionRule.regex("regex.overlap-char", "overlap", "b", priority = 20),
+                RedactionRule.regex("regex.adjacent", "adjacent", "c", priority = 30),
+            )
+        )
+
+        val result = TextRedactor.of(policy).redact("abc")
+
+        result.redactedText shouldBeEqualTo "***"
+        result.spans shouldHaveSize 2
+        result.spans[0].range shouldBeEqualTo RedactionRange.of(0, 2)
+        result.spans[0].ruleIds shouldBeEqualTo listOf("regex.overlap", "regex.overlap-char")
+        result.spans[1].range shouldBeEqualTo RedactionRange.of(2, 3)
+        result.spans[1].ruleIds shouldBeEqualTo listOf("regex.adjacent")
+    }
+
+    @Test
     fun `keyword and regex matches merge overlaps and preserve adjacent spans`() {
         val policy = RedactionPolicy.of(
             rules = listOf(
