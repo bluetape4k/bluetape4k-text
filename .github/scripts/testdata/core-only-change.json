@@ -1,0 +1,15 @@
+{
+  "changed_paths": [
+    "tokenizer-core/src/main/kotlin/io/bluetape4k/tokenizer/utils/DictionaryProvider.kt"
+  ],
+  "expected_filters": [
+    "tokenizer-core",
+    "tokenizer-japanese",
+    "tokenizer-korean",
+    "examples"
+  ],
+  "excluded_filters": [
+    "lingua",
+    "text-search"
+  ]
+}
