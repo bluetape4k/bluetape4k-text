@@ -101,6 +101,46 @@ class AhoCorasickAutomatonTest : AbstractAhoCorasickTest() {
         log.debug { "다중 매치 정렬: $matches" }
     }
 
+    @Test
+    fun `parseText - suffix와 동일 시작 overlap은 start ascending, length descending 순서`() {
+        // 준비: suffix 매치는 trie raw 순회에서 더 늦은 start가 먼저 emit되고,
+        // 동일 start도 짧은 keyword가 먼저 emit될 수 있다.
+        val suffixAutomaton = AhoCorasickAutomaton.builder<String>()
+            .add("a", "A")
+            .add("ba", "BA")
+            .build()
+        val sameStartAutomaton = AhoCorasickAutomaton.builder<String>()
+            .add("a", "A")
+            .add("ab", "AB")
+            .build()
+
+        // 실행
+        val suffixMatches = suffixAutomaton.parseText("ba")
+        val sameStartMatches = sameStartAutomaton.parseText("ab")
+
+        // 검증: eager parseText는 공개 계약에 따라 start ASC, 동일 start에서는 length DESC를 보장한다.
+        suffixMatches.map { it.keyword } shouldBeEqualTo listOf("ba", "a")
+        suffixMatches.map { it.start } shouldBeEqualTo listOf(0, 1)
+        sameStartMatches.map { it.keyword } shouldBeEqualTo listOf("ab", "a")
+        sameStartMatches.map { it.length } shouldBeEqualTo listOf(2, 1)
+    }
+
+    @Test
+    fun `parseText - stopOnFirstMatch는 정렬 전 첫 raw match에서 중단`() {
+        // 준비: "ba"의 첫 raw match는 suffix keyword인 "a"이며, eager 정렬 후의 첫 match와 다르다.
+        val automaton = AhoCorasickAutomaton.builder<String>()
+            .add("a", "A")
+            .add("ba", "BA")
+            .options(SearchOptions(stopOnFirstMatch = true))
+            .build()
+
+        // 실행
+        val matches = automaton.parseText("ba")
+
+        // 검증: stopOnFirstMatch는 raw traversal semantics를 유지해 첫 raw match만 반환한다.
+        matches.map { it.start to it.keyword } shouldBeEqualTo listOf(1 to "a")
+    }
+
     // ──────────────────────────────── containsMatch ────────────────────────────────
 
     @Test

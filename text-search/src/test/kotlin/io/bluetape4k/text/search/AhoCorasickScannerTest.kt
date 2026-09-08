@@ -45,6 +45,20 @@ class AhoCorasickScannerTest: AbstractAhoCorasickTest() {
     }
 
     @Test
+    fun `scanner는 eager 정렬 없이 chunk의 raw traversal 순서를 유지한다`() {
+        val automaton = AhoCorasickAutomaton.builder<String>()
+            .add("a", "A")
+            .add("ba", "BA")
+            .build()
+        val scanner = automaton.scanner()
+
+        val matches = scanner.scan("ba") + scanner.finish()
+
+        matches.map { it.keyword } shouldBeEqualTo listOf("a", "ba")
+        matches.map { it.start } shouldBeEqualTo listOf(1, 0)
+    }
+
+    @Test
     fun `ignoreCase와 word boundary 옵션을 유지한다`() {
         val scanner = AhoCorasickAutomaton.builder<String>()
             .add("hello", "HELLO")

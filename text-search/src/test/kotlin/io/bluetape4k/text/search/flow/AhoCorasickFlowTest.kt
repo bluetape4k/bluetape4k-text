@@ -173,13 +173,25 @@ class AhoCorasickFlowTest {
     }
 
     @Test
-    fun `기본 옵션에서는 synchronous parseText와 Flow 결과 순서가 같다`() = runTest(timeout = 30.seconds) {
+    fun `기본 옵션에서는 eager parseText와 raw Flow 결과 순서가 구분된다`() = runTest(timeout = 30.seconds) {
         val automaton = fixtureAutomaton()
 
         val eagerMatches = automaton.parseText(SAMPLE_TEXT)
         val flowMatches = automaton.matchesAsFlow(SAMPLE_TEXT).toList()
 
-        eagerMatches shouldBeEqualTo flowMatches
+        eagerMatches.map { it.keyword } shouldBeEqualTo listOf("she", "hers", "he")
+        flowMatches.map { it.keyword } shouldBeEqualTo listOf("he", "she", "hers")
+    }
+
+    @Test
+    fun `기본 Flow는 eager 정렬 없이 raw traversal 순서를 유지한다`() = runTest(timeout = 30.seconds) {
+        val automaton = ahoCorasickOf("a", "ba")
+
+        val eagerMatches = automaton.parseText("ba")
+        val flowMatches = automaton.matchesAsFlow("ba").toList()
+
+        eagerMatches.map { it.keyword } shouldBeEqualTo listOf("ba", "a")
+        flowMatches.map { it.keyword } shouldBeEqualTo listOf("a", "ba")
     }
 
     @Test

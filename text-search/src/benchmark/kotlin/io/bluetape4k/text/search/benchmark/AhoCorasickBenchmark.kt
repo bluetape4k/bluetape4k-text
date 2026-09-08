@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit
  * Aho-Corasick 자동자의 대표 검색 경로에 대한 JMH 처리량 벤치마크.
  *
  * - [parseTextLargeDictionary]: 큰 사전 + 긴 입력 기준선
+ * - [parseTextOrderedMatches]: eager 결과 정렬 비용을 포함한 대량 매치 기준선
  * - [matchesAsFlowLargeDictionaryCollect]: `channelFlow` + `Dispatchers.Default` 기반 스트리밍 검색
  * - [parseTextDenseMatches]: 겹치는 dense match 기준선
  * - [parseTextNoMatch]: 매치가 없는 입력 기준선
@@ -46,11 +47,13 @@ open class AhoCorasickBenchmark {
 
     private lateinit var largeDictionaryMatcher: AhoCorasickAutomaton<String>
     private lateinit var denseMatcher: AhoCorasickAutomaton<String>
+    private lateinit var orderedMatcher: AhoCorasickAutomaton<String>
     private lateinit var normalizedMatcher: AhoCorasickAutomaton<String>
     private lateinit var smallKeywords: List<String>
     private lateinit var largeDictionaryText: String
     private lateinit var noMatchText: String
     private lateinit var denseText: String
+    private lateinit var orderedText: String
     private lateinit var normalizedText: String
     private lateinit var normalizedLargeText: String
 
@@ -61,6 +64,7 @@ open class AhoCorasickBenchmark {
 
         largeDictionaryMatcher = ahoCorasickOf(largeKeywords)
         denseMatcher = ahoCorasickOf(listOf("a", "aa", "aaa", "aaaa", "aaaaa"))
+        orderedMatcher = ahoCorasickOf(listOf("a", "ba"))
         normalizedMatcher = ahoCorasickOf(
             listOf("cafe", "한글", "(주)"),
             SearchOptions(ignoreCase = true, normalization = NormalizationForm.NFKC),
@@ -81,6 +85,7 @@ open class AhoCorasickBenchmark {
                 append("aaaaa ")
             }
         }
+        orderedText = "ba".repeat(ORDERED_TOKEN_COUNT)
         normalizedText = buildString {
             repeat(NORMALIZED_TOKEN_COUNT) {
                 append("ＣＡＦＥ 한글 ㈜ ")
@@ -97,6 +102,15 @@ open class AhoCorasickBenchmark {
     @Benchmark
     fun parseTextLargeDictionary(): List<AhoCorasickMatch<String>> =
         largeDictionaryMatcher.parseText(largeDictionaryText)
+
+    /**
+     * raw traversal 순서와 다른 eager 결과 정렬을 20,000개 매치에서 측정한다.
+     *
+     * @return 정렬된 매치 결과 리스트 (검색 경로 유지용 반환값)
+     */
+    @Benchmark
+    fun parseTextOrderedMatches(): List<AhoCorasickMatch<String>> =
+        orderedMatcher.parseText(orderedText)
 
     /**
      * 큰 사전과 긴 입력에서 [matchesAsFlow] 전체 수집 처리량을 측정한다.
@@ -165,6 +179,7 @@ open class AhoCorasickBenchmark {
         private const val LARGE_KEYWORD_COUNT = 5_000
         private const val LARGE_TEXT_TOKEN_COUNT = 2_000
         private const val DENSE_TOKEN_COUNT = 2_000
+        private const val ORDERED_TOKEN_COUNT = 10_000
         private const val NORMALIZED_TOKEN_COUNT = 1_000
         private const val NORMALIZED_LARGE_TEXT_LENGTH = 100_000
     }

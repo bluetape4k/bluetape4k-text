@@ -32,6 +32,8 @@ import io.bluetape4k.text.search.internal.lowercaseWithMapping
  *
  * @param V 각 키워드에 연결된 값의 타입입니다.
  */
+// 기존 facade를 유지하면서 eager 정렬과 scanner의 raw 순회를 별도 내부 경로로 구분합니다.
+@Suppress("TooManyFunctions")
 class AhoCorasickAutomaton<V> internal constructor(
     private val core: TrieCore,
     private val values: Map<String, V>,
@@ -58,9 +60,13 @@ class AhoCorasickAutomaton<V> internal constructor(
      * [SearchOptions.stopOnFirstMatch]가 `true`이면 이 메서드는 첫 raw match 뒤에 탐색을 중단합니다.
      * [firstMatch]는 leftmost-longest 계약을 위해 이 설정을 무시하고 모든 후보를 확인합니다.
      * 결과의 [AhoCorasickMatch.keyword]는 정규화된 형태와, 필요하면 소문자 형태를 반영합니다.
+     * 결과는 [AhoCorasickMatch.start] 오름차순, 동일한 시작 위치에서는 match 길이 내림차순,
+     * 길이까지 같으면 keyword 오름차순으로 정렬됩니다. 이 eager 정렬은
+     * [io.bluetape4k.text.search.flow.matchesAsFlow]의 기본
+     * raw streaming 순서와 [AhoCorasickScanner]의 chunk 방출 순서에는 적용되지 않습니다.
      *
      * @param text 검색할 입력 문자열입니다.
-     * @return 시작 위치 오름차순으로 정렬된 match list입니다.
+     * @return start ASC, length DESC, keyword ASC 순서로 정렬된 match list입니다.
      */
     fun parseText(text: CharSequence): List<AhoCorasickMatch<V>> {
         if (text.isEmpty() || values.isEmpty()) {
@@ -79,6 +85,7 @@ class AhoCorasickAutomaton<V> internal constructor(
      * [ignoreStopOnFirstMatch]가 `true`이면 Flow 계약에 따라 [SearchOptions.stopOnFirstMatch]를 무시합니다.
      * 겹침 제거와 단어 경계 필터는 raw match를 모두 수집한 뒤 적용하지만, trie 순회 자체는
      * [TrieCore.parseTextSuspending]을 통해 각 문자에서 협력 취소를 관찰합니다.
+     * 후처리 결과는 eager [parseText]와 같은 match 정렬을 사용합니다.
      */
     internal suspend fun parseTextSuspending(
         text: CharSequence,
@@ -96,10 +103,27 @@ class AhoCorasickAutomaton<V> internal constructor(
         return mapEmits(processed, emits, !ignoreStopOnFirstMatch && options.stopOnFirstMatch)
     }
 
+    /**
+     * Scanner가 청크별 trie 순회 순서를 유지하도록 [parseText]와 같은 후처리를 적용합니다.
+     *
+     * [parseText]는 완전한 입력을 materialize한 뒤 start ASC 순서로 정렬하지만, scanner는 확정된
+     * 청크를 즉시 방출해야 하므로 raw traversal 순서를 보존합니다.
+     */
+    internal fun parseTextStreaming(text: CharSequence): List<AhoCorasickMatch<V>> {
+        if (text.isEmpty() || values.isEmpty()) {
+            return emptyList()
+        }
+
+        val processed = preprocess(text)
+        val emits = core.parseText(processed.text)
+        return mapEmits(processed, emits, options.stopOnFirstMatch, sortMatches = false)
+    }
+
     private fun mapEmits(
         processed: ProcessedText,
         emits: List<Emit>,
         stopOnFirstMatch: Boolean,
+        sortMatches: Boolean = true,
     ): List<AhoCorasickMatch<V>> {
         if (emits.isEmpty()) {
             return emptyList()
@@ -124,7 +148,15 @@ class AhoCorasickAutomaton<V> internal constructor(
                 break
             }
         }
-        return matches
+        return if (!sortMatches || matches.size < 2) {
+            matches
+        } else {
+            matches.sortedWith(
+                compareBy<AhoCorasickMatch<V>> { it.start }
+                    .thenByDescending { it.length }
+                    .thenBy { it.keyword },
+            )
+        }
     }
 
     /** 청크 입력을 순차적으로 처리하는 상태 보존 scanner를 생성합니다. */
@@ -192,7 +224,7 @@ class AhoCorasickAutomaton<V> internal constructor(
         // firstMatch는 leftmost-longest 계약을 위해 stopOnFirstMatch와 무관하게 모든 후보를 확인합니다.
         val processed = preprocess(text)
         val emits = core.parseText(processed.text, stopOnHit = false)
-        val matches = mapEmits(processed, emits, stopOnFirstMatch = false)
+        val matches = mapEmits(processed, emits, stopOnFirstMatch = false, sortMatches = false)
         // 가장 왼쪽(start ASC)을 우선하고, start가 같으면 더 긴 match(length DESC)를 우선합니다.
         return matches.minWithOrNull(
             compareBy<AhoCorasickMatch<V>> { it.start }.thenByDescending { it.length }
