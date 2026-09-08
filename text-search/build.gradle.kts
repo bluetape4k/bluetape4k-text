@@ -67,6 +67,16 @@ benchmark {
             outputTimeUnit = "s"
             reportFormat = "json"
         }
+        register("accessor") {
+            include("io.bluetape4k.text.search.benchmark.DictionaryAccessorBenchmark")
+            warmups = 1
+            iterations = 3
+            iterationTime = 1
+            iterationTimeUnit = "s"
+            mode = "thrpt"
+            outputTimeUnit = "s"
+            reportFormat = "json"
+        }
         register("dictionary") {
             include("io.bluetape4k.text.search.benchmark.VersionedDictionaryBenchmark")
             warmups = 1
@@ -100,4 +110,12 @@ tasks.register<JavaExec>("preloadTimingDiagnostic") {
     description = "Measure Korean/Japanese dictionary preload cold and warm durations in a fresh JVM."
     classpath = sourceSets["benchmark"].runtimeClasspath
     mainClass.set("io.bluetape4k.text.search.benchmark.DictionaryPreloadTimingDiagnostic")
+}
+
+// 초기 로딩을 제외하고 JMH 처리량과 별도로 조회당 할당량을 측정합니다.
+tasks.register<JavaExec>("accessorAllocationDiagnostic") {
+    group = "benchmark"
+    description = "Measure warm dictionary accessor allocations in a fresh JVM."
+    classpath = sourceSets["benchmark"].runtimeClasspath
+    mainClass.set("io.bluetape4k.text.search.benchmark.DictionaryAccessorAllocationDiagnostic")
 }

@@ -75,6 +75,11 @@ object KoreanDictionaryProvider: KLogging() {
 
     private val dictionaryMutationLock = ReentrantLock()
 
+    // 사전 종류별 마지막 값 하나만 보관합니다. 기존 공개 뷰의 깊은 불변성은 유지합니다.
+    private var dictionaryViewCache: Pair<Map<KoreanPos, Set<String>>, Map<KoreanPos, CharArraySet>>? = null
+    private var blockwordViewCache: Pair<Map<Severity, Set<String>>, Map<Severity, CharArraySet>>? = null
+    private var properNounViewCache: Pair<Set<String>, CharArraySet>? = null
+
     private val koreanDictionaryVersions = SuspendMemoized {
         VersionedDictionary(
             DictionarySnapshot(
@@ -697,21 +702,29 @@ object KoreanDictionaryProvider: KLogging() {
         immutableMap(dictionary.mapValues { (_, words) -> immutableSet(words.map { it.asDictionaryWord() }) })
 
     private fun publicDictionaryView(value: Map<KoreanPos, Set<String>>): Map<KoreanPos, CharArraySet> =
-        Collections.unmodifiableMap(
-            value.mapValues { (_, words) ->
-                CharArraySet.unmodifiableSet(CharArraySet(words.toList()))
-            }
-        )
+        dictionaryMutationLock.withLock {
+            dictionaryViewCache?.takeIf { it.first === value }?.second ?: Collections.unmodifiableMap(
+                value.mapValues { (_, words) ->
+                    CharArraySet.unmodifiableSet(CharArraySet(words.toList()))
+                }
+            ).also { dictionaryViewCache = value to it }
+        }
 
     private fun publicBlockwordView(value: Map<Severity, Set<String>>): Map<Severity, CharArraySet> =
-        Collections.unmodifiableMap(
-            value.mapValues { (_, words) ->
-                CharArraySet.unmodifiableSet(CharArraySet(words.toList()))
-            }
-        )
+        dictionaryMutationLock.withLock {
+            blockwordViewCache?.takeIf { it.first === value }?.second ?: Collections.unmodifiableMap(
+                value.mapValues { (_, words) ->
+                    CharArraySet.unmodifiableSet(CharArraySet(words.toList()))
+                }
+            ).also { blockwordViewCache = value to it }
+        }
 
     private fun publicProperNounView(value: Set<String>): CharArraySet =
-        CharArraySet.unmodifiableSet(CharArraySet(value.toList()))
+        dictionaryMutationLock.withLock {
+            properNounViewCache?.takeIf { it.first === value }?.second
+                ?: CharArraySet.unmodifiableSet(CharArraySet(value.toList()))
+                    .also { properNounViewCache = value to it }
+        }
 
     private fun Any.asDictionaryWord(): String = when (this) {
         is CharArray -> concatToString()

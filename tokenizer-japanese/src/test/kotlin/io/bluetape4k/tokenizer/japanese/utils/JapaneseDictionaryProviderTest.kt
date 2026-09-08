@@ -5,6 +5,7 @@ import io.bluetape4k.junit5.coroutines.runSuspendIO
 import io.bluetape4k.tokenizer.japanese.AbstractTokenizerTest
 import io.bluetape4k.tokenizer.model.Severity
 import io.bluetape4k.assertions.assertFailsWith
+import io.bluetape4k.assertions.shouldBeSameInstanceAs
 import io.bluetape4k.assertions.shouldBeFalse
 import io.bluetape4k.assertions.shouldBeTrue
 import io.bluetape4k.assertions.shouldBeEqualTo
@@ -30,6 +31,37 @@ import java.util.concurrent.atomic.AtomicLong
 class JapaneseDictionaryProviderTest: AbstractTokenizerTest() {
 
     companion object: KLogging()
+
+    @Test
+    fun `공개 금칙어 뷰는 재사용되며 add remove clear reload 이후 갱신된다`() {
+        val original = JapaneseDictionaryProvider.currentBlockwordSeveritySnapshot()
+        val word = "issue334追加単語"
+        val before = JapaneseDictionaryProvider.blockWordDictionary
+        JapaneseDictionaryProvider.blockWordDictionary shouldBeSameInstanceAs before
+        try {
+            JapaneseDictionaryProvider.addBlockwords(listOf(word))
+            val added = JapaneseDictionaryProvider.blockWordDictionary
+            added.contains(word).shouldBeTrue()
+            before.contains(word).shouldBeFalse()
+            JapaneseDictionaryProvider.blockWordDictionary shouldBeSameInstanceAs added
+            JapaneseDictionaryProvider.removeBlockwords(listOf(word))
+            JapaneseDictionaryProvider.blockWordDictionary.contains(word).shouldBeFalse()
+            added.contains(word).shouldBeTrue()
+            JapaneseDictionaryProvider.clearBlockwords()
+            JapaneseDictionaryProvider.blockWordDictionary.shouldBeEmpty()
+            added.contains(word).shouldBeTrue()
+        } finally {
+            JapaneseDictionaryProvider.reloadBlockwords(
+                DictionaryVersion(
+                    "japanese-blockwords",
+                    JapaneseDictionaryProvider.currentBlockwordSnapshot().version.revision + 1,
+                ),
+                original.value,
+            )
+        }
+        JapaneseDictionaryProvider.blockWordDictionary.size shouldBeEqualTo before.size
+        JapaneseDictionaryProvider.blockWordDictionary.contains(word).shouldBeFalse()
+    }
 
     @Test
     fun `명시적 suspend preload API를 제공한다`() {
