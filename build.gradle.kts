@@ -293,7 +293,7 @@ subprojects {
 
                 // <central-catalog-local-aliases>
 
-                dependency("com.fasterxml.jackson:jackson-bom:${bt4kVersion("jackson")}")
+                dependency("com.fasterxml.jackson:jackson-bom:${bt4kVersion("jackson2")}")
 
                 dependency("org.awaitility:awaitility-kotlin:${bt4kVersion("awaitility")}")
 
