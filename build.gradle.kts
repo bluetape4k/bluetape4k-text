@@ -1,4 +1,5 @@
 import dev.detekt.gradle.Detekt
+import dev.detekt.gradle.plugin.getSupportedKotlinVersion
 import dev.detekt.gradle.report.ReportMergeTask
 import nmcp.NmcpAggregationExtension
 import nmcp.NmcpExtension
@@ -148,6 +149,17 @@ subprojects {
             plugin("signing")
             plugin("io.spring.dependency-management")
             plugin("org.jetbrains.dokka")
+        }
+    }
+
+    pluginManager.withPlugin("dev.detekt") {
+        configurations.matching { it.name == "detekt" }.configureEach {
+            resolutionStrategy.eachDependency {
+                if (requested.group == "org.jetbrains.kotlin") {
+                    useVersion(getSupportedKotlinVersion())
+                    because("Detekt must run with the Kotlin compiler version it was built against")
+                }
+            }
         }
     }
 
