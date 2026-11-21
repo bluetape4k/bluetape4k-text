@@ -11,6 +11,13 @@
 
 - `1.0.0` 정식 배포 후 다음 minor 개발선을 `1.1.0-SNAPSHOT`으로 열었다.
 
+## [1.1.0] - 2026-11-21
+
+### 변경
+
+- 최신 central catalog와 text-search/tokenizer/Lingua validation line을
+  정렬하고 release-facing documentation contract를 갱신했습니다.
+
 ## [1.0.0] - 2026-09-02
 
 ### 추가
