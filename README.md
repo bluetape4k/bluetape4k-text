@@ -8,9 +8,9 @@
 
 [한국어](./README.ko.md) | English
 
-Current stable version: `1.0.0`
+Current stable version: `1.1.0`
 
-Current development line: `1.1.0-SNAPSHOT` on `develop`
+Current development line: `1.2.0-SNAPSHOT` on `develop`
 
 ![Bluetape4k text processing workbench](./docs/assets/text-workbench.png)
 
