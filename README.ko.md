@@ -8,9 +8,9 @@
 
 [English](./README.md) | 한국어
 
-현재 안정 버전: `1.0.0`
+현재 안정 버전: `1.1.0`
 
-현재 개발선: `develop`의 `1.1.0-SNAPSHOT`
+현재 개발선: `develop`의 `1.2.0-SNAPSHOT`
 
 ![bluetape4k 텍스트 처리 작업대 일러스트](./docs/assets/text-workbench.png)
 
